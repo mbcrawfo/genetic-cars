@@ -7,8 +7,6 @@ namespace Genetic_Cars
 {
   partial class MainWindow
   {
-    private DrawingSurface m_drawingSurface;
-
     /// <summary>
     /// Required designer variable.
     /// </summary>
@@ -19,26 +17,7 @@ namespace Genetic_Cars
     /// </summary>
     public IntPtr DrawingSurfaceHandle
     {
-      get
-      {
-        Debug.Assert(m_drawingSurface != null);
-        return m_drawingSurface.Handle;
-      }
-    }
-
-    protected override void OnCreateControl()
-    {
-      base.OnCreateControl();
-
-      // SFML surface
-      m_drawingSurface = new DrawingSurface();
-      m_drawingSurface.Size = new Size(ClientSize.Width, 
-        ClientSize.Height - 200);
-      m_drawingSurface.Location = new Point(0, 0);
-      Controls.Add(m_drawingSurface);
-
-      this.Resize += (sender, args) => m_drawingSurface.Size = 
-        new Size(ClientSize.Width, ClientSize.Height - 200);
+      get { return drawingSurface.Handle; }
     }
 
     /// <summary>
@@ -64,13 +43,25 @@ namespace Genetic_Cars
     /// </summary>
     private void InitializeComponent()
     {
+      this.drawingSurface = new System.Windows.Forms.Panel();
       this.SuspendLayout();
+      // 
+      // drawingSurface
+      // 
+      this.drawingSurface.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.drawingSurface.Location = new System.Drawing.Point(12, 12);
+      this.drawingSurface.Name = "drawingSurface";
+      this.drawingSurface.Size = new System.Drawing.Size(760, 302);
+      this.drawingSurface.TabIndex = 0;
       // 
       // MainWindow
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.ClientSize = new System.Drawing.Size(784, 562);
+      this.Controls.Add(this.drawingSurface);
       this.MinimumSize = new System.Drawing.Size(800, 600);
       this.Name = "MainWindow";
       this.Text = "Genetic Cars";
@@ -80,22 +71,7 @@ namespace Genetic_Cars
 
     #endregion
 
-    /// <summary>
-    /// Custom control for SFML graphics that does not paint in the foreground 
-    /// or background.
-    /// </summary>
-    private class DrawingSurface : Control
-    {
-      protected override void OnPaint(PaintEventArgs e)
-      {
-        //base.OnPaint(e);
-      }
-
-      protected override void OnPaintBackground(PaintEventArgs pevent)
-      {
-        //base.OnPaintBackground(pevent);
-      }
-    }
+    private Panel drawingSurface;
   }
 }
 
