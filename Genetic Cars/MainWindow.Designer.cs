@@ -11,15 +11,7 @@ namespace Genetic_Cars
     /// Required designer variable.
     /// </summary>
     private System.ComponentModel.IContainer components = null;
-
-    /// <summary>
-    /// The handle for the SFML drawing surface.
-    /// </summary>
-    public IntPtr DrawingSurfaceHandle
-    {
-      get { return drawingSurface.Handle; }
-    }
-
+    
     /// <summary>
     /// Clean up any resources being used.
     /// </summary>

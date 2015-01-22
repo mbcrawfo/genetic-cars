@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Genetic_Cars
@@ -15,6 +8,14 @@ namespace Genetic_Cars
     public MainWindow()
     {
       InitializeComponent();
+    }
+
+    /// <summary>
+    /// The handle for the SFML drawing surface.
+    /// </summary>
+    public IntPtr DrawingSurfaceHandle
+    {
+      get { return drawingSurface.Handle; }
     }
   }
 }
