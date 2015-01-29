@@ -33,15 +33,15 @@ namespace Genetic_Cars
     // rendering state variables
     private readonly MainWindow m_window = new MainWindow();
     // can't be initialized until after the window is shown
-    private SFML.Graphics.RenderWindow m_renderWindow;
-    private SFML.Graphics.View m_view;
+    private readonly SFML.Graphics.RenderWindow m_renderWindow;
+    private readonly SFML.Graphics.View m_view;
 
     // physics state variables
-    private World m_world = new World(Gravity);
+    private readonly World m_world;
 
     // game data
-    private Random m_random = new Random();
-    private readonly Track m_track = new Track();
+    private Random m_random;
+    private readonly Track m_track;
     
     /// <summary>
     /// The main entry point for the application.
@@ -55,24 +55,16 @@ namespace Genetic_Cars
     }
 
     /// <summary>
-    /// Executes the program.
+    /// Creates the app in its initial state with a world generated using a 
+    /// seed based on the current time.
     /// </summary>
-    public void Run()
-    {
-      Initialize();
-      MainLoop();
-    }
-
-    /// <summary>
-    /// Initialize everything.
-    /// </summary>
-    private void Initialize()
+    public Application()
     {
       // initialize the rendering components
       m_window.Show();
       m_renderWindow = new RenderWindow(
-        m_window.DrawingSurfaceHandle, 
-        new ContextSettings{AntialiasingLevel = 8}
+        m_window.DrawingSurfaceHandle,
+        new ContextSettings { AntialiasingLevel = 8 }
         );
       var size = m_renderWindow.Size;
       m_view = new SFML.Graphics.View
@@ -82,15 +74,17 @@ namespace Genetic_Cars
         Viewport = new FloatRect(0, 0, 1, 1)
       };
 
-      m_track.World = m_world;
-      m_track.Rand = m_random;
-      m_track.Generate();
+      // create the world
+      m_random = new Random();
+      m_world = new World(Gravity);
+      m_track = new Track(m_world);
+      m_track.Generate(m_random);
     }
 
     /// <summary>
-    /// The program main loop.
+    /// Executes the program.
     /// </summary>
-    private void MainLoop()
+    public void Run()
     {
       while (m_window.Visible)
       {

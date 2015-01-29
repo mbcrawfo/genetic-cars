@@ -22,43 +22,37 @@ namespace Genetic_Cars
     private const float ShapeOutlineSize = 0.03f;
     private static readonly Vector2f ShapeSize = new Vector2f(1, .25f);
 
-    private World m_world;
-    private Random m_rand;
+    private readonly World m_world;
     private readonly List<Body> m_trackBodies = new List<Body>();
     private readonly List<Shape> m_trackShapes = new List<Shape>();
+
+    /// <summary>
+    /// Initializes, but does not generate the track.
+    /// </summary>
+    /// <param name="world">The physics world the track lives in.</param>
+    public Track(World world)
+    {
+      if (world == null)
+      {
+        throw new ArgumentNullException("world");
+      }
+      m_world = world;
+    }
     
     /// <summary>
-    /// The physics world for the track.
+    /// Randomly generates a new track.
     /// </summary>
-    public World World
+    /// <param name="rand">The RNG used to generate the track.</param>
+    public void Generate(Random rand)
     {
-      get { return m_world; }
-      set
-      {
-        Debug.Assert(value != null);
-        m_world = value;
-      }
-    }
+      Clear();
 
-    /// <summary>
-    /// RNG used in track generation.
-    /// </summary>
-    public Random Rand
-    {
-      get { return m_rand; }
-      set
-      {
-        Debug.Assert(value != null);
-        m_rand = value;
-      }
-    }
-
-    public void Generate()
-    {
-      Debug.Assert(m_world != null);
-      Debug.Assert(m_rand != null);
-      Debug.Assert(m_trackBodies.Count == 0);
-      Debug.Assert(m_trackShapes.Count == 0);
+      // Track pieces have their origin placed halfway up the left side of the 
+      // piece, with the next piece connected at the point halfway up the right 
+      // side of the piece to form a chain:
+      // |------------------------------------|
+      // @                                    @
+      // |------------------------------------|
 
       // the first piece is larger to provide a launch point and positioned 
       // so that the real track can start at 0,0
@@ -76,8 +70,11 @@ namespace Genetic_Cars
       };
       m_trackShapes.Add(shape);
       
+      // place the rest of the pieces
       for (int i = 0; i < NumPieces; i++)
       {
+        // the piece of the new position is offset from the previous piece's 
+        // position
         pos = new Vector2f
         {
           X = pos.X + 
@@ -86,10 +83,11 @@ namespace Genetic_Cars
             (shape.Size.X * (float)Math.Sin(MathExtensions.DegToRad(rot)))
         };
 
+        // the angle of the piece is randomized, with a 50% chance to be negative
         var maxAngle = CalcMaxAngle(i) + 10;
         var minAngle = CalcMinAngle(i) + 10;
-        rot = (float)Rand.NextDouble() * (maxAngle - minAngle) + minAngle;
-        if (Rand.NextDouble() < 0.5)
+        rot = (float)rand.NextDouble() * (maxAngle - minAngle) + minAngle;
+        if (rand.NextDouble() < 0.5)
         {
           rot *= -1f;
         }
@@ -97,6 +95,20 @@ namespace Genetic_Cars
         shape = CreateShape(pos, rot);
         m_trackShapes.Add(shape);
       }
+    }
+
+    /// <summary>
+    /// Clears the track allowing a new track to be generated.
+    /// </summary>
+    public void Clear()
+    {
+      foreach (var body in m_trackBodies)
+      {
+        m_world.RemoveBody(body);
+      }
+
+      m_trackBodies.Clear();
+      m_trackShapes.Clear();
     }
 
     /// <summary>
