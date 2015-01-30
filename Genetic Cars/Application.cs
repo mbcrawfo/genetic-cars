@@ -1,27 +1,27 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Drawing;
+using System.Reflection;
 using System.Threading;
-using System.Windows.Forms;
 using FarseerPhysics.Dynamics;
+using log4net;
 using Microsoft.Xna.Framework;
 using SFML.Graphics;
 using SFML.Window;
-using Color = SFML.Graphics.Color;
 
 namespace Genetic_Cars
 {
   class Application
   {
-    #region Constants
-    // logic updates at 30 fps
+    private static readonly ILog Log = LogManager.GetLogger(
+      MethodBase.GetCurrentMethod().DeclaringType);
+
+    // logic updates at 30 fps, time in ms
     private const long LogicTickInterval = (long)(1000f / 30f);
-    // physics updates at 60 fps
+    // physics updates at 60 fps, Farseer uses time in seconds
     private const float PhysicsTickInterval = 1f / 60f;
-    // attempt to maintain 30 fps
+    // attempt to maintain 30 fps in ms
     private const long TargetFrameTime = (long)(1000f / 30f);
     private static readonly Vector2 Gravity = new Vector2(0f, -9.8f);
-    #endregion
 
     // frame state variables
     private readonly Stopwatch m_frameTime = new Stopwatch();
@@ -33,8 +33,8 @@ namespace Genetic_Cars
     // rendering state variables
     private readonly MainWindow m_window = new MainWindow();
     // can't be initialized until after the window is shown
-    private readonly SFML.Graphics.RenderWindow m_renderWindow;
-    private readonly SFML.Graphics.View m_view;
+    private readonly RenderWindow m_renderWindow;
+    private readonly View m_view;
 
     // physics state variables
     private readonly World m_world;
@@ -49,8 +49,8 @@ namespace Genetic_Cars
     [STAThread]
     static void Main()
     {
-      //System.Windows.Forms.Application.EnableVisualStyles();
-      //System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
+      System.Windows.Forms.Application.EnableVisualStyles();
+      System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
       new Application().Run();
     }
 
@@ -66,16 +66,19 @@ namespace Genetic_Cars
         m_window.DrawingSurfaceHandle,
         new ContextSettings { AntialiasingLevel = 8 }
         );
-      var size = m_renderWindow.Size;
-      m_view = new SFML.Graphics.View
+      Log.DebugFormat("RenderWindow created size {0}", m_renderWindow.Size);
+      m_view = new View
       {
         Size = new Vector2f(10, 7.5f),
         Center = new Vector2f(0, -2),
         Viewport = new FloatRect(0, 0, 1, 1)
       };
 
+      var seedString = System.DateTime.Now.ToString("F");
+      m_random = new Random(seedString.GetHashCode());
+      Log.InfoFormat("RNG seed string:\n{0}", seedString);
+      
       // create the world
-      m_random = new Random();
       m_world = new World(Gravity);
       m_track = new Track(m_world);
       m_track.Generate(m_random);
@@ -93,7 +96,6 @@ namespace Genetic_Cars
 
         DoDrawing();
         DoPhysics();
-        System.Windows.Forms.Application.DoEvents();
         DoLogic();
 
         if (m_frameTime.ElapsedMilliseconds < TargetFrameTime)
@@ -105,6 +107,7 @@ namespace Genetic_Cars
 
     private void DoLogic()
     {
+      System.Windows.Forms.Application.DoEvents();
       m_renderWindow.DispatchEvents();
       
       m_logicDelta += m_lastFrameTotalTime;

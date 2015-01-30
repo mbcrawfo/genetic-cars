@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Drawing;
+﻿using System.ComponentModel;
 using System.Windows.Forms;
 
 namespace Genetic_Cars
@@ -10,7 +8,7 @@ namespace Genetic_Cars
     /// <summary>
     /// Required designer variable.
     /// </summary>
-    private System.ComponentModel.IContainer components = null;
+    private IContainer components = null;
     
     /// <summary>
     /// Clean up any resources being used.

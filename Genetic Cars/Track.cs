@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using FarseerPhysics.Dynamics;
+using log4net;
 using SFML.Graphics;
 using SFML.Window;
 
@@ -12,6 +14,9 @@ namespace Genetic_Cars
   /// </summary>
   class Track
   {
+    private static readonly ILog Log = LogManager.GetLogger(
+      MethodBase.GetCurrentMethod().DeclaringType);
+
     private const int NumPieces = 100;
     private const float MaxPieceAngle = 75;
     private const float PieceAngleShift = 5;
@@ -45,7 +50,14 @@ namespace Genetic_Cars
     /// <param name="rand">The RNG used to generate the track.</param>
     public void Generate(Random rand)
     {
+      if (rand == null)
+      {
+        throw new ArgumentNullException("rand");
+      }
+
       Clear();
+      var stopwatch = new Stopwatch();
+      stopwatch.Start();
 
       // Track pieces have their origin placed halfway up the left side of the 
       // piece, with the next piece connected at the point halfway up the right 
@@ -53,8 +65,7 @@ namespace Genetic_Cars
       // |------------------------------------|
       // @                                    @
       // |------------------------------------|
-
-      // the first piece is larger to provide a launch point and positioned 
+      // The first piece is larger to provide a launch point and positioned 
       // so that the real track can start at 0,0
       var pos = new Vector2f(-10, 0);
       var rot = 0f;
@@ -94,7 +105,14 @@ namespace Genetic_Cars
         
         shape = CreateShape(pos, rot);
         m_trackShapes.Add(shape);
+        //Log.DebugFormat("Added piece at {0}, rotation {1} degrees", pos, rot);
       }
+
+      // TODO: uncomment me
+      //Debug.Assert(m_trackShapes.Count == m_trackBodies.Count,
+      //  "m_trackShapes.Count == m_trackBodies.Count");
+      Log.DebugFormat("Generated {0} track pieces in {1} ms", 
+        m_trackShapes.Count, stopwatch.ElapsedMilliseconds);
     }
 
     /// <summary>
@@ -102,6 +120,8 @@ namespace Genetic_Cars
     /// </summary>
     public void Clear()
     {
+      Log.DebugFormat("Clearing {0} track pieces", m_trackShapes.Count);
+
       foreach (var body in m_trackBodies)
       {
         m_world.RemoveBody(body);
