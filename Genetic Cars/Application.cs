@@ -10,7 +10,7 @@ using SFML.Window;
 
 namespace Genetic_Cars
 {
-  class Application
+  class Application : IDisposable
   {
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
@@ -102,6 +102,21 @@ namespace Genetic_Cars
         {
           Thread.Sleep(1);
         }
+      }
+    }
+
+    /// <summary>
+    /// Clean up disposables, blah blah.
+    /// </summary>
+    public void Dispose()
+    {
+      if (m_renderWindow != null)
+      {
+        m_renderWindow.Dispose();
+      }
+      if (m_window != null)
+      {
+        m_window.Dispose();
       }
     }
 
