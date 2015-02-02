@@ -26,22 +26,22 @@ namespace Genetic_Cars
     // frame state variables
     private readonly Stopwatch m_frameTime = new Stopwatch();
     private readonly Stopwatch m_physicsTime = new Stopwatch();
-    private long m_lastFrameTotalTime = 0;
-    private long m_logicDelta = 0;
-    private float m_lastPhysicsStepDelta = 0f;
+    private long m_lastFrameTotalTime;
+    private long m_logicDelta;
+    private float m_lastPhysicsStepDelta;
 
     // rendering state variables
-    private readonly MainWindow m_window = new MainWindow();
+    private MainWindow m_window;
     // can't be initialized until after the window is shown
-    private readonly RenderWindow m_renderWindow;
-    private readonly View m_view;
+    private RenderWindow m_renderWindow;
+    private View m_view;
 
     // physics state variables
-    private readonly World m_world;
+    private World m_world;
 
     // game data
     private Random m_random;
-    private readonly Track m_track;
+    private Track m_track;
     
     /// <summary>
     /// The main entry point for the application.
@@ -58,9 +58,10 @@ namespace Genetic_Cars
     /// Creates the app in its initial state with a world generated using a 
     /// seed based on the current time.
     /// </summary>
-    public Application()
+    public void Initialize()
     {
       // initialize the rendering components
+      m_window = new MainWindow();
       m_window.Show();
       m_renderWindow = new RenderWindow(
         m_window.DrawingSurfaceHandle,
@@ -74,7 +75,7 @@ namespace Genetic_Cars
         Viewport = new FloatRect(0, 0, 1, 1)
       };
 
-      var seedString = System.DateTime.Now.ToString("F");
+      var seedString = DateTime.Now.ToString("F");
       m_random = new Random(seedString.GetHashCode());
       Log.InfoFormat("RNG seed string:\n{0}", seedString);
       
@@ -89,6 +90,8 @@ namespace Genetic_Cars
     /// </summary>
     public void Run()
     {
+      Initialize();
+
       while (m_window.Visible)
       {
         m_lastFrameTotalTime = m_frameTime.ElapsedMilliseconds;
