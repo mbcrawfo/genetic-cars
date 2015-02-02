@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using FarseerPhysics.Dynamics;
+using FarseerPhysics.Factories;
 using log4net;
+using Microsoft.Xna.Framework;
 using SFML.Graphics;
 using SFML.Window;
 
@@ -14,6 +16,7 @@ namespace Genetic_Cars
   /// </summary>
   class Track
   {
+    public readonly Category CollisionCategory = Category.Cat1;
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -59,41 +62,28 @@ namespace Genetic_Cars
       var stopwatch = new Stopwatch();
       stopwatch.Start();
 
-      // Track pieces have their origin placed halfway up the left side of the 
-      // piece, with the next piece connected at the point halfway up the right 
-      // side of the piece to form a chain:
-      // |------------------------------------|
-      // @                                    @
-      // |------------------------------------|
       // The first piece is larger to provide a launch point and positioned 
       // so that the real track can start at 0,0
-      var pos = new Vector2f(-10, 0);
+      var start = new Vector2f(-10, 0);
       var rot = 0f;
       var shape = new RectangleShape
       {
         FillColor = ShapeFillColor,
         OutlineColor = ShapeOutlineColor,
         OutlineThickness = ShapeOutlineSize,
-        Origin = new Vector2f(0, ShapeSize.Y / 2f),
-        Position = pos,
+        Position = start,
         Size = new Vector2f(10, ShapeSize.Y),
         Rotation = rot
       };
+      var end = CalcEndPoint(start, shape.Size, rot);
       m_trackShapes.Add(shape);
+      var body = CreateBody(start, end);
+      m_trackBodies.Add(body);
       
       // place the rest of the pieces
       for (int i = 0; i < NumPieces; i++)
       {
-        // the piece of the new position is offset from the previous piece's 
-        // position
-        pos = new Vector2f
-        {
-          X = pos.X + 
-            (shape.Size.X * (float)Math.Cos(MathExtensions.DegToRad(rot))),
-          Y = pos.Y + 
-            (shape.Size.X * (float)Math.Sin(MathExtensions.DegToRad(rot)))
-        };
-
+        start = end;
         // the angle of the piece is randomized, with a 50% chance to be negative
         var maxAngle = CalcMaxAngle(i) + 10;
         var minAngle = CalcMinAngle(i) + 10;
@@ -102,15 +92,16 @@ namespace Genetic_Cars
         {
           rot *= -1f;
         }
-        
-        shape = CreateShape(pos, rot);
+        shape = CreateShape(start, rot);
+        end = CalcEndPoint(start, shape.Size, rot);
+        body = CreateBody(start, end);
+
         m_trackShapes.Add(shape);
-        //Log.DebugFormat("Added piece at {0}, rotation {1} degrees", pos, rot);
+        m_trackBodies.Add(body);
       }
 
-      // TODO: uncomment me
-      //Debug.Assert(m_trackShapes.Count == m_trackBodies.Count,
-      //  "m_trackShapes.Count == m_trackBodies.Count");
+      Debug.Assert(m_trackShapes.Count == m_trackBodies.Count,
+        "m_trackShapes.Count == m_trackBodies.Count");
       Log.DebugFormat("Generated {0} track pieces in {1} ms", 
         m_trackShapes.Count, stopwatch.ElapsedMilliseconds);
     }
@@ -144,6 +135,44 @@ namespace Genetic_Cars
     }
 
     /// <summary>
+    /// Creates a physics body for a piece of track.  The body is only an edge 
+    /// that runs along the top of the track piece.
+    /// </summary>
+    /// <param name="start"></param>
+    /// <param name="end"></param>
+    /// <returns></returns>
+    private Body CreateBody(Vector2f start, Vector2f end)
+    {
+      var body = BodyFactory.CreateEdge(
+        m_world, start.ToVector2(), end.ToVector2()
+        );
+      body.BodyType = BodyType.Static;
+      body.CollidesWith = Category.All;
+      body.CollisionCategories = CollisionCategory;
+      return body;
+    }
+
+    /// <summary>
+    /// Calculates the end point (upper right corner) for a piece of track.  
+    /// This is the point where the next piece of track will attach.
+    /// </summary>
+    /// <param name="start"></param>
+    /// <param name="size"></param>
+    /// <param name="rotation"></param>
+    /// <returns></returns>
+    private static Vector2f CalcEndPoint(Vector2f start, Vector2f size,
+      float rotation)
+    {
+      return new Vector2f
+      {
+        X = start.X +
+          (size.X * (float)Math.Cos(MathExtensions.DegToRad(rotation))),
+        Y = start.Y +
+          (size.X * (float)Math.Sin(MathExtensions.DegToRad(rotation)))
+      };
+    }
+
+    /// <summary>
     /// Creates and returns a track piece shape.
     /// </summary>
     /// <param name="position"></param>
@@ -151,23 +180,15 @@ namespace Genetic_Cars
     /// <returns></returns>
     private static RectangleShape CreateShape(Vector2f position, float rotation)
     {
-      // SFML uses an inverted Y axis
-      position = new Vector2f
-      {
-        X = position.X, 
-        Y = -position.Y
-      };
-      rotation *= -1f;
-
       return new RectangleShape
       {
         FillColor = ShapeFillColor,
         OutlineColor = ShapeOutlineColor,
         OutlineThickness = ShapeOutlineSize,
-        Origin = new Vector2f(0, ShapeSize.Y / 2f),
         Size = ShapeSize,
-        Position = position,
-        Rotation = rotation
+        // invert the position and rotation for SFML
+        Position = position.InvertY(),
+        Rotation = rotation * -1f
       };
     }
 

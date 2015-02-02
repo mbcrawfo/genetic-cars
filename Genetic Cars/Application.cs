@@ -22,6 +22,7 @@ namespace Genetic_Cars
     // attempt to maintain 30 fps in ms
     private const long TargetFrameTime = (long)(1000f / 30f);
     private static readonly Vector2 Gravity = new Vector2(0f, -9.8f);
+    private const float ViewBaseWidth = 20f;
 
     // frame state variables
     private readonly Stopwatch m_frameTime = new Stopwatch();
@@ -35,6 +36,7 @@ namespace Genetic_Cars
     // can't be initialized until after the window is shown
     private RenderWindow m_renderWindow;
     private View m_view;
+    private float m_renderWindowBaseWidth;
 
     // physics state variables
     private World m_world;
@@ -68,12 +70,17 @@ namespace Genetic_Cars
         new ContextSettings { AntialiasingLevel = 8 }
         );
       Log.DebugFormat("RenderWindow created size {0}", m_renderWindow.Size);
+      var size = m_renderWindow.Size;
+      m_renderWindowBaseWidth = size.X;
+      var ratio = (float)size.Y / size.X;
       m_view = new View
       {
-        Size = new Vector2f(10, 7.5f),
+        Size = new Vector2f(ViewBaseWidth, ViewBaseWidth * ratio),
         Center = new Vector2f(0, -2),
         Viewport = new FloatRect(0, 0, 1, 1)
       };
+
+      m_renderWindow.Resized += m_renderWindow_Resized;
 
       var seedString = DateTime.Now.ToString("F");
       m_random = new Random(seedString.GetHashCode());
@@ -133,7 +140,7 @@ namespace Genetic_Cars
       {
         m_logicDelta -= LogicTickInterval;
         
-        m_view.Move(new Vector2f(0.1f, 0));
+        //m_view.Move(new Vector2f(0.1f, 0));
       }
     }
 
@@ -143,7 +150,6 @@ namespace Genetic_Cars
 
       m_renderWindow.Clear(Color.White);
       m_track.Draw(m_renderWindow);
-
       m_renderWindow.Display();
     }
 
@@ -157,6 +163,21 @@ namespace Genetic_Cars
         m_world.ClearForces();
       }
       m_physicsTime.Restart();
+    }
+
+    /// <summary>
+    /// Resizes the view to avoid distorting objects.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void m_renderWindow_Resized(object sender, SizeEventArgs e)
+    {
+      var newWidth = (ViewBaseWidth / m_renderWindowBaseWidth) * e.Width;
+      var ratio = (float)e.Height / e.Width;
+      m_view.Size = new Vector2f(newWidth, newWidth * ratio);
+      Log.DebugFormat("Window resized to {0} new view size {1}",
+        e, m_view.Size
+        );
     }
   }
 }
