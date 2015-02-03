@@ -16,7 +16,7 @@ namespace Genetic_Cars
   /// </summary>
   class Track
   {
-    public readonly Category CollisionCategory = Category.Cat1;
+    public static readonly Category CollisionCategory = Category.Cat1;
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
 

@@ -44,6 +44,9 @@ namespace Genetic_Cars
     // game data
     private Random m_random;
     private Track m_track;
+
+    //TESTING
+    private Car m_car;
     
     /// <summary>
     /// The main entry point for the application.
@@ -90,6 +93,14 @@ namespace Genetic_Cars
       m_world = new World(Gravity);
       m_track = new Track(m_world);
       m_track.Generate(m_random);
+
+      //TESTING
+      CarDef def = new CarDef
+      {
+        bodyPoints = new float[Car.NumBodyPoints] 
+          { 1, .5f, .25f, .5f, 1, .5f, .25f, .5f }
+      };
+      m_car = new Car(def, m_world);
     }
 
     /// <summary>
@@ -150,6 +161,7 @@ namespace Genetic_Cars
 
       m_renderWindow.Clear(Color.White);
       m_track.Draw(m_renderWindow);
+      m_car.Draw(m_renderWindow);
       m_renderWindow.Display();
     }
 
