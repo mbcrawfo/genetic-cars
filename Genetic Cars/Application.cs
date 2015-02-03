@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
+using FarseerPhysics;
 using FarseerPhysics.Dynamics;
 using log4net;
 using Microsoft.Xna.Framework;
@@ -91,15 +92,24 @@ namespace Genetic_Cars
       
       // create the world
       m_world = new World(Gravity);
+      Settings.UseFPECollisionCategories = true;
       m_track = new Track(m_world);
       m_track.Generate(m_random);
 
       //TESTING
-      CarDef def = new CarDef
-      {
-        bodyPoints = new float[Car.NumBodyPoints] 
-          { 1, .5f, .25f, .5f, 1, .5f, .25f, .5f }
-      };
+      CarDef def = new CarDef();
+      def.BodyPoints[0] = 1;
+      def.BodyPoints[1] = 1;
+      def.BodyPoints[2] = 1;
+      def.BodyPoints[3] = 1;
+      def.BodyPoints[4] = 1;
+      def.BodyPoints[5] = 1;
+      def.BodyPoints[6] = 1;
+      def.BodyPoints[7] = 1;
+      def.BodyMass = 0.5f;
+      def.WheelAttachment[0] = 7;
+      def.WheelAttachment[1] = 5;
+
       m_car = new Car(def, m_world);
     }
 

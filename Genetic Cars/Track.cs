@@ -14,7 +14,7 @@ namespace Genetic_Cars
   /// <summary>
   /// Holds the track for the cars to race on.
   /// </summary>
-  class Track
+  class Track : IDisposable
   {
     public static readonly Category CollisionCategory = Category.Cat1;
     private static readonly ILog Log = LogManager.GetLogger(
@@ -45,6 +45,11 @@ namespace Genetic_Cars
         throw new ArgumentNullException("world");
       }
       m_world = world;
+    }
+
+    public void Dispose()
+    {
+      //TODO: implement me
     }
     
     /// <summary>
