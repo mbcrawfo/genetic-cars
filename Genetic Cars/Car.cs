@@ -1,117 +1,116 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Reflection;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using FarseerPhysics.Collision.Shapes;
 using FarseerPhysics.Common;
 using FarseerPhysics.Dynamics;
+using FarseerPhysics.Dynamics.Joints;
 using FarseerPhysics.Factories;
 using log4net;
+using Microsoft.Xna.Framework;
 using SFML.Graphics;
 using SFML.Window;
-using CircleShape = SFML.Graphics.CircleShape;
 
 namespace Genetic_Cars
 {
-  class CarDef
+  public class Car : IDisposable
   {
-    // the points that make up the polygon of the car's body, starting with 
-    // point 0 at 3 o'clock and going CCW around the center.  each value 
-    // is in the range [0,1] indicating the distance from the center as a 
-    // percentage of the max distance
-    public float[] BodyPoints { get; private set; }
-    // body mass, in the range [0,1] as a percentage of the max mass
-    public float BodyMass { get; set; }
-    // the points on the body where the wheels are attached, given as indices 
-    // in bodyPoints
-    public int[] WheelAttachment { get; private set; }
-    // the radiuses of the wheels, with each value in the range [0,1] as a 
-    // percentage of the max radius
-    public float[] WheelRadius { get; private set; }
-    // the speed of the wheels, in the range [0,1] as a percentage of the max
-    // speed
-    public float WheelSpeed { get; set; }
-
-    public CarDef()
-    {
-      BodyPoints = new float[Car.NumBodyPoints];
-      WheelAttachment = new int[Car.NumWheels];
-      WheelRadius = new float[Car.NumWheels];
-    }
-  }
-
-  class Car : IDisposable
-  {
-    public const int NumBodyPoints = 8;
-    public const int NumWheels = 2;
-
-    private const float MinBodyDistance = .5f;
-    private const float MaxBodyDistance = 2;
-    private const float MinBodyMass = 10;
-    private const float MaxBodyMass = 100;
-
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
-    private static readonly Vector2f StartPosition = new Vector2f(1, 4);
+
+    private static readonly Color OutlineColor = Color.Black;
+    private const float OutlineThickness = -.04f;
+    private const float WheelAxisLineThickness = .04f;
     public static readonly Category CollisionCategory = Category.Cat2;
+
+    public static Vector2f StartPosition { get; set; }
 
     private readonly World m_world;
     private ConvexShape m_bodyShape;
     private Body m_bodyBody;
-    private CircleShape[] m_wheelShape;
-    
+    private CircleShape[] m_wheelShapes;
+    private RectangleShape[] m_wheelLines;
+    private Body[] m_wheelBodies;
+    private RevoluteJoint[] m_wheelJoints;
+
     public Car(CarDef def, World world)
     {
       if (world == null)
       {
         throw new ArgumentNullException("world");
       }
+      if (def == null)
+      {
+        throw new ArgumentNullException("def");
+      }
+      
+      // will throw on failure
+      def.Validate();
       m_world = world;
-
-      ValidateCarDef(def);
       Definition = def;
 
-      BuildBody();
-      BuildWheels();
+      CreateBody();
+      CreateWheels();
     }
 
     public CarDef Definition { get; private set; }
 
+    public Vector2f Center
+    {
+      get { return m_bodyShape.Position; }
+    }
+
     public void Draw(RenderTarget target)
+    {
+      target.Draw(m_bodyShape);
+
+      for (int i = 0; i < m_wheelShapes.Length; i++)
+      {
+        target.Draw(m_wheelShapes[i]);
+        target.Draw(m_wheelLines[i]);
+      }
+    }
+
+    public void SyncPositions()
     {
       var pos = m_bodyBody.Position.ToVector2f().InvertY();
       m_bodyShape.Position = pos;
       m_bodyShape.Rotation = (float)-MathExtensions.RadToDeg(m_bodyBody.Rotation);
-      target.Draw(m_bodyShape);
 
-      m_wheelShape[0].Position = pos;
-      target.Draw(m_wheelShape[0]);
+      for (int i = 0; i < m_wheelShapes.Length; i++)
+      {
+        var wheelPos = m_wheelBodies[i].Position.ToVector2f().InvertY();
+        var wheelRot = (float) -MathExtensions.RadToDeg(m_wheelBodies[i].Rotation);
+
+        m_wheelShapes[i].Position = wheelPos;
+        m_wheelLines[i].Position = wheelPos;
+        m_wheelLines[i].Rotation = wheelRot;
+      }
     }
 
     public void Dispose()
     {
+      m_world.RemoveBody(m_bodyBody);
     }
 
-    private void BuildBody()
+    private void CreateBody()
     {
-      m_bodyShape = new ConvexShape(NumBodyPoints)
+      m_bodyShape = new ConvexShape((uint)CarDef.NumBodyPoints)
       {
-        FillColor = Color.Red,
+        FillColor = new Color(200, 0, 0),
+        OutlineColor = OutlineColor,
+        OutlineThickness = OutlineThickness,
         Position = StartPosition.InvertY()
       };
-      m_bodyBody = BodyFactory.CreateBody(m_world, StartPosition.ToVector2());
-      m_bodyBody.BodyType = BodyType.Dynamic;
 
-      var vertices = new Vertices(NumBodyPoints);
-      const float angleStep = 360f / NumBodyPoints;
+      // build the vertex list for the polygon
+      var vertices = new Vertices(CarDef.NumBodyPoints);
+      var angleStep = 360f / CarDef.NumBodyPoints;
       var angle = 0f;
-      for (int i = 0; i < NumBodyPoints; i++)
+      for (int i = 0; i < CarDef.NumBodyPoints; i++)
       {
-        var distance = (Definition.BodyPoints[i] * 
-          (MaxBodyDistance - MinBodyDistance)) + MinBodyDistance;
+        // the distance this point is from the center
+        var distance = Definition.CalcBodyPoint(i);
+        // turn the distance into a point centered around (0,0)
         var point = new Vector2f
         {
           X = distance * (float)Math.Cos(MathExtensions.DegToRad(angle)),
@@ -122,63 +121,77 @@ namespace Genetic_Cars
 
         angle += angleStep;
       }
-      FixtureFactory.AttachPolygon(vertices, 1, m_bodyBody);
+
+      // build the physics shape
+      m_bodyBody = BodyFactory.CreatePolygon(
+        m_world, vertices, Definition.CalcBodyDensity(), 
+        StartPosition.ToVector2()
+        );
+      m_bodyBody.BodyType = BodyType.Dynamic;
       m_bodyBody.CollidesWith = ~CollisionCategory;
       m_bodyBody.CollisionCategories = CollisionCategory;
-      var mass = (Definition.BodyMass * 
-        (MaxBodyMass - MinBodyMass)) + MinBodyMass;
-      m_bodyBody.Mass = mass;
     }
 
-    private void BuildWheels()
+    private void CreateWheels()
     {
-      m_wheelShape = new CircleShape[2];
+      Debug.Assert(m_bodyShape != null);
+      Debug.Assert(m_bodyBody != null);
 
-      for (int i = 0; i < m_wheelShape.Length; i++)
+      m_wheelShapes = new CircleShape[CarDef.NumWheels];
+      m_wheelLines = new RectangleShape[CarDef.NumWheels];
+      m_wheelBodies = new Body[CarDef.NumWheels];
+      m_wheelJoints = new RevoluteJoint[CarDef.NumWheels];
+
+      for (int i = 0; i < m_wheelShapes.Length; i++)
       {
-        var pos = m_bodyShape.GetPoint((uint)Definition.WheelAttachment[i]);
-        var offset = pos - m_bodyShape.Position;
-        var color = Color.Black;
-        color.A = 128;
-        m_wheelShape[i] = new CircleShape
+        // the offset of the attachment point from the center of the main body
+        var attachOffset =
+          m_bodyShape.GetPoint((uint) Definition.WheelAttachment[i]);
+        // the world position of the attachment point
+        var attachPos = attachOffset + m_bodyShape.Position;
+        var radius = Definition.CalcWheelRadius(i);
+        var color = Color.White;
+
+        var shape = new CircleShape
         {
           FillColor = color,
-          Origin = pos + new Vector2f(.25f, .25f),
-          Position = m_bodyShape.Position,
-          Radius = .5f
+          OutlineColor = OutlineColor,
+          OutlineThickness = OutlineThickness,
+          Origin = new Vector2f(radius, radius),
+          Position = attachPos,
+          Radius = radius
         };
-      }
-    }
+        var line = new RectangleShape
+        {
+          FillColor = Color.Black,
+          Origin = new Vector2f(0, -WheelAxisLineThickness / 2f),
+          Size = new Vector2f(WheelAxisLineThickness, radius),
+          Position = shape.Position
+        };
 
-    private static void ValidateCarDef(CarDef def)
-    {
-      for (int i = 0; i < def.BodyPoints.Length; i++)
-      {
-        if (def.BodyPoints[i] < 0 || def.BodyPoints[i] > 1)
+        var body = BodyFactory.CreateCircle(
+          m_world, radius, Definition.CalcWheelDensity(i), 
+          attachPos.ToVector2().InvertY()
+          );
+        body.BodyType = BodyType.Dynamic;
+        body.Friction = 1;
+        body.CollidesWith = ~CollisionCategory;
+        body.CollisionCategories = CollisionCategory;
+
+        var joint = new RevoluteJoint(
+          m_bodyBody, attachOffset.ToVector2().InvertY(), body,
+          new Vector2(0, 0))
         {
-          throw new ArgumentOutOfRangeException(
-            "def", @"BodyPoints[" + i + @"] out of range");
-        }
-      }
-      if (def.BodyMass < 0 || def.BodyMass > 1)
-      {
-        throw new ArgumentOutOfRangeException("def", @"BodyMass out of range");
-      }
-      for (int i = 0; i < def.WheelAttachment.Length; i++)
-      {
-        if (def.WheelAttachment[i] < 0 || def.WheelAttachment[i] >= NumBodyPoints)
-        {
-          throw new ArgumentOutOfRangeException(
-            "def", @"WheelAttachment[" + i + @"] out of range");
-        }
-      }
-      for (int i = 0; i < def.WheelRadius.Length; i++)
-      {
-        if (def.WheelRadius[i] < 0 || def.WheelRadius[i] > 1)
-        {
-          throw new ArgumentOutOfRangeException(
-            "def", @"WheelRadius[" + i + @"] out of range");
-        }
+          MotorEnabled = true, 
+          MaxMotorTorque = 100, 
+          MotorSpeed = -10
+        };
+        m_world.AddJoint(joint);
+
+        m_wheelShapes[i] = shape;
+        m_wheelLines[i] = line;
+        m_wheelBodies[i] = body;
+        m_wheelJoints[i] = joint;
       }
     }
   }

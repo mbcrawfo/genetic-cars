@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using FarseerPhysics.Dynamics;
 using FarseerPhysics.Factories;
@@ -21,7 +23,7 @@ namespace Genetic_Cars
       MethodBase.GetCurrentMethod().DeclaringType);
 
     private const int NumPieces = 100;
-    private const float MaxPieceAngle = 75;
+    private const float MaxPieceAngle = 60;
     private const float PieceAngleShift = 5;
 
     // info for the SFML shapes that make up the track
@@ -31,8 +33,8 @@ namespace Genetic_Cars
     private static readonly Vector2f ShapeSize = new Vector2f(1, .25f);
 
     private readonly World m_world;
-    private readonly List<Body> m_trackBodies = new List<Body>();
-    private readonly List<Shape> m_trackShapes = new List<Shape>();
+    private readonly List<Body> m_trackBodies = new List<Body>(NumPieces);
+    private readonly List<Shape> m_trackShapes = new List<Shape>(NumPieces);
 
     /// <summary>
     /// Initializes, but does not generate the track.
@@ -47,9 +49,14 @@ namespace Genetic_Cars
       m_world = world;
     }
 
+    /// <summary>
+    /// The X position of the world where cars should start.
+    /// </summary>
+    public float StartingLine { get; private set; }
+
     public void Dispose()
     {
-      //TODO: implement me
+      Clear();
     }
     
     /// <summary>
@@ -67,23 +74,32 @@ namespace Genetic_Cars
       var stopwatch = new Stopwatch();
       stopwatch.Start();
 
-      // The first piece is larger to provide a launch point and positioned 
-      // so that the real track can start at 0,0
+      // first an invisible physics piece to block cars from running off the 
+      // track to the left
       var start = new Vector2f(-10, 0);
+      var body = BodyFactory.CreateEdge(
+        m_world, start.ToVector2(), start.ToVector2() + new Vector2(0, 10));
+      body.CollidesWith = Category.All;
+      body.CollisionCategories = CollisionCategory;
+      m_trackBodies.Add(body);
+      
+      // the first visible piece is the starting pad and is positioned so that 
+      // the random track starts at (0,0)
       var rot = 0f;
       var shape = new RectangleShape
       {
         FillColor = ShapeFillColor,
         OutlineColor = ShapeOutlineColor,
         OutlineThickness = ShapeOutlineSize,
-        Position = start,
+        Position = start.InvertY(),
         Size = new Vector2f(10, ShapeSize.Y),
         Rotation = rot
       };
       var end = CalcEndPoint(start, shape.Size, rot);
       m_trackShapes.Add(shape);
-      var body = CreateBody(start, end);
+      body = CreateBody(start, end);
       m_trackBodies.Add(body);
+      StartingLine = (start / 2f).X;
       
       // place the rest of the pieces
       for (int i = 0; i < NumPieces; i++)
@@ -105,8 +121,6 @@ namespace Genetic_Cars
         m_trackBodies.Add(body);
       }
 
-      Debug.Assert(m_trackShapes.Count == m_trackBodies.Count,
-        "m_trackShapes.Count == m_trackBodies.Count");
       Log.DebugFormat("Generated {0} track pieces in {1} ms", 
         m_trackShapes.Count, stopwatch.ElapsedMilliseconds);
     }
@@ -152,6 +166,7 @@ namespace Genetic_Cars
         m_world, start.ToVector2(), end.ToVector2()
         );
       body.BodyType = BodyType.Static;
+      body.Friction = 1;
       body.CollidesWith = Category.All;
       body.CollisionCategories = CollisionCategory;
       return body;

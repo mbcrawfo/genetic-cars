@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
@@ -8,6 +9,7 @@ using log4net;
 using Microsoft.Xna.Framework;
 using SFML.Graphics;
 using SFML.Window;
+using Settings = Genetic_Cars.Properties.Settings;
 
 namespace Genetic_Cars
 {
@@ -55,9 +57,24 @@ namespace Genetic_Cars
     [STAThread]
     static void Main()
     {
+      // dump settings to the log
+      Log.Info("Loaded settings:");
+      foreach (SettingsProperty property in Settings.Default.Properties)
+      {
+        Log.InfoFormat("{0}={1}", 
+          property.Name, Properties.Settings.Default[property.Name]);
+      }
+
+      // enable collision categories in farseer
+      FarseerPhysics.Settings.UseFPECollisionCategories = true;
+
+      // not sure what this does, leftover from the project generation
       System.Windows.Forms.Application.EnableVisualStyles();
       System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
-      new Application().Run();
+
+      var app = new Application();
+      app.Initialize();
+      app.Run();
     }
 
     /// <summary>
@@ -92,23 +109,27 @@ namespace Genetic_Cars
       
       // create the world
       m_world = new World(Gravity);
-      Settings.UseFPECollisionCategories = true;
       m_track = new Track(m_world);
       m_track.Generate(m_random);
+      Car.StartPosition = new Vector2f(m_track.StartingLine, 3);
 
       //TESTING
       CarDef def = new CarDef();
       def.BodyPoints[0] = 1;
-      def.BodyPoints[1] = 1;
-      def.BodyPoints[2] = 1;
-      def.BodyPoints[3] = 1;
+      def.BodyPoints[1] = 0;
+      def.BodyPoints[2] = .25f;
+      def.BodyPoints[3] = 0;
       def.BodyPoints[4] = 1;
-      def.BodyPoints[5] = 1;
-      def.BodyPoints[6] = 1;
-      def.BodyPoints[7] = 1;
-      def.BodyMass = 0.5f;
-      def.WheelAttachment[0] = 7;
-      def.WheelAttachment[1] = 5;
+      def.BodyPoints[5] = .25f;
+      def.BodyPoints[6] = 0f;
+      def.BodyPoints[7] = .25f;
+      def.BodyDensity = 1;
+      def.WheelAttachment[0] = 5;
+      def.WheelAttachment[1] = 7;
+      def.WheelRadius[0] = .25f;
+      def.WheelRadius[1] = .25f;
+      def.WheelDensity[0] = 1;
+      def.WheelDensity[1] = 1;
 
       m_car = new Car(def, m_world);
     }
@@ -118,8 +139,6 @@ namespace Genetic_Cars
     /// </summary>
     public void Run()
     {
-      Initialize();
-
       while (m_window.Visible)
       {
         m_lastFrameTotalTime = m_frameTime.ElapsedMilliseconds;
@@ -160,8 +179,6 @@ namespace Genetic_Cars
       while (m_logicDelta >= LogicTickInterval)
       {
         m_logicDelta -= LogicTickInterval;
-        
-        //m_view.Move(new Vector2f(0.1f, 0));
       }
     }
 
@@ -183,6 +200,9 @@ namespace Genetic_Cars
         m_lastPhysicsStepDelta -= PhysicsTickInterval;
         m_world.Step(PhysicsTickInterval);
         m_world.ClearForces();
+
+        m_car.SyncPositions();
+        m_view.Center = m_car.Center;
       }
       m_physicsTime.Restart();
     }

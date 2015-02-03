@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Car.cs" />
+    <Compile Include="CarDef.cs" />
     <Compile Include="FarseerDebugView.cs" />
     <Compile Include="MainWindow.cs">
       <SubType>Form</SubType>
@@ -71,6 +72,7 @@
     <Compile Include="Application.cs" />
     <Compile Include="MathExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="Track.cs" />
     <Compile Include="VectorExtensions.cs" />
     <EmbeddedResource Include="MainWindow.resx">
