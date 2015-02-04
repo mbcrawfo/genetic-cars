@@ -32,5 +32,20 @@
     <Setting Name="NumWheels" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">2</Value>
     </Setting>
+    <Setting Name="MinWheelSpeed" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">180</Value>
+    </Setting>
+    <Setting Name="MaxWheelSpeed" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">1440</Value>
+    </Setting>
+    <Setting Name="MinWheelTorque" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="MaxWheelTorque" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">50</Value>
+    </Setting>
+    <Setting Name="NumTrackPieces" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">100</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

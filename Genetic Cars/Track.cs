@@ -16,21 +16,22 @@ namespace Genetic_Cars
   /// <summary>
   /// Holds the track for the cars to race on.
   /// </summary>
-  sealed class Track : IDisposable
+  sealed class Track : IDisposable, IDrawable
   {
     public static readonly Category CollisionCategory = Category.Cat1;
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
 
-    private const int NumPieces = 100;
+    private static readonly int NumPieces = 
+      Properties.Settings.Default.NumTrackPieces;
     private const float MaxPieceAngle = 60;
-    private const float PieceAngleShift = 5;
+    private const float MinPieceAngle = 3;
 
-    // info for the SFML shapes that make up the track
-    private static readonly Color ShapeFillColor = new Color(128, 128, 128);
-    private static readonly Color ShapeOutlineColor = Color.Black;
-    private const float ShapeOutlineSize = 0.03f;
-    private static readonly Vector2f ShapeSize = new Vector2f(3, .25f);
+    // graphical properties of the track
+    private static readonly Color FillColor = new Color(128, 128, 128);
+    private static readonly Color OutlineColor = Color.Black;
+    private const float OutlineSize = 0.03f;
+    private static readonly Vector2f PieceSize = new Vector2f(3, .25f);
 
     private bool m_disposed = false;
     private bool m_generated = false;
@@ -38,6 +39,7 @@ namespace Genetic_Cars
     private readonly World m_world;
     private readonly List<Body> m_trackBodies = new List<Body>(NumPieces);
     private readonly List<Shape> m_trackShapes = new List<Shape>(NumPieces);
+    private float m_startingLine;
 
     /// <summary>
     /// Initializes, but does not generate the track.
@@ -60,7 +62,14 @@ namespace Genetic_Cars
     /// <summary>
     /// The X position of the world where cars should start.
     /// </summary>
-    public float StartingLine { get; private set; }
+    public float StartingLine
+    {
+      get
+      {
+        Debug.Assert(m_generated);
+        return m_startingLine;
+      }
+    }
 
     public void Dispose()
     {
@@ -120,18 +129,18 @@ namespace Genetic_Cars
       var rot = 0f;
       var shape = new RectangleShape
       {
-        FillColor = ShapeFillColor,
-        OutlineColor = ShapeOutlineColor,
-        OutlineThickness = ShapeOutlineSize,
+        FillColor = FillColor,
+        OutlineColor = OutlineColor,
+        OutlineThickness = OutlineSize,
         Position = start.InvertY(),
-        Size = new Vector2f(10, ShapeSize.Y),
+        Size = new Vector2f(10, PieceSize.Y),
         Rotation = rot
       };
       var end = CalcEndPoint(start, shape.Size, rot);
       m_trackShapes.Add(shape);
       body = CreateBody(start, end);
       m_trackBodies.Add(body);
-      StartingLine = (start / 2f).X;
+      m_startingLine = (start / 2f).X;
       
       // place the rest of the pieces
       for (int i = 0; i < NumPieces; i++)
@@ -251,10 +260,10 @@ namespace Genetic_Cars
     {
       return new RectangleShape
       {
-        FillColor = ShapeFillColor,
-        OutlineColor = ShapeOutlineColor,
-        OutlineThickness = ShapeOutlineSize,
-        Size = ShapeSize,
+        FillColor = FillColor,
+        OutlineColor = OutlineColor,
+        OutlineThickness = OutlineSize,
+        Size = PieceSize,
         // invert the position and rotation for SFML
         Position = position.InvertY(),
         Rotation = rotation * -1f
@@ -264,7 +273,7 @@ namespace Genetic_Cars
     /// <summary>
     /// Uses a cubic function to calculate the maximum angle for a piece of 
     /// track in the range 
-    /// [<see cref="PieceAngleShift"/>, <see cref="MaxPieceAngle"/>].
+    /// [<see cref="MinPieceAngle"/>, <see cref="MaxPieceAngle"/>].
     /// </summary>
     /// <param name="index">The index of the track piece with 
     /// <see cref="NumPieces"/> as the maximum.
@@ -279,13 +288,13 @@ namespace Genetic_Cars
       float x = ((index + 1f) / NumPieces) * 10f;
       float y = x * x * x;
       float percent = y / 1000f;
-      return (percent * (MaxPieceAngle - PieceAngleShift)) + PieceAngleShift;
+      return (percent * (MaxPieceAngle - MinPieceAngle)) + MinPieceAngle;
     }
 
     /// <summary>
     /// Uses a cubic function to calculate the maximum angle for a piece of 
     /// track in the range 
-    /// [<see cref="PieceAngleShift"/>, <see cref="MaxPieceAngle"/>].  Will 
+    /// [<see cref="MinPieceAngle"/>, <see cref="MaxPieceAngle"/>].  Will 
     /// always return a value less than <see cref="CalcMaxAngle"/> for the 
     /// same index.
     /// </summary>
@@ -302,7 +311,7 @@ namespace Genetic_Cars
       float x = ((index + 1f) / NumPieces) * 10f;
       float y = (x * x * x) - (float)Math.Pow(x, 2.7);
       float percent = y / 1000f;
-      return (percent * (MaxPieceAngle - PieceAngleShift)) + PieceAngleShift;
+      return (percent * (MaxPieceAngle - MinPieceAngle)) + MinPieceAngle;
     }
   }
 }

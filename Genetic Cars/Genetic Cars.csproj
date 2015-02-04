@@ -62,7 +62,9 @@
   <ItemGroup>
     <Compile Include="Car.cs" />
     <Compile Include="CarDef.cs" />
+    <Compile Include="IDynamicObject.cs" />
     <Compile Include="FarseerDebugView.cs" />
+    <Compile Include="IDrawable.cs" />
     <Compile Include="MainWindow.cs">
       <SubType>Form</SubType>
     </Compile>

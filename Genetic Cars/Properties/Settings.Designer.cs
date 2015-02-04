@@ -142,5 +142,65 @@ namespace Genetic_Cars.Properties {
                 this["NumWheels"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("180")]
+        public float MinWheelSpeed {
+            get {
+                return ((float)(this["MinWheelSpeed"]));
+            }
+            set {
+                this["MinWheelSpeed"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1440")]
+        public float MaxWheelSpeed {
+            get {
+                return ((float)(this["MaxWheelSpeed"]));
+            }
+            set {
+                this["MaxWheelSpeed"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public float MinWheelTorque {
+            get {
+                return ((float)(this["MinWheelTorque"]));
+            }
+            set {
+                this["MinWheelTorque"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("50")]
+        public float MaxWheelTorque {
+            get {
+                return ((float)(this["MaxWheelTorque"]));
+            }
+            set {
+                this["MaxWheelTorque"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public int NumTrackPieces {
+            get {
+                return ((int)(this["NumTrackPieces"]));
+            }
+            set {
+                this["NumTrackPieces"] = value;
+            }
+        }
     }
 }

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Reflection;
+using System.Threading;
 using FarseerPhysics.Common;
 using FarseerPhysics.Dynamics;
+using FarseerPhysics.Dynamics.Contacts;
 using FarseerPhysics.Dynamics.Joints;
 using FarseerPhysics.Factories;
 using log4net;
@@ -12,28 +14,56 @@ using SFML.Window;
 
 namespace Genetic_Cars
 {
-  sealed class Car : IDisposable
+  /// <summary>
+  /// Holds the graphics and physics objects for a car.
+  /// </summary>
+  sealed class Car : IDisposable, IDrawable, IDynamicObject
   {
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
 
-    private static readonly Color OutlineColor = Color.Black;
-    private const float OutlineThickness = -.04f;
-    private const float WheelAxisLineThickness = .04f;
+    // collision category for all car components
     public static readonly Category CollisionCategory = Category.Cat2;
 
+    // graphical properties for the car
+    private static readonly Color OutlineColor = Color.Black;
+    private const float OutlineThickness = -.05f;
+    private const float WheelAxisLineThickness = .04f;
+
+    // cars are accelerated over a period of time to try to avoid wheelies
+    // delta time for acceleration in ms
+    private const int AccelerationTime = 5000;
+    // time between each acceleration step
+    private const int AccelerationInterval = 100;
+    // total number of acceleration steps
+    private const int AccelerationSteps = AccelerationTime / AccelerationInterval;
+    
+    /// <summary>
+    /// The position where all cars are generated.
+    /// </summary>
     public static Vector2f StartPosition { get; set; }
 
     private bool m_disposed = false;
 
-    private readonly World m_world;
+    // graphics fields
     private ConvexShape m_bodyShape;
-    private Body m_bodyBody;
     private CircleShape[] m_wheelShapes;
     private RectangleShape[] m_wheelLines;
+    // physics fields
+    private readonly World m_world;
+    private Body m_bodyBody;
     private Body[] m_wheelBodies;
     private RevoluteJoint[] m_wheelJoints;
+    // acceleration timer fields
+    private Timer m_accelerationTimer;
+    private int m_accelerationTime = 0;
+    private float m_torqueStep;
 
+    /// <summary>
+    /// Builds a car.
+    /// </summary>
+    /// <param name="def">The parameters used to generate the car.</param>
+    /// <param name="world">The physics world the car is built in.</param>
     public Car(CarDef def, World world)
     {
       if (world == null)
@@ -59,8 +89,14 @@ namespace Genetic_Cars
       Dispose(false);
     }
 
+    /// <summary>
+    /// The car definition used to build this car.
+    /// </summary>
     public CarDef Definition { get; private set; }
 
+    /// <summary>
+    /// The geometric center of the car's body.
+    /// </summary>
     public Vector2f Center
     {
       get { return m_bodyShape.Position; }
@@ -77,7 +113,7 @@ namespace Genetic_Cars
       }
     }
 
-    public void SyncPositions()
+    public void Sync()
     {
       var pos = m_bodyBody.Position.ToVector2f().InvertY();
       m_bodyShape.Position = pos;
@@ -109,6 +145,7 @@ namespace Genetic_Cars
 
       if (disposeManaged)
       {
+        m_accelerationTimer.Dispose();
         m_bodyShape.Dispose();
 
         for (int i = 0; i < m_wheelShapes.Length; i++)
@@ -128,11 +165,19 @@ namespace Genetic_Cars
       m_disposed = true;
     }
 
+    /// <summary>
+    /// Creates the graphics and physics objects for the body of the car.
+    /// </summary>
     private void CreateBody()
     {
+      var density = Definition.CalcBodyDensity();
+      var densityFraction = density / CarDef.MaxBodyDensity;
+      // greater density = darker color
+      var color = (byte) (255 - (125 * densityFraction));
+
       m_bodyShape = new ConvexShape((uint)CarDef.NumBodyPoints)
       {
-        FillColor = new Color(200, 0, 0),
+        FillColor = new Color(color, 0, 0),
         OutlineColor = OutlineColor,
         OutlineThickness = OutlineThickness,
         Position = StartPosition.InvertY()
@@ -160,14 +205,15 @@ namespace Genetic_Cars
 
       // build the physics shape
       m_bodyBody = BodyFactory.CreatePolygon(
-        m_world, vertices, Definition.CalcBodyDensity(), 
-        StartPosition.ToVector2()
-        );
+        m_world, vertices, density, StartPosition.ToVector2());
       m_bodyBody.BodyType = BodyType.Dynamic;
       m_bodyBody.CollidesWith = ~CollisionCategory;
       m_bodyBody.CollisionCategories = CollisionCategory;
     }
 
+    /// <summary>
+    /// Creates the wheels for the car.  Must be called after CreateBody.
+    /// </summary>
     private void CreateWheels()
     {
       Debug.Assert(m_bodyShape != null);
@@ -186,11 +232,14 @@ namespace Genetic_Cars
         // the world position of the attachment point
         var attachPos = attachOffset + m_bodyShape.Position;
         var radius = Definition.CalcWheelRadius(i);
-        var color = Color.White;
+        var density = Definition.CalcWheelDensity(i);
+        var densityFraction = density / CarDef.MaxWheelDensity;
+        // greater density = darker color
+        byte color = (byte)(255 - (210 * densityFraction));
 
         var shape = new CircleShape
         {
-          FillColor = color,
+          FillColor = new Color(color, color, color),
           OutlineColor = OutlineColor,
           OutlineThickness = OutlineThickness,
           Origin = new Vector2f(radius, radius),
@@ -201,26 +250,29 @@ namespace Genetic_Cars
         {
           FillColor = Color.Black,
           Origin = new Vector2f(0, -WheelAxisLineThickness / 2f),
-          Size = new Vector2f(WheelAxisLineThickness, radius),
+          Size = new Vector2f(WheelAxisLineThickness, radius - WheelAxisLineThickness),
           Position = shape.Position
         };
 
         var body = BodyFactory.CreateCircle(
-          m_world, radius, Definition.CalcWheelDensity(i), 
+          m_world, radius, density, 
           attachPos.ToVector2().InvertY()
           );
         body.BodyType = BodyType.Dynamic;
         body.Friction = 1;
         body.CollidesWith = ~CollisionCategory;
         body.CollisionCategories = CollisionCategory;
+        body.OnCollision += WheelInitialCollision;
 
+        m_torqueStep = Definition.CalcWheelTorque() / AccelerationSteps;
         var joint = new RevoluteJoint(
           m_bodyBody, attachOffset.ToVector2().InvertY(), body,
           new Vector2(0, 0))
         {
-          MotorEnabled = true, 
-          MaxMotorTorque = 100, 
-          MotorSpeed = -10
+          MotorEnabled = false, 
+          MaxMotorTorque = m_torqueStep, 
+          // speed must be negative for clockwise rotation
+          MotorSpeed = -(float)MathExtensions.DegToRad(Definition.CalcWheelSpeed())
         };
         m_world.AddJoint(joint);
 
@@ -228,6 +280,59 @@ namespace Genetic_Cars
         m_wheelLines[i] = line;
         m_wheelBodies[i] = body;
         m_wheelJoints[i] = joint;
+      }
+    }
+
+    /// <summary>
+    /// Called on the first collision for either wheel (should always be with 
+    /// the track) to enable the motors, and starts the wheel acceleration.
+    /// </summary>
+    /// <param name="fixtureA"></param>
+    /// <param name="fixtureB"></param>
+    /// <param name="contact"></param>
+    /// <returns></returns>
+    private bool WheelInitialCollision(
+      Fixture fixtureA, Fixture fixtureB, Contact contact)
+    {
+      for (int i = 0; i < m_wheelBodies.Length; i++)
+      {
+        m_wheelJoints[i].MotorEnabled = true;
+        m_wheelBodies[i].OnCollision -= WheelInitialCollision;
+      }
+
+      m_accelerationTimer = new Timer(
+        AccelerationCallback, null, AccelerationInterval, AccelerationInterval);
+
+      return true;
+    }
+
+    /// <summary>
+    /// Increases the torque for each wheel until the acceleration time is 
+    /// completed, then disables the timer.
+    /// </summary>
+    /// <param name="state"></param>
+    /// <remarks>
+    /// THIS IS A HACK!
+    /// Farseer is not thread safe but so far I haven't noticed any problems 
+    /// from this.
+    /// </remarks>
+    private void AccelerationCallback(object state)
+    {
+      m_accelerationTime += AccelerationInterval;
+      if (m_accelerationTime < AccelerationTime)
+      {
+        foreach (var joint in m_wheelJoints)
+        {
+          joint.MaxMotorTorque += m_torqueStep;
+        }
+      }
+      else
+      {
+        foreach (var joint in m_wheelJoints)
+        {
+          joint.MaxMotorTorque = Definition.CalcWheelTorque();
+        }
+        m_accelerationTimer.Change(Timeout.Infinite, Timeout.Infinite);
       }
     }
   }

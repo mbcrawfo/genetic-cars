@@ -3,6 +3,16 @@ using Genetic_Cars.Properties;
 
 namespace Genetic_Cars
 {
+  /// <summary>
+  /// Holds the information defining how a car will be constructed.
+  /// </summary>
+  /// <remarks>
+  /// Unless otherwise specified, units used are as follows.
+  /// Length: meters
+  /// Density: kg/m^3 (all bodies have a depth of 1m)
+  /// Torque: newton meters
+  /// Rotational Speed: degrees per second
+  /// </remarks>
   public sealed class CarDef
   {
     /// <summary>
@@ -30,7 +40,7 @@ namespace Genetic_Cars
       Settings.Default.MaxBodyPointDistance;
 
     /// <summary>
-    /// The smallest possible body density.
+    /// The smallest possible body density. 
     /// </summary>
     public static readonly float MinBodyDensity =
       Settings.Default.MinBodyDensity;
@@ -65,6 +75,18 @@ namespace Genetic_Cars
     public static readonly float MaxWheelDensity =
       Settings.Default.MaxWheelDensity;
 
+    public static readonly float MinWheelSpeed =
+      Settings.Default.MinWheelSpeed;
+
+    public static readonly float MaxWheelSpeed =
+      Settings.Default.MaxWheelSpeed;
+
+    public static readonly float MinWheelTorque =
+      Settings.Default.MinWheelTorque;
+
+    public static readonly float MaxWheelTorque =
+      Settings.Default.MaxWheelTorque;
+
     /// <summary>
     /// The points that make up the polygons in the car's body, with 
     /// BodyPoints[0] starting at 0° and going counter clockwise evenly spaced. 
@@ -94,9 +116,16 @@ namespace Genetic_Cars
     public float[] WheelDensity { get; private set; }
 
     /// <summary>
-    /// The speed of the wheels, as a percentage [0,1] of the max speed.
+    /// The speed of the wheels, as a percentage [0,1] of the max speed.  
+    /// All wheels turn at the same speed.
     /// </summary>
     public float WheelSpeed { get; set; }
+
+    /// <summary>
+    /// The torque of the wheels, as a percentage [0,1] of the max torque.  
+    /// All wheels have the same torque.
+    /// </summary>
+    public float WheelTorque { get; set; }
 
     public CarDef()
     {
@@ -119,15 +148,15 @@ namespace Genetic_Cars
         if (BodyPoints[i] < 0 || BodyPoints[i] > 1)
         {
           throw new ArgumentOutOfRangeException(
-            "BodyPoints", @"BodyPoints[" + i + @"] out of range");
+            "BodyPoints", "BodyPoints[" + i + "] out of range");
         }
       }
+
       if (BodyDensity < 0 || BodyDensity > 1)
       {
-        // ReSharper disable once LocalizableElement
-        throw new ArgumentOutOfRangeException(
-          "BodyDensity", "BodyDensity out of range");
+        throw new ArgumentOutOfRangeException("BodyDensity");
       }
+
       for (int i = 0; i < WheelAttachment.Length; i++)
       {
         if (WheelAttachment[i] < 0 || WheelAttachment[i] >= NumBodyPoints)
@@ -137,9 +166,6 @@ namespace Genetic_Cars
             String.Format("WheelAttachment[{0}] out of range", i)
             );
         }
-      }
-      for (int i = 0; i < WheelRadius.Length; i++)
-      {
         if (WheelRadius[i] < 0 || WheelRadius[i] > 1)
         {
           throw new ArgumentOutOfRangeException(
@@ -147,9 +173,6 @@ namespace Genetic_Cars
             String.Format("WheelRadius[{0}] out of range", i)
             );
         }
-      }
-      for (int i = 0; i < WheelDensity.Length; i++)
-      {
         if (WheelDensity[i] < 0 || WheelDensity[i] > 1)
         {
           throw new ArgumentOutOfRangeException(
@@ -157,6 +180,16 @@ namespace Genetic_Cars
             String.Format("WheelDensity[{0}] out of range", i)
             );
         }
+      }
+
+      if (WheelSpeed < 0 || WheelSpeed > 1)
+      {
+        throw new ArgumentOutOfRangeException("WheelSpeed");
+      }
+
+      if (WheelTorque < 0 || WheelTorque > 1)
+      {
+        throw new ArgumentOutOfRangeException("WheelTorque");
       }
     }
 
@@ -212,6 +245,28 @@ namespace Genetic_Cars
       }
       return (WheelDensity[idx] * (MaxWheelDensity - MinWheelDensity)) +
              MinWheelDensity;
+    }
+
+    /// <summary>
+    /// Calculates the speed of the wheels.
+    /// </summary>
+    /// <returns></returns>
+    public float CalcWheelSpeed()
+    {
+      // TODO: Update calculations
+      // Different size wheels really need to turn at different speeds, maybe 
+      // turn this stat into car speed and calculate wheel rotational 
+      // speed based on that
+      return (WheelSpeed * (MaxWheelSpeed - MinWheelSpeed)) + MinWheelSpeed;
+    }
+
+    /// <summary>
+    /// Calculates the torque of the wheels.
+    /// </summary>
+    /// <returns></returns>
+    public float CalcWheelTorque()
+    {
+      return (WheelTorque * (MaxWheelTorque - MinWheelTorque)) + MinWheelTorque;
     }
   }
 }
