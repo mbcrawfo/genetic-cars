@@ -16,7 +16,7 @@ namespace Genetic_Cars
   /// <summary>
   /// Holds the track for the cars to race on.
   /// </summary>
-  class Track : IDisposable
+  sealed class Track : IDisposable
   {
     public static readonly Category CollisionCategory = Category.Cat1;
     private static readonly ILog Log = LogManager.GetLogger(
@@ -30,7 +30,10 @@ namespace Genetic_Cars
     private static readonly Color ShapeFillColor = new Color(128, 128, 128);
     private static readonly Color ShapeOutlineColor = Color.Black;
     private const float ShapeOutlineSize = 0.03f;
-    private static readonly Vector2f ShapeSize = new Vector2f(1, .25f);
+    private static readonly Vector2f ShapeSize = new Vector2f(3, .25f);
+
+    private bool m_disposed = false;
+    private bool m_generated = false;
 
     private readonly World m_world;
     private readonly List<Body> m_trackBodies = new List<Body>(NumPieces);
@@ -49,6 +52,11 @@ namespace Genetic_Cars
       m_world = world;
     }
 
+     ~Track()
+    {
+      Dispose(false);
+    }
+
     /// <summary>
     /// The X position of the world where cars should start.
     /// </summary>
@@ -56,11 +64,35 @@ namespace Genetic_Cars
 
     public void Dispose()
     {
-      Clear();
+      Dispose(true);
+      GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposeManaged)
+    {
+      if (m_disposed || !m_generated)
+      {
+        return;
+      }
+
+      if (disposeManaged)
+      {
+        foreach (var shape in m_trackShapes)
+        {
+          shape.Dispose();
+        }
+      }
+
+      foreach (var body in m_trackBodies)
+      {
+        m_world.RemoveBody(body);
+      }
+
+      m_disposed = true;
     }
     
     /// <summary>
-    /// Randomly generates a new track.
+    /// Randomly generates a new track, replacing an existing track.
     /// </summary>
     /// <param name="rand">The RNG used to generate the track.</param>
     public void Generate(Random rand)
@@ -105,14 +137,21 @@ namespace Genetic_Cars
       for (int i = 0; i < NumPieces; i++)
       {
         start = end;
-        // the angle of the piece is randomized, with a 50% chance to be negative
-        var maxAngle = CalcMaxAngle(i) + 10;
-        var minAngle = CalcMinAngle(i) + 10;
+        // the angle of the piece is randomized
+        var maxAngle = CalcMaxAngle(i);
+        var minAngle = CalcMinAngle(i);
+        var rotSign = rot < 0 ? -1f : 1f;
         rot = (float)rand.NextDouble() * (maxAngle - minAngle) + minAngle;
-        if (rand.NextDouble() < 0.5)
+        // with a 40% chance to flip the sign from the last piece
+        if (rand.NextDouble() < 0.4)
         {
-          rot *= -1f;
+          rot *= -rotSign;
         }
+        else
+        {
+          rot *= rotSign;
+        }
+
         shape = CreateShape(start, rot);
         end = CalcEndPoint(start, shape.Size, rot);
         body = CreateBody(start, end);
@@ -121,6 +160,7 @@ namespace Genetic_Cars
         m_trackBodies.Add(body);
       }
 
+      m_generated = true;
       Log.DebugFormat("Generated {0} track pieces in {1} ms", 
         m_trackShapes.Count, stopwatch.ElapsedMilliseconds);
     }
@@ -130,15 +170,24 @@ namespace Genetic_Cars
     /// </summary>
     public void Clear()
     {
+      if (!m_generated)
+      {
+        return;
+      }
       Log.DebugFormat("Clearing {0} track pieces", m_trackShapes.Count);
 
       foreach (var body in m_trackBodies)
       {
         m_world.RemoveBody(body);
       }
+      foreach (var shape in m_trackShapes)
+      {
+        shape.Dispose();
+      }
 
       m_trackBodies.Clear();
       m_trackShapes.Clear();
+      m_generated = false;
     }
 
     /// <summary>

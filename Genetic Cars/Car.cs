@@ -12,7 +12,7 @@ using SFML.Window;
 
 namespace Genetic_Cars
 {
-  public class Car : IDisposable
+  sealed class Car : IDisposable
   {
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
@@ -23,6 +23,8 @@ namespace Genetic_Cars
     public static readonly Category CollisionCategory = Category.Cat2;
 
     public static Vector2f StartPosition { get; set; }
+
+    private bool m_disposed = false;
 
     private readonly World m_world;
     private ConvexShape m_bodyShape;
@@ -50,6 +52,11 @@ namespace Genetic_Cars
 
       CreateBody();
       CreateWheels();
+    }
+
+    ~Car()
+    {
+      Dispose(false);
     }
 
     public CarDef Definition { get; private set; }
@@ -89,7 +96,36 @@ namespace Genetic_Cars
 
     public void Dispose()
     {
+      Dispose(true);
+      GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposeManaged)
+    {
+      if (m_disposed)
+      {
+        return;
+      }
+
+      if (disposeManaged)
+      {
+        m_bodyShape.Dispose();
+
+        for (int i = 0; i < m_wheelShapes.Length; i++)
+        {
+          m_wheelShapes[i].Dispose();
+          m_wheelLines[i].Dispose();
+        }
+      }
+
+      for (int i = 0; i < m_wheelShapes.Length; i++)
+      {
+        m_world.RemoveJoint(m_wheelJoints[i]);
+        m_world.RemoveBody(m_wheelBodies[i]);
+      }
       m_world.RemoveBody(m_bodyBody);
+
+      m_disposed = true;
     }
 
     private void CreateBody()

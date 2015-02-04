@@ -13,7 +13,7 @@ using Settings = Genetic_Cars.Properties.Settings;
 
 namespace Genetic_Cars
 {
-  class Application : IDisposable
+  sealed class Application : IDisposable
   {
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
@@ -26,6 +26,9 @@ namespace Genetic_Cars
     private const long TargetFrameTime = (long)(1000f / 30f);
     private static readonly Vector2 Gravity = new Vector2(0f, -9.8f);
     private const float ViewBaseWidth = 20f;
+
+    private bool m_disposed = false;
+    private bool m_initialized = false;
 
     // frame state variables
     private readonly Stopwatch m_frameTime = new Stopwatch();
@@ -67,6 +70,8 @@ namespace Genetic_Cars
 
       // enable collision categories in farseer
       FarseerPhysics.Settings.UseFPECollisionCategories = true;
+      FarseerPhysics.Settings.VelocityIterations = 10;
+      FarseerPhysics.Settings.PositionIterations = 8;
 
       // not sure what this does, leftover from the project generation
       System.Windows.Forms.Application.EnableVisualStyles();
@@ -75,6 +80,11 @@ namespace Genetic_Cars
       var app = new Application();
       app.Initialize();
       app.Run();
+    }
+
+    ~Application()
+    {
+      Dispose(false);
     }
 
     /// <summary>
@@ -132,6 +142,8 @@ namespace Genetic_Cars
       def.WheelDensity[1] = 1;
 
       m_car = new Car(def, m_world);
+
+      m_initialized = true;
     }
 
     /// <summary>
@@ -155,19 +167,30 @@ namespace Genetic_Cars
       }
     }
 
-    /// <summary>
-    /// Clean up disposables, blah blah.
-    /// </summary>
     public void Dispose()
     {
-      if (m_renderWindow != null)
+      Dispose(true);
+      GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposeManaged)
+    {
+      if (m_disposed || !m_initialized)
       {
-        m_renderWindow.Dispose();
+        return;
       }
-      if (m_window != null)
+
+      if (disposeManaged)
       {
+        m_track.Dispose();
+        m_car.Dispose();
+
+        m_view.Dispose();
+        m_renderWindow.Dispose();
         m_window.Dispose();
       }
+
+      m_disposed = true;
     }
 
     private void DoLogic()
