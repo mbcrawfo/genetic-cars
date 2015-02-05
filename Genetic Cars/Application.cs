@@ -14,7 +14,7 @@ using Settings = Genetic_Cars.Properties.Settings;
 
 namespace Genetic_Cars
 {
-  sealed class Application : IDisposable
+  sealed class Application : IDisposable, IPhysicsManager
   {
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
@@ -53,8 +53,6 @@ namespace Genetic_Cars
     private Track m_track;
 
     private readonly List<IDrawable> m_drawables = new List<IDrawable>();
-    private readonly List<IDynamicObject> m_dynamicObjects = 
-      new List<IDynamicObject>();
 
     //TESTING
     private Car m_car;
@@ -92,6 +90,10 @@ namespace Genetic_Cars
       Dispose(false);
     }
 
+    public event EventHandler<float> PreStep;
+    public event EventHandler<float> PostStep;
+    public World World { get { return m_world; } }
+
     /// <summary>
     /// Creates the app in its initial state with a world generated using a 
     /// seed based on the current time.
@@ -124,7 +126,7 @@ namespace Genetic_Cars
       
       // create the world
       m_world = new World(Gravity);
-      m_track = new Track(m_world);
+      m_track = new Track(this);
       m_track.Generate(m_random);
       m_drawables.Add(m_track);
       Car.StartPosition = new Vector2f(m_track.StartingLine, 
@@ -150,9 +152,8 @@ namespace Genetic_Cars
       def.WheelSpeed = .5f;
       def.WheelTorque = .25f;
 
-      m_car = new Car(def, m_world);
+      m_car = new Car(def, this);
       m_drawables.Add(m_car);
-      m_dynamicObjects.Add(m_car);
 
       m_initialized = true;
     }
@@ -234,13 +235,18 @@ namespace Genetic_Cars
       while (m_lastPhysicsStepDelta >= PhysicsTickInterval)
       {
         m_lastPhysicsStepDelta -= PhysicsTickInterval;
+
+        if (PreStep != null)
+        {
+          PreStep(this, PhysicsTickInterval);
+        }
+
         m_world.Step(PhysicsTickInterval);
         m_world.ClearForces();
 
-
-        foreach (var obj in m_dynamicObjects)
+        if (PostStep != null)
         {
-          obj.Sync();
+          PostStep(this, PhysicsTickInterval);
         }
 
         m_view.Center = m_car.Center;

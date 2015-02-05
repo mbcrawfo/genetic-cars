@@ -44,14 +44,14 @@ namespace Genetic_Cars
     /// <summary>
     /// Initializes, but does not generate the track.
     /// </summary>
-    /// <param name="world">The physics world the track lives in.</param>
-    public Track(World world)
+    /// <param name="physics"></param>
+    public Track(IPhysicsManager physics)
     {
-      if (world == null)
+      if (physics == null)
       {
-        throw new ArgumentNullException("world");
+        throw new ArgumentNullException("physics");
       }
-      m_world = world;
+      m_world = physics.World;
     }
 
      ~Track()
