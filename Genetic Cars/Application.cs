@@ -149,8 +149,10 @@ namespace Genetic_Cars
       def.WheelRadius[1] = .3f;
       def.WheelDensity[0] = .5f;
       def.WheelDensity[1] = .5f;
-      def.WheelSpeed = .5f;
-      def.WheelTorque = .25f;
+      def.WheelSpeed[0] = .5f;
+      def.WheelSpeed[1] = .5f;
+      def.WheelTorque[0] = .25f;
+      def.WheelTorque[1] = .25f;
 
       m_car = new Car(def, this);
       m_drawables.Add(m_car);

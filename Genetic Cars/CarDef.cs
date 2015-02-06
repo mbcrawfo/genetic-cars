@@ -116,16 +116,14 @@ namespace Genetic_Cars
     public float[] WheelDensity { get; private set; }
 
     /// <summary>
-    /// The speed of the wheels, as a percentage [0,1] of the max speed.  
-    /// All wheels turn at the same speed.
+    /// The speed of the wheel, as a percentage [0,1] of the max speed.
     /// </summary>
-    public float WheelSpeed { get; set; }
+    public float[] WheelSpeed { get; private set; }
 
     /// <summary>
-    /// The torque of the wheels, as a percentage [0,1] of the max torque.  
-    /// All wheels have the same torque.
+    /// The torque of the wheel, as a percentage [0,1] of the max torque.
     /// </summary>
-    public float WheelTorque { get; set; }
+    public float[] WheelTorque { get; private set; }
 
     public CarDef()
     {
@@ -133,6 +131,8 @@ namespace Genetic_Cars
       WheelAttachment = new int[NumWheels];
       WheelRadius = new float[NumWheels];
       WheelDensity = new float[NumWheels];
+      WheelSpeed = new float[NumWheels];
+      WheelTorque = new float[NumWheels];
     }
 
     /// <summary>
@@ -180,31 +180,36 @@ namespace Genetic_Cars
             String.Format("WheelDensity[{0}] out of range", i)
             );
         }
-      }
+        if (WheelSpeed[i] < 0 || WheelSpeed[i] > 1)
+        {
+          throw new ArgumentOutOfRangeException(
+            "WheelSpeed",
+            String.Format("WheelSpeed[{0}] out of range", i)
+            );
+        }
 
-      if (WheelSpeed < 0 || WheelSpeed > 1)
-      {
-        throw new ArgumentOutOfRangeException("WheelSpeed");
-      }
-
-      if (WheelTorque < 0 || WheelTorque > 1)
-      {
-        throw new ArgumentOutOfRangeException("WheelTorque");
+        if (WheelTorque[i] < 0 || WheelTorque[i] > 1)
+        {
+          throw new ArgumentOutOfRangeException(
+            "WheelTorque",
+            String.Format("WheelTorque[{0}] out of range", i)
+            );
+        }
       }
     }
 
     /// <summary>
     /// Calculates the position of the requested body point.
     /// </summary>
-    /// <param name="idx"></param>
+    /// <param name="i"></param>
     /// <returns></returns>
-    public float CalcBodyPoint(int idx)
+    public float CalcBodyPoint(int i)
     {
-      if (idx < 0 || idx > BodyPoints.Length)
+      if (i < 0 || i > BodyPoints.Length)
       {
-        throw new ArgumentOutOfRangeException("idx");
+        throw new ArgumentOutOfRangeException("i");
       }
-      return (BodyPoints[idx] * (MaxBodyPointDistance - MinBodyPointDistance)) +
+      return (BodyPoints[i] * (MaxBodyPointDistance - MinBodyPointDistance)) +
              MinBodyPointDistance;
     }
 
@@ -220,53 +225,59 @@ namespace Genetic_Cars
     /// <summary>
     /// Calculates the radius of the requested wheel.
     /// </summary>
-    /// <param name="idx"></param>
+    /// <param name="i"></param>
     /// <returns></returns>
-    public float CalcWheelRadius(int idx)
+    public float CalcWheelRadius(int i)
     {
-      if (idx < 0 || idx > WheelRadius.Length)
+      if (i < 0 || i > WheelRadius.Length)
       {
-        throw new ArgumentOutOfRangeException("idx");
+        throw new ArgumentOutOfRangeException("i");
       }
-      return (WheelRadius[idx] * (MaxWheelRadius - MinWheelRadius)) + 
+      return (WheelRadius[i] * (MaxWheelRadius - MinWheelRadius)) + 
         MinWheelRadius;
     }
 
     /// <summary>
     /// Calculates the density of the requested wheel.
     /// </summary>
-    /// <param name="idx"></param>
+    /// <param name="i"></param>
     /// <returns></returns>
-    public float CalcWheelDensity(int idx)
+    public float CalcWheelDensity(int i)
     {
-      if (idx < 0 || idx > WheelDensity.Length)
+      if (i < 0 || i > WheelDensity.Length)
       {
-        throw new ArgumentOutOfRangeException("idx");
+        throw new ArgumentOutOfRangeException("i");
       }
-      return (WheelDensity[idx] * (MaxWheelDensity - MinWheelDensity)) +
+      return (WheelDensity[i] * (MaxWheelDensity - MinWheelDensity)) +
              MinWheelDensity;
     }
 
     /// <summary>
-    /// Calculates the speed of the wheels.
+    /// Calculates the speed of the requested wheel.
     /// </summary>
+    /// <param name="i"></param>
     /// <returns></returns>
-    public float CalcWheelSpeed()
+    public float CalcWheelSpeed(int i)
     {
-      // TODO: Update calculations
-      // Different size wheels really need to turn at different speeds, maybe 
-      // turn this stat into car speed and calculate wheel rotational 
-      // speed based on that
-      return (WheelSpeed * (MaxWheelSpeed - MinWheelSpeed)) + MinWheelSpeed;
+      if (i < 0 || i > WheelDensity.Length)
+      {
+        throw new ArgumentOutOfRangeException("i");
+      }
+      return (WheelSpeed[i] * (MaxWheelSpeed - MinWheelSpeed)) + MinWheelSpeed;
     }
 
     /// <summary>
-    /// Calculates the torque of the wheels.
+    /// Calculates the torque of the requested wheel.
     /// </summary>
+    /// <param name="i"></param>
     /// <returns></returns>
-    public float CalcWheelTorque()
+    public float CalcWheelTorque(int i)
     {
-      return (WheelTorque * (MaxWheelTorque - MinWheelTorque)) + MinWheelTorque;
+      if (i < 0 || i > WheelDensity.Length)
+      {
+        throw new ArgumentOutOfRangeException("i");
+      }
+      return (WheelTorque[i] * (MaxWheelTorque - MinWheelTorque)) + MinWheelTorque;
     }
   }
 }

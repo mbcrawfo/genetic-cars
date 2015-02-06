@@ -56,7 +56,7 @@ namespace Genetic_Cars
     private RevoluteJoint[] m_wheelJoints;
     // acceleration fields
     private float m_accelerationTime;
-    private float m_torqueStep;
+    private float[] m_torqueStep;
 
     /// <summary>
     /// Builds a car.
@@ -208,6 +208,7 @@ namespace Genetic_Cars
       m_wheelLines = new RectangleShape[CarDef.NumWheels];
       m_wheelBodies = new Body[CarDef.NumWheels];
       m_wheelJoints = new RevoluteJoint[CarDef.NumWheels];
+      m_torqueStep = new float[CarDef.NumWheels];
 
       for (int i = 0; i < m_wheelShapes.Length; i++)
       {
@@ -256,9 +257,10 @@ namespace Genetic_Cars
           new Vector2(0, 0))
         {
           MotorEnabled = false, 
-          MaxMotorTorque = m_torqueStep, 
+          MaxMotorTorque = 0, 
           // speed must be negative for clockwise rotation
-          MotorSpeed = -(float)MathExtensions.DegToRad(Definition.CalcWheelSpeed())
+          MotorSpeed = 
+            -(float)MathExtensions.DegToRad(Definition.CalcWheelSpeed(i))
         };
         m_physicsManager.World.AddJoint(joint);
 
@@ -283,10 +285,10 @@ namespace Genetic_Cars
       for (int i = 0; i < m_wheelBodies.Length; i++)
       {
         m_wheelJoints[i].MotorEnabled = true;
+        m_torqueStep[i] = Definition.CalcWheelTorque(i) / AccelerationSteps;
         m_wheelBodies[i].OnCollision -= WheelInitialCollision;
       }
-
-      m_torqueStep = Definition.CalcWheelTorque() / AccelerationSteps;
+      
       m_accelerationTime = 0;
       m_physicsManager.PreStep += ApplyAcceleration;
 
@@ -330,10 +332,10 @@ namespace Genetic_Cars
       while (m_accelerationTime >= AccelerationInterval)
       {
         m_accelerationTime -= AccelerationInterval;
-        foreach (var joint in m_wheelJoints)
+        for (int i = 0; i < m_wheelJoints.Length; i++)
         {
-          joint.MaxMotorTorque += m_torqueStep;
-          if (joint.MaxMotorTorque >= Definition.CalcWheelTorque())
+          m_wheelJoints[i].MaxMotorTorque += m_torqueStep[i];
+          if (m_wheelJoints[i].MaxMotorTorque >= Definition.CalcWheelTorque(i))
           {
             done = true;
           }
