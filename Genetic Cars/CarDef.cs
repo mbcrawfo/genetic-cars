@@ -1,5 +1,7 @@
 using System;
+using System.Text;
 using Genetic_Cars.Properties;
+using log4net;
 
 namespace Genetic_Cars
 {
@@ -273,11 +275,68 @@ namespace Genetic_Cars
     /// <returns></returns>
     public float CalcWheelTorque(int i)
     {
-      if (i < 0 || i > WheelDensity.Length)
+      if (i < 0 || i > WheelDensity.Length) 
       {
         throw new ArgumentOutOfRangeException("i");
       }
       return (WheelTorque[i] * (MaxWheelTorque - MinWheelTorque)) + MinWheelTorque;
+    }
+
+    /// <summary>
+    /// Dumps the details of the definition out to a logger.
+    /// </summary>
+    /// <param name="log"></param>
+    public void DumpToLog(ILog log)
+    {
+      if (log == null)
+      {
+        throw new ArgumentNullException("log");
+      }
+
+      StringBuilder sb = new StringBuilder();
+      
+      sb.AppendFormat("BodyPoints[{0}]={{", BodyPoints.Length);
+      foreach (var point in BodyPoints)
+      {
+        sb.AppendFormat("{0:F2}, ", point);
+      }
+      sb.Remove(sb.Length - 2, 2);
+      sb.Append("}");
+      log.Debug(sb.ToString());
+      sb.Clear();
+
+      sb.Append("BodyPointsCalcd={");
+      for (var i = 0; i < BodyPoints.Length; i++)
+      {
+        sb.AppendFormat("{0:F2}, ", CalcBodyPoint(i));
+      }
+      sb.Remove(sb.Length - 2, 2);
+      sb.Append("}");
+      log.Debug(sb.ToString());
+      sb.Clear();
+
+      log.DebugFormat("BodyDensity={0:F2}", BodyDensity);
+
+      for (var i = 0; i < NumWheels; i++)
+      {
+        sb.AppendFormat(
+          "WheelData[{0}]={{Attach={1}, Radius={2:F2}, Density={3:F2}, " +
+          "Speed={4:F2}, Torque={5:F2}",
+          i, WheelAttachment[i], WheelRadius[i], WheelDensity[i],
+          WheelSpeed[i], WheelTorque[i]
+          );
+        sb.Append("}");
+        log.Debug(sb.ToString());
+        sb.Clear();
+
+        sb.AppendFormat(
+          "WheelStats[{0}]={{Radius={1:F2}, Speed={2:F2}, Torque={3:F2}",
+          i, CalcWheelRadius(i), CalcWheelSpeed(i), CalcWheelTorque(i)
+          );
+        sb.Append("}");
+        log.Debug(sb.ToString());
+        sb.Clear();
+      }
     }
   }
 }
