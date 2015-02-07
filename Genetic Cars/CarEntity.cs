@@ -16,7 +16,7 @@ namespace Genetic_Cars
   /// <summary>
   /// Holds the graphics and physics objects for a car.
   /// </summary>
-  sealed class Car : IDisposable, IDrawable
+  sealed class CarEntity : IDisposable, IDrawable
   {
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
@@ -63,7 +63,7 @@ namespace Genetic_Cars
     /// </summary>
     /// <param name="def">The parameters used to generate the car.</param>
     /// <param name="physics">The program physics system.</param>
-    public Car(CarDef def, IPhysicsManager physics)
+    public CarEntity(CarDefinition def, IPhysicsManager physics)
     {
       if (physics == null)
       {
@@ -85,7 +85,7 @@ namespace Genetic_Cars
       physics.PostStep += SyncPosition;
     }
 
-    ~Car()
+    ~CarEntity()
     {
       Dispose(false);
     }
@@ -93,7 +93,7 @@ namespace Genetic_Cars
     /// <summary>
     /// The car definition used to build this car.
     /// </summary>
-    public CarDef Definition { get; private set; }
+    public CarDefinition Definition { get; private set; }
 
     /// <summary>
     /// The geometric center of the car's body.
@@ -156,11 +156,11 @@ namespace Genetic_Cars
     private void CreateBody()
     {
       var density = Definition.CalcBodyDensity();
-      var densityFraction = density / CarDef.MaxBodyDensity;
+      var densityFraction = density / CarDefinition.MaxBodyDensity;
       // greater density = darker color
       var color = (byte) (255 - (125 * densityFraction));
 
-      m_bodyShape = new ConvexShape((uint)CarDef.NumBodyPoints)
+      m_bodyShape = new ConvexShape((uint)CarDefinition.NumBodyPoints)
       {
         FillColor = new Color(color, 0, 0),
         OutlineColor = OutlineColor,
@@ -169,10 +169,10 @@ namespace Genetic_Cars
       };
 
       // build the vertex list for the polygon
-      var vertices = new Vertices(CarDef.NumBodyPoints);
-      var angleStep = 360f / CarDef.NumBodyPoints;
+      var vertices = new Vertices(CarDefinition.NumBodyPoints);
+      var angleStep = 360f / CarDefinition.NumBodyPoints;
       var angle = 0f;
-      for (int i = 0; i < CarDef.NumBodyPoints; i++)
+      for (int i = 0; i < CarDefinition.NumBodyPoints; i++)
       {
         // the distance this point is from the center
         var distance = Definition.CalcBodyPoint(i);
@@ -204,11 +204,11 @@ namespace Genetic_Cars
       Debug.Assert(m_bodyShape != null);
       Debug.Assert(m_bodyBody != null);
 
-      m_wheelShapes = new CircleShape[CarDef.NumWheels];
-      m_wheelLines = new RectangleShape[CarDef.NumWheels];
-      m_wheelBodies = new Body[CarDef.NumWheels];
-      m_wheelJoints = new RevoluteJoint[CarDef.NumWheels];
-      m_torqueStep = new float[CarDef.NumWheels];
+      m_wheelShapes = new CircleShape[CarDefinition.NumWheels];
+      m_wheelLines = new RectangleShape[CarDefinition.NumWheels];
+      m_wheelBodies = new Body[CarDefinition.NumWheels];
+      m_wheelJoints = new RevoluteJoint[CarDefinition.NumWheels];
+      m_torqueStep = new float[CarDefinition.NumWheels];
 
       for (int i = 0; i < m_wheelShapes.Length; i++)
       {
@@ -219,7 +219,7 @@ namespace Genetic_Cars
         var attachPos = attachOffset + m_bodyShape.Position;
         var radius = Definition.CalcWheelRadius(i);
         var density = Definition.CalcWheelDensity(i);
-        var densityFraction = density / CarDef.MaxWheelDensity;
+        var densityFraction = density / CarDefinition.MaxWheelDensity;
         // greater density = darker color
         byte color = (byte)(255 - (210 * densityFraction));
 

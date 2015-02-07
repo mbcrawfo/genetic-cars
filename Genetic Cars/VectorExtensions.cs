@@ -11,7 +11,7 @@ namespace Genetic_Cars
   /// <summary>
   /// Extensions to help with conversions between the vector classes.
   /// </summary>
-  public static class VectorExtensions
+  static class VectorExtensions
   {
     /// <summary>
     /// Converts <see cref="Vector2"/> to <see cref="Vector2f"/>.

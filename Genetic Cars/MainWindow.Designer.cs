@@ -43,17 +43,18 @@ namespace Genetic_Cars
             | System.Windows.Forms.AnchorStyles.Right)));
       this.drawingSurface.Location = new System.Drawing.Point(12, 12);
       this.drawingSurface.Name = "drawingSurface";
-      this.drawingSurface.Size = new System.Drawing.Size(760, 302);
+      this.drawingSurface.Size = new System.Drawing.Size(984, 470);
       this.drawingSurface.TabIndex = 0;
       // 
       // MainWindow
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(784, 562);
+      this.ClientSize = new System.Drawing.Size(1008, 730);
       this.Controls.Add(this.drawingSurface);
-      this.MinimumSize = new System.Drawing.Size(800, 600);
+      this.MinimumSize = new System.Drawing.Size(1024, 768);
       this.Name = "MainWindow";
+      this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
       this.Text = "Genetic Cars";
       this.ResumeLayout(false);
 

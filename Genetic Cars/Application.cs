@@ -4,13 +4,12 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
-using FarseerPhysics;
 using FarseerPhysics.Dynamics;
+using Genetic_Cars.Properties;
 using log4net;
 using Microsoft.Xna.Framework;
 using SFML.Graphics;
 using SFML.Window;
-using Settings = Genetic_Cars.Properties.Settings;
 
 namespace Genetic_Cars
 {
@@ -46,7 +45,6 @@ namespace Genetic_Cars
     private float m_renderWindowBaseWidth;
 
     // physics state variables
-    private World m_world;
 
     // game data
     private Random m_random;
@@ -55,7 +53,7 @@ namespace Genetic_Cars
     private readonly List<IDrawable> m_drawables = new List<IDrawable>();
 
     //TESTING
-    private Car m_car;
+    private CarEntity m_carEntity;
     
     /// <summary>
     /// The main entry point for the application.
@@ -92,7 +90,7 @@ namespace Genetic_Cars
 
     public event EventHandler<float> PreStep;
     public event EventHandler<float> PostStep;
-    public World World { get { return m_world; } }
+    public World World { get; private set; }
 
     /// <summary>
     /// Creates the app in its initial state with a world generated using a 
@@ -121,19 +119,22 @@ namespace Genetic_Cars
       m_renderWindow.Resized += m_renderWindow_Resized;
 
       var seedString = DateTime.Now.ToString("F");
-      m_random = new Random(seedString.GetHashCode());
+      var seed = seedString.GetHashCode();
       Log.InfoFormat("RNG seed string:\n{0}", seedString);
-      
+      Log.InfoFormat("Seed hashed to 0x{0:X08}", seed);
+      m_random = new Random(seed);
+      Track.Random = m_random;
+
       // create the world
-      m_world = new World(Gravity);
+      World = new World(Gravity);
       m_track = new Track(this);
-      m_track.Generate(m_random);
+      m_track.Generate();
       m_drawables.Add(m_track);
-      Car.StartPosition = new Vector2f(m_track.StartingLine, 
-        (2 * CarDef.MaxBodyPointDistance) + CarDef.MaxWheelRadius);
+      CarEntity.StartPosition = new Vector2f(m_track.StartingLine, 
+        (2 * CarDefinition.MaxBodyPointDistance) + CarDefinition.MaxWheelRadius);
 
       //TESTING
-      CarDef def = new CarDef();
+      CarDefinition def = new CarDefinition();
       def.BodyPoints[0] = .8f;
       def.BodyPoints[1] = 0;
       def.BodyPoints[2] = .25f;
@@ -154,8 +155,8 @@ namespace Genetic_Cars
       def.WheelTorque[0] = .25f;
       def.WheelTorque[1] = .25f;
 
-      m_car = new Car(def, this);
-      m_drawables.Add(m_car);
+      m_carEntity = new CarEntity(def, this);
+      m_drawables.Add(m_carEntity);
 
       m_initialized = true;
     }
@@ -197,7 +198,7 @@ namespace Genetic_Cars
       if (disposeManaged)
       {
         m_track.Dispose();
-        m_car.Dispose();
+        m_carEntity.Dispose();
 
         m_view.Dispose();
         m_renderWindow.Dispose();
@@ -243,15 +244,15 @@ namespace Genetic_Cars
           PreStep(this, PhysicsTickInterval);
         }
 
-        m_world.Step(PhysicsTickInterval);
-        m_world.ClearForces();
+        World.Step(PhysicsTickInterval);
+        World.ClearForces();
 
         if (PostStep != null)
         {
           PostStep(this, PhysicsTickInterval);
         }
 
-        m_view.Center = m_car.Center;
+        m_view.Center = m_carEntity.Center;
       }
       m_physicsTime.Restart();
     }

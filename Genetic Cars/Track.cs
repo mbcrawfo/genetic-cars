@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using FarseerPhysics.Dynamics;
 using FarseerPhysics.Factories;
+using Genetic_Cars.Properties;
 using log4net;
 using Microsoft.Xna.Framework;
 using SFML.Graphics;
@@ -18,12 +17,13 @@ namespace Genetic_Cars
   /// </summary>
   sealed class Track : IDisposable, IDrawable
   {
-    public static readonly Category CollisionCategory = Category.Cat1;
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
-
+    
+    
+    // track properties
     private static readonly int NumPieces = 
-      Properties.Settings.Default.NumTrackPieces;
+      Settings.Default.NumTrackPieces;
     private const float MaxPieceAngle = 60;
     private const float MinPieceAngle = 3;
 
@@ -32,6 +32,17 @@ namespace Genetic_Cars
     private static readonly Color OutlineColor = Color.Black;
     private const float OutlineSize = 0.03f;
     private static readonly Vector2f PieceSize = new Vector2f(3, .25f);
+
+    /// <summary>
+    /// The collision category for all of the track components.
+    /// </summary>
+    public static readonly Category CollisionCategory = Category.Cat1;
+
+    /// <summary>
+    /// The RNG used for all track generation.  Must be set before any tracks 
+    /// are created.
+    /// </summary>
+    public static Random Random { get; set; }
 
     private bool m_disposed = false;
     private bool m_generated = false;
@@ -103,13 +114,9 @@ namespace Genetic_Cars
     /// <summary>
     /// Randomly generates a new track, replacing an existing track.
     /// </summary>
-    /// <param name="rand">The RNG used to generate the track.</param>
-    public void Generate(Random rand)
+    public void Generate()
     {
-      if (rand == null)
-      {
-        throw new ArgumentNullException("rand");
-      }
+      Debug.Assert(Random != null);
 
       Clear();
       var stopwatch = new Stopwatch();
@@ -150,9 +157,9 @@ namespace Genetic_Cars
         var maxAngle = CalcMaxAngle(i);
         var minAngle = CalcMinAngle(i);
         var rotSign = rot < 0 ? -1f : 1f;
-        rot = (float)rand.NextDouble() * (maxAngle - minAngle) + minAngle;
+        rot = (float)Random.NextDouble() * (maxAngle - minAngle) + minAngle;
         // with a 40% chance to flip the sign from the last piece
-        if (rand.NextDouble() < 0.4)
+        if (Random.NextDouble() < 0.4)
         {
           rot *= -rotSign;
         }

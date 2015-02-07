@@ -15,7 +15,7 @@ namespace Genetic_Cars
   /// Torque: newton meters
   /// Rotational Speed: degrees per second
   /// </remarks>
-  public sealed class CarDef
+  sealed class CarDefinition
   {
     /// <summary>
     /// The number of points that make up the car body polygon.
@@ -127,7 +127,7 @@ namespace Genetic_Cars
     /// </summary>
     public float[] WheelTorque { get; private set; }
 
-    public CarDef()
+    public CarDefinition()
     {
       BodyPoints = new float[NumBodyPoints];
       WheelAttachment = new int[NumWheels];
