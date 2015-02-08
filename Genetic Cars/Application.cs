@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using FarseerPhysics.Dynamics;
@@ -73,6 +74,7 @@ namespace Genetic_Cars
       FarseerPhysics.Settings.UseFPECollisionCategories = true;
       FarseerPhysics.Settings.VelocityIterations = 10;
       FarseerPhysics.Settings.PositionIterations = 8;
+      FarseerPhysics.Settings.MaxPolygonVertices = CarDefinition.NumBodyPoints;
 
       // not sure what this does, leftover from the project generation
       System.Windows.Forms.Application.EnableVisualStyles();
@@ -124,6 +126,7 @@ namespace Genetic_Cars
       Log.InfoFormat("Seed hashed to 0x{0:X08}", seed);
       m_random = new Random(seed);
       Track.Random = m_random;
+      CarPhenotype.Random = m_random;
 
       // create the world
       World = new World(Gravity);
@@ -134,30 +137,39 @@ namespace Genetic_Cars
         (2 * CarDefinition.MaxBodyPointDistance) + CarDefinition.MaxWheelRadius);
 
       //TESTING
-      CarDefinition def = new CarDefinition();
-      def.BodyPoints[0] = .8f;
-      def.BodyPoints[1] = 0;
-      def.BodyPoints[2] = .25f;
-      def.BodyPoints[3] = 0;
-      def.BodyPoints[4] = .8f;
-      def.BodyPoints[5] = .25f;
-      def.BodyPoints[6] = 0f;
-      def.BodyPoints[7] = .25f;
-      def.BodyDensity = 1f;
-      def.WheelAttachment[0] = 5;
-      def.WheelAttachment[1] = 7;
-      def.WheelRadius[0] = .3f;
-      def.WheelRadius[1] = .3f;
-      def.WheelDensity[0] = .5f;
-      def.WheelDensity[1] = .5f;
-      def.WheelSpeed[0] = .5f;
-      def.WheelSpeed[1] = .5f;
-      def.WheelTorque[0] = .25f;
-      def.WheelTorque[1] = .25f;
+//       CarDefinition def = new CarDefinition();
+//       def.BodyPoints[0] = .8f;
+//       def.BodyPoints[1] = 0;
+//       def.BodyPoints[2] = .25f;
+//       def.BodyPoints[3] = 0;
+//       def.BodyPoints[4] = .8f;
+//       def.BodyPoints[5] = .25f;
+//       def.BodyPoints[6] = 0f;
+//       def.BodyPoints[7] = .25f;
+//       def.BodyDensity = 1f;
+//       def.WheelAttachment[0] = 5;
+//       def.WheelAttachment[1] = 7;
+//       def.WheelRadius[0] = .3f;
+//       def.WheelRadius[1] = .3f;
+//       def.WheelDensity[0] = .5f;
+//       def.WheelDensity[1] = .5f;
+//       def.WheelSpeed[0] = .5f;
+//       def.WheelSpeed[1] = .5f;
+//       def.WheelTorque[0] = .25f;
+//       def.WheelTorque[1] = .25f;
+      
+      for (var i = 0; i < 25; i++)
+      {
+        var cp = new CarPhenotype();
+        cp.Randomize();
+        Log.Debug(cp);
+        var def = cp.ToCarDefinition();
+        def.DumpToLog(Log);
 
-      m_carEntity = new CarEntity(def, this);
-      m_drawables.Add(m_carEntity);
-
+        m_carEntity = new CarEntity(def, this);
+        m_drawables.Add(m_carEntity);
+      }
+      
       m_initialized = true;
     }
 
@@ -250,6 +262,13 @@ namespace Genetic_Cars
         if (PostStep != null)
         {
           PostStep(this, PhysicsTickInterval);
+        }
+
+        foreach (CarEntity car in m_drawables.OfType<CarEntity>().Where(
+          car => car.DistanceTraveled > m_carEntity.DistanceTraveled)
+          )
+        {
+          m_carEntity = car;
         }
 
         m_view.Center = m_carEntity.Center;

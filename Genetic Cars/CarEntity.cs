@@ -103,6 +103,11 @@ namespace Genetic_Cars
       get { return m_bodyShape.Position; }
     }
 
+    public float DistanceTraveled
+    {
+      get { return (Center - StartPosition).X; }
+    }
+
     public void Draw(RenderTarget target)
     {
       for (int i = 0; i < m_wheelShapes.Length; i++)
@@ -235,7 +240,7 @@ namespace Genetic_Cars
         var line = new RectangleShape
         {
           FillColor = Color.Black,
-          Origin = new Vector2f(0, -WheelAxisLineThickness / 2f),
+          Origin = new Vector2f(0, WheelAxisLineThickness / 2f),
           Size = new Vector2f(WheelAxisLineThickness, radius - WheelAxisLineThickness),
           Position = shape.Position
         };

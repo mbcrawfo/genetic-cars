@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="MinBodyPointDistance" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">0.5</Value>
+      <Value Profile="(Default)">0.1</Value>
     </Setting>
     <Setting Name="MaxBodyPointDistance" Type="System.Single" Scope="User">
       <Value Profile="(Default)">2</Value>
@@ -15,10 +15,10 @@
       <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="MinWheelRadius" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">0.25</Value>
+      <Value Profile="(Default)">0.15</Value>
     </Setting>
     <Setting Name="MaxWheelRadius" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">1</Value>
+      <Value Profile="(Default)">0.75</Value>
     </Setting>
     <Setting Name="MinWheelDensity" Type="System.Single" Scope="User">
       <Value Profile="(Default)">0.1</Value>
@@ -27,22 +27,22 @@
       <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="NumBodyPoints" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">8</Value>
+      <Value Profile="(Default)">16</Value>
     </Setting>
     <Setting Name="NumWheels" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">2</Value>
     </Setting>
     <Setting Name="MinWheelSpeed" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">180</Value>
+      <Value Profile="(Default)">360</Value>
     </Setting>
     <Setting Name="MaxWheelSpeed" Type="System.Single" Scope="User">
       <Value Profile="(Default)">1440</Value>
     </Setting>
     <Setting Name="MinWheelTorque" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">1</Value>
+      <Value Profile="(Default)">0.5</Value>
     </Setting>
     <Setting Name="MaxWheelTorque" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">50</Value>
+      <Value Profile="(Default)">10</Value>
     </Setting>
     <Setting Name="NumTrackPieces" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">100</Value>

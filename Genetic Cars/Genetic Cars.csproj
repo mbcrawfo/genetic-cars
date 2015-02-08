@@ -24,7 +24,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -62,6 +62,7 @@
   <ItemGroup>
     <Compile Include="CarEntity.cs" />
     <Compile Include="CarDefinition.cs" />
+    <Compile Include="CarPhenotype.cs" />
     <Compile Include="IPhysicsManager.cs" />
     <Compile Include="FarseerDebugView.cs" />
     <Compile Include="IDrawable.cs" />
