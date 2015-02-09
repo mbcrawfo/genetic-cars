@@ -197,6 +197,7 @@ namespace Genetic_Cars
       m_bodyBody = BodyFactory.CreatePolygon(
         m_physicsManager.World, vertices, density, StartPosition.ToVector2());
       m_bodyBody.BodyType = BodyType.Dynamic;
+      m_bodyBody.Friction = 1;
       m_bodyBody.CollidesWith = ~CollisionCategory;
       m_bodyBody.CollisionCategories = CollisionCategory;
     }
