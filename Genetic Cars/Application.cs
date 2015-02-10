@@ -35,8 +35,8 @@ namespace Genetic_Cars
     private readonly Stopwatch m_frameTime = new Stopwatch();
     private readonly Stopwatch m_physicsTime = new Stopwatch();
     private long m_lastFrameTotalTime;
-    private long m_logicDelta;
     private float m_lastPhysicsStepDelta;
+    private bool m_paused = false;
 
     // rendering state variables
     private MainWindow m_window;
@@ -45,12 +45,8 @@ namespace Genetic_Cars
     private View m_view;
     private float m_renderWindowBaseWidth;
 
-    // physics state variables
-
     // game data
-    private Random m_random;
     private Track m_track;
-
     private readonly List<IDrawable> m_drawables = new List<IDrawable>();
 
     //TESTING
@@ -70,7 +66,6 @@ namespace Genetic_Cars
           property.Name, Settings.Default[property.Name]);
       }
 
-      // enable collision categories in farseer
       FarseerPhysics.Settings.UseFPECollisionCategories = true;
       FarseerPhysics.Settings.VelocityIterations = 10;
       FarseerPhysics.Settings.PositionIterations = 8;
@@ -103,6 +98,10 @@ namespace Genetic_Cars
       // initialize the rendering components
       m_window = new MainWindow();
       m_window.Show();
+      m_window.PauseSimulation += PauseSimulation;
+      m_window.ResumeSimulation += ResumeSimulation;
+      m_window.SeedChanged += WindowOnSeedChanged;
+
       m_renderWindow = new RenderWindow(
         m_window.DrawingSurfaceHandle,
         new ContextSettings { AntialiasingLevel = 8 }
@@ -117,62 +116,15 @@ namespace Genetic_Cars
         Center = new Vector2f(0, -2),
         Viewport = new FloatRect(0, 0, 1, 1)
       };
+      m_renderWindow.Resized += WindowOnResized;
 
-      m_renderWindow.Resized += m_renderWindow_Resized;
-
-      var seedString = DateTime.Now.ToString("F");
-      var seed = seedString.GetHashCode();
-      Log.InfoFormat("RNG seed string:\n{0}", seedString);
-      Log.InfoFormat("Seed hashed to 0x{0:X08}", seed);
-      m_random = new Random(seed);
-      Track.Random = m_random;
-      CarPhenotype.Random = m_random;
-
-      // create the world
-      World = new World(Gravity);
-      m_track = new Track(this);
-      m_track.Generate();
-      m_drawables.Add(m_track);
-      CarEntity.StartPosition = new Vector2f(m_track.StartingLine, 
-        (2 * CarDefinition.MaxBodyPointDistance) + CarDefinition.MaxWheelRadius);
-
-      //TESTING
-//       CarDefinition def = new CarDefinition();
-//       def.BodyPoints[0] = .8f;
-//       def.BodyPoints[1] = 0;
-//       def.BodyPoints[2] = .25f;
-//       def.BodyPoints[3] = 0;
-//       def.BodyPoints[4] = .8f;
-//       def.BodyPoints[5] = .25f;
-//       def.BodyPoints[6] = 0f;
-//       def.BodyPoints[7] = .25f;
-//       def.BodyDensity = 1f;
-//       def.WheelAttachment[0] = 5;
-//       def.WheelAttachment[1] = 7;
-//       def.WheelRadius[0] = .3f;
-//       def.WheelRadius[1] = .3f;
-//       def.WheelDensity[0] = .5f;
-//       def.WheelDensity[1] = .5f;
-//       def.WheelSpeed[0] = .5f;
-//       def.WheelSpeed[1] = .5f;
-//       def.WheelTorque[0] = .25f;
-//       def.WheelTorque[1] = .25f;
-      
-      for (var i = 0; i < 25; i++)
-      {
-        var cp = new CarPhenotype();
-        cp.Randomize();
-        Log.Debug(cp);
-        var def = cp.ToCarDefinition();
-        def.DumpToLog(Log);
-
-        m_carEntity = new CarEntity(def, this);
-        m_drawables.Add(m_carEntity);
-      }
+      var seed = DateTime.Now.ToString("F");
+      SetSeed(seed);
+      GenerateWorld();
       
       m_initialized = true;
     }
-
+    
     /// <summary>
     /// Executes the program.
     /// </summary>
@@ -183,9 +135,13 @@ namespace Genetic_Cars
         m_lastFrameTotalTime = m_frameTime.ElapsedMilliseconds;
         m_frameTime.Restart();
 
-        DoDrawing();
-        DoPhysics();
-        DoLogic();
+        if (!m_paused)
+        {
+          DoDrawing();
+          DoPhysics();
+        }
+        System.Windows.Forms.Application.DoEvents();
+        m_renderWindow.DispatchEvents();
 
         if (m_frameTime.ElapsedMilliseconds < TargetFrameTime)
         {
@@ -218,18 +174,6 @@ namespace Genetic_Cars
       }
 
       m_disposed = true;
-    }
-
-    private void DoLogic()
-    {
-      System.Windows.Forms.Application.DoEvents();
-      m_renderWindow.DispatchEvents();
-      
-      m_logicDelta += m_lastFrameTotalTime;
-      while (m_logicDelta >= LogicTickInterval)
-      {
-        m_logicDelta -= LogicTickInterval;
-      }
     }
 
     private void DoDrawing()
@@ -276,12 +220,66 @@ namespace Genetic_Cars
       m_physicsTime.Restart();
     }
 
+    private void SetSeed(string seed)
+    {
+      if (seed == null)
+      {
+        throw new ArgumentNullException("seed");
+      }
+      
+      var seedHash = seed.GetHashCode();
+      Log.InfoFormat("RNG seed changed to:\n{0}", seed);
+      Log.InfoFormat("Seed hashed to 0x{0:X08}", seedHash);
+
+      var random = new Random(seedHash);
+      Track.Random = random;
+      CarPhenotype.Random = random;
+    }
+
+    private void GenerateWorld()
+    {
+      m_drawables.Clear();
+
+      // create the world
+      World = new World(Gravity);
+      m_track = new Track(this);
+      m_track.Generate();
+      m_drawables.Add(m_track);
+      CarEntity.StartPosition = new Vector2f(m_track.StartingLine,
+        (2 * CarDefinition.MaxBodyPointDistance) + CarDefinition.MaxWheelRadius);
+
+      var popSize = Settings.Default.PopulationSize;
+      for (var i = 0; i < popSize; i++)
+      {
+        var cp = new CarPhenotype();
+        cp.Randomize();
+        var def = cp.ToCarDefinition();
+        m_carEntity = new CarEntity(def, this);
+        m_drawables.Add(m_carEntity);
+      }
+    }
+
+    private void PauseSimulation()
+    {
+      m_paused = true;
+      m_frameTime.Stop();
+      m_physicsTime.Stop();
+    }
+
+    private void ResumeSimulation()
+    {
+      m_paused = false;
+      m_frameTime.Start();
+      m_frameTime.Start();
+    }
+
+    #region Event Handlers
     /// <summary>
-    /// Resizes the view to avoid distorting objects.
+    /// Resizes the SFML view to avoid object distortion.
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private void m_renderWindow_Resized(object sender, SizeEventArgs e)
+    private void WindowOnResized(object sender, SizeEventArgs e)
     {
       var newWidth = (ViewBaseWidth / m_renderWindowBaseWidth) * e.Width;
       var ratio = (float)e.Height / e.Width;
@@ -290,5 +288,12 @@ namespace Genetic_Cars
         e, m_view.Size
         );
     }
+
+    private void WindowOnSeedChanged(string seed)
+    {
+      SetSeed(seed);
+      GenerateWorld();
+    }
+    #endregion
   }
 }

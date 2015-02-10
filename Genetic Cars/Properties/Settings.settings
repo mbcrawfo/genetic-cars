@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="MinBodyPointDistance" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">0.1</Value>
+      <Value Profile="(Default)">0.5</Value>
     </Setting>
     <Setting Name="MaxBodyPointDistance" Type="System.Single" Scope="User">
       <Value Profile="(Default)">2</Value>
@@ -46,6 +46,12 @@
     </Setting>
     <Setting Name="NumTrackPieces" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">100</Value>
+    </Setting>
+    <Setting Name="PopulationSize" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">25</Value>
+    </Setting>
+    <Setting Name="DefaultMutationRate" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">0.1</Value>
     </Setting>
   </Settings>
 </SettingsFile>
