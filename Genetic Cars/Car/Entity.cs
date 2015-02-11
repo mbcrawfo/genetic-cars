@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using FarseerPhysics.Common;
 using FarseerPhysics.Dynamics;
@@ -13,6 +14,13 @@ using SFML.Window;
 
 namespace Genetic_Cars.Car
 {
+  enum EntityType
+  {
+    Normal,
+    Clone,
+    Champion
+  }
+
   /// <summary>
   /// Holds the graphics and physics objects for a car.
   /// </summary>
@@ -41,10 +49,12 @@ namespace Genetic_Cars.Car
     /// <summary>
     /// The position where all cars are generated.
     /// </summary>
-    public static Vector2f StartPosition { get; set; }
+    public static Vector2 StartPosition { get; set; }
 
     private bool m_disposed = false;
-    private readonly IPhysicsManager m_physicsManager;
+    private readonly PhysicsManager m_physicsManager;
+    private EntityType m_type;
+    private Vector2 m_lastPosition;
 
     // graphics fields
     private ConvexShape m_bodyShape;
@@ -61,9 +71,10 @@ namespace Genetic_Cars.Car
     /// <summary>
     /// Builds a car.
     /// </summary>
+    /// <param name="id"></param>
     /// <param name="def">The parameters used to generate the car.</param>
     /// <param name="physics">The program physics system.</param>
-    public Entity(Definition def, IPhysicsManager physics)
+    public Entity(int id, Definition def, PhysicsManager physics)
     {
       if (physics == null)
       {
@@ -73,22 +84,29 @@ namespace Genetic_Cars.Car
       {
         throw new ArgumentNullException("def");
       }
-      m_physicsManager = physics;
-      
       // will throw on failure
       def.Validate();
-      Definition = def;
 
+      Id = id;
+      Definition = def;
+      m_physicsManager = physics;
+      m_lastPosition = StartPosition;
+      
       CreateBody();
       CreateWheels();
-
-      physics.PostStep += SyncPosition;
+      Type = EntityType.Normal;
+      physics.PostStep += PhysicsPostStep;
     }
 
     ~Entity()
     {
       Dispose(false);
     }
+
+    /// <summary>
+    /// Just an identifier for this car.
+    /// </summary>
+    public int Id { get; set; }
 
     /// <summary>
     /// The car definition used to build this car.
@@ -98,14 +116,67 @@ namespace Genetic_Cars.Car
     /// <summary>
     /// The geometric center of the car's body.
     /// </summary>
-    public Vector2f Center
+    public Vector2 Position
     {
-      get { return m_bodyShape.Position; }
+      get { return m_bodyShape.Position.ToVector2().InvertY(); }
     }
 
+    /// <summary>
+    /// The total distance traveled by the car.
+    /// </summary>
     public float DistanceTraveled
     {
-      get { return (Center - StartPosition).X; }
+      get { return (Position - StartPosition).X; }
+    }
+
+    /// <summary>
+    /// The current speed of the car in m/s.
+    /// </summary>
+    public float Speed { get; private set; }
+
+    /// <summary>
+    /// Sets the type of the car entity, affecting how cars are displayed.  
+    /// Defaults to normal.
+    /// Normal: Red body
+    /// Clone: Blue body
+    /// Champion: Transparent green body, transparent wheels.
+    /// </summary>
+    public EntityType Type
+    {
+      get { return m_type; }
+      set
+      {
+        Debug.Assert(m_bodyShape != null);
+        Debug.Assert(m_wheelShapes.All(s => s != null));
+
+        m_type = value;
+        Log.DebugFormat("Car {0} type set to {1}", Id, m_type);
+
+        var density = Definition.CalcBodyDensity() / Definition.MaxBodyDensity;
+        // greater density = darker color
+        var color = (byte)(255 - (125 * density));
+
+        switch (m_type)
+        {
+          case EntityType.Normal:
+            m_bodyShape.FillColor = new Color(color, 0, 0);
+            break;
+
+          case EntityType.Clone:
+            m_bodyShape.FillColor = new Color(0, 0, color);
+            break;
+
+          case EntityType.Champion:
+            m_bodyShape.FillColor = new Color(0, color, 0, 64);
+            foreach (var shape in m_wheelShapes)
+            {
+              var oldColor = shape.FillColor;
+              shape.FillColor = new Color(
+                oldColor.R, oldColor.G, oldColor.B, 64);
+            }
+            break;
+        }
+      }
     }
 
     public void Draw(RenderTarget target)
@@ -143,7 +214,7 @@ namespace Genetic_Cars.Car
       }
 
       m_physicsManager.PreStep -= ApplyAcceleration;
-      m_physicsManager.PostStep -= SyncPosition;
+      m_physicsManager.PostStep -= PhysicsPostStep;
 
       for (int i = 0; i < m_wheelShapes.Length; i++)
       {
@@ -160,17 +231,11 @@ namespace Genetic_Cars.Car
     /// </summary>
     private void CreateBody()
     {
-      var density = Definition.CalcBodyDensity();
-      var densityFraction = density / Definition.MaxBodyDensity;
-      // greater density = darker color
-      var color = (byte) (255 - (125 * densityFraction));
-
       m_bodyShape = new ConvexShape((uint)Definition.NumBodyPoints)
       {
-        FillColor = new Color(color, 0, 0),
         OutlineColor = OutlineColor,
         OutlineThickness = OutlineThickness,
-        Position = StartPosition.InvertY()
+        Position = StartPosition.ToVector2f().InvertY()
       };
 
       // build the vertex list for the polygon
@@ -195,7 +260,9 @@ namespace Genetic_Cars.Car
 
       // build the physics shape
       m_bodyBody = BodyFactory.CreatePolygon(
-        m_physicsManager.World, vertices, density, StartPosition.ToVector2());
+        m_physicsManager.World, vertices, Definition.CalcBodyDensity(),
+        StartPosition
+        );
       m_bodyBody.BodyType = BodyType.Dynamic;
       m_bodyBody.Friction = 1;
       m_bodyBody.CollidesWith = ~CollisionCategory;
@@ -305,18 +372,22 @@ namespace Genetic_Cars.Car
     /// Syncs the position of the car's graphical elements to the physics 
     /// objects.
     /// </summary>
-    /// <param name="sender"></param>
     /// <param name="deltaTime"></param>
-    private void SyncPosition(object sender, float deltaTime)
+    private void PhysicsPostStep(float deltaTime)
     {
+      Speed = (Position - m_lastPosition).Length() / deltaTime;
+      m_lastPosition = Position;
+
       var pos = m_bodyBody.Position.ToVector2f().InvertY();
       m_bodyShape.Position = pos;
-      m_bodyShape.Rotation = (float)-MathExtensions.RadToDeg(m_bodyBody.Rotation);
+      m_bodyShape.Rotation = 
+        (float)-MathExtensions.RadToDeg(m_bodyBody.Rotation);
 
       for (int i = 0; i < m_wheelShapes.Length; i++)
       {
         var wheelPos = m_wheelBodies[i].Position.ToVector2f().InvertY();
-        var wheelRot = (float)-MathExtensions.RadToDeg(m_wheelBodies[i].Rotation);
+        var wheelRot = 
+          (float)-MathExtensions.RadToDeg(m_wheelBodies[i].Rotation);
 
         m_wheelShapes[i].Position = wheelPos;
         m_wheelLines[i].Position = wheelPos;
@@ -328,9 +399,8 @@ namespace Genetic_Cars.Car
     /// Increases the torque for each wheel until the defined max torque is 
     /// reached.
     /// </summary>
-    /// <param name="sender"></param>
     /// <param name="deltaTime"></param>
-    private void ApplyAcceleration(object sender, float deltaTime)
+    private void ApplyAcceleration(float deltaTime)
     {
       var done = false;
       m_accelerationTime += deltaTime;

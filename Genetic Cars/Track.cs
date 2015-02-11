@@ -56,7 +56,7 @@ namespace Genetic_Cars
     /// Initializes, but does not generate the track.
     /// </summary>
     /// <param name="physics"></param>
-    public Track(IPhysicsManager physics)
+    public Track(PhysicsManager physics)
     {
       if (physics == null)
       {

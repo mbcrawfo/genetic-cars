@@ -45,10 +45,10 @@ namespace Genetic_Cars
     /// <param name="rate">The new mutation rate [0, 1]</param>
     public delegate void MutationRateChangedHandler(float rate);
 
-    public SeedChangedHandler SeedChanged;
-    public PauseSimulationHandler PauseSimulation;
-    public ResumeSimulationHandler ResumeSimulation;
-    public MutationRateChangedHandler MutationRateChanged;
+    public event SeedChangedHandler SeedChanged;
+    public event PauseSimulationHandler PauseSimulation;
+    public event ResumeSimulationHandler ResumeSimulation;
+    public event MutationRateChangedHandler MutationRateChanged;
 
     /// <summary>
     /// The handle for the SFML drawing surface.

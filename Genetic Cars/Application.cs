@@ -15,7 +15,7 @@ using SFML.Window;
 
 namespace Genetic_Cars
 {
-  sealed class Application : IDisposable, IPhysicsManager
+  sealed class Application : PhysicsManager, IDisposable
   {
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
@@ -86,10 +86,6 @@ namespace Genetic_Cars
       Dispose(false);
     }
 
-    public event EventHandler<float> PreStep;
-    public event EventHandler<float> PostStep;
-    public World World { get; private set; }
-
     /// <summary>
     /// Creates the app in its initial state with a world generated using a 
     /// seed based on the current time.
@@ -102,7 +98,7 @@ namespace Genetic_Cars
       m_window.PauseSimulation += PauseSimulation;
       m_window.ResumeSimulation += ResumeSimulation;
       m_window.SeedChanged += WindowOnSeedChanged;
-
+      
       m_renderWindow = new RenderWindow(
         m_window.DrawingSurfaceHandle,
         new ContextSettings { AntialiasingLevel = 8 }
@@ -196,18 +192,7 @@ namespace Genetic_Cars
       {
         m_lastPhysicsStepDelta -= PhysicsTickInterval;
 
-        if (PreStep != null)
-        {
-          PreStep(this, PhysicsTickInterval);
-        }
-
-        World.Step(PhysicsTickInterval);
-        World.ClearForces();
-
-        if (PostStep != null)
-        {
-          PostStep(this, PhysicsTickInterval);
-        }
+        StepWorld(PhysicsTickInterval);
 
         foreach (Entity car in m_drawables.OfType<Entity>().Where(
           car => car.DistanceTraveled > m_carEntity.DistanceTraveled)
@@ -216,7 +201,7 @@ namespace Genetic_Cars
           m_carEntity = car;
         }
 
-        m_view.Center = m_carEntity.Center;
+        m_view.Center = m_carEntity.Position.ToVector2f().InvertY();
       }
       m_physicsTime.Restart();
     }
@@ -246,7 +231,7 @@ namespace Genetic_Cars
       m_track = new Track(this);
       m_track.Generate();
       m_drawables.Add(m_track);
-      Entity.StartPosition = new Vector2f(m_track.StartingLine,
+      Entity.StartPosition = new Vector2(m_track.StartingLine,
         (2 * Definition.MaxBodyPointDistance) + Definition.MaxWheelRadius);
 
       var popSize = Settings.Default.PopulationSize;
@@ -255,7 +240,7 @@ namespace Genetic_Cars
         var cp = new Phenotype();
         cp.Randomize();
         var def = cp.ToDefinition();
-        m_carEntity = new Entity(def, this);
+        m_carEntity = new Entity(i, def, this);
         m_drawables.Add(m_carEntity);
       }
     }
