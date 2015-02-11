@@ -64,6 +64,7 @@
     <Compile Include="Car\Definition.cs" />
     <Compile Include="Car\Phenotype.cs" />
     <Compile Include="Car\Population.cs" />
+    <Compile Include="ColorExtensions.cs" />
     <Compile Include="PhysicsManager.cs" />
     <Compile Include="FarseerDebugView.cs" />
     <Compile Include="IDrawable.cs" />

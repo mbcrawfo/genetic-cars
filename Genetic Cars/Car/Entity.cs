@@ -34,6 +34,8 @@ namespace Genetic_Cars.Car
     // collision category for all car components
     public static readonly Category CollisionCategory = Category.Cat2;
 
+    public delegate void DeathHandler(int id);
+
     // graphical properties for the car
     private static readonly Color OutlineColor = Color.Black;
     private const float OutlineThickness = -.05f;
@@ -49,8 +51,15 @@ namespace Genetic_Cars.Car
       (int)Math.Round(AccelerationTime / AccelerationInterval);
 
     private const int SpeedHistorySecs = 5;
-    private const int HistorySamplesPerSec = 4;
-    private const float HistorySampleInterval = 1f / HistorySamplesPerSec;
+    private const int SpeedHistorySamplesPerSec = 4;
+    private const float SpeedHistorySampleInterval = 
+      1f / SpeedHistorySamplesPerSec;
+
+    // roughly the number of seconds the car's speed must be below the 
+    // threshold before it will die
+    private const int SecondsTilDeath = 5;
+    private const int MaxHealth = SecondsTilDeath * SpeedHistorySamplesPerSec;
+    private const float LowSpeedThreshold = 0.5f;
     
     /// <summary>
     /// The position where all cars are generated.
@@ -61,8 +70,10 @@ namespace Genetic_Cars.Car
     private readonly PhysicsManager m_physicsManager;
     private EntityType m_type;
     private Vector2 m_lastPosition;
+    private int m_health = MaxHealth;
+
     private readonly float[] m_speedHistory = 
-      new float[SpeedHistorySecs * HistorySamplesPerSec];
+      new float[SpeedHistorySecs * SpeedHistorySamplesPerSec];
     private int m_speedHistoryIndex = 0;
     private float m_speedSampleTime = 0;
 
@@ -100,18 +111,21 @@ namespace Genetic_Cars.Car
       Id = id;
       Definition = def;
       m_physicsManager = physics;
+      m_physicsManager.PostStep += PhysicsPostStep;
       m_lastPosition = StartPosition;
       
       CreateBody();
       CreateWheels();
+
       Type = EntityType.Normal;
-      physics.PostStep += PhysicsPostStep;
     }
 
     ~Entity()
     {
       Dispose(false);
     }
+
+    public event DeathHandler Death;
 
     /// <summary>
     /// Just an identifier for this car.
@@ -122,6 +136,14 @@ namespace Genetic_Cars.Car
     /// The car definition used to build this car.
     /// </summary>
     public Definition Definition { get; private set; }
+
+    /// <summary>
+    /// The car's health as a percentage.
+    /// </summary>
+    public float Health
+    {
+      get { return m_health / (float) MaxHealth; }
+    }
 
     /// <summary>
     /// The geometric center of the car's body.
@@ -170,7 +192,8 @@ namespace Genetic_Cars.Car
 
         var density = Definition.CalcBodyDensity() / Definition.MaxBodyDensity;
         // greater density = darker color
-        var color = (byte)(255 - (125 * density));
+        byte color = (byte)(255 - (125 * density));
+        byte alpha = 255;
 
         switch (m_type)
         {
@@ -183,14 +206,20 @@ namespace Genetic_Cars.Car
             break;
 
           case EntityType.Champion:
-            m_bodyShape.FillColor = new Color(0, color, 0, 64);
-            foreach (var shape in m_wheelShapes)
-            {
-              var oldColor = shape.FillColor;
-              shape.FillColor = new Color(
-                oldColor.R, oldColor.G, oldColor.B, 64);
-            }
+            alpha = 64;
+            m_bodyShape.FillColor = new Color(0, color, 0, alpha);
             break;
+        }
+
+        m_bodyShape.OutlineColor = m_bodyShape.OutlineColor.SetAlpha(alpha);
+        for (var i = 0; i < m_wheelShapes.Length; i++)
+        {
+          var shape = m_wheelShapes[i];
+          shape.FillColor = shape.FillColor.SetAlpha(alpha);
+          shape.OutlineColor = shape.OutlineColor.SetAlpha(alpha);
+
+          var line = m_wheelLines[i];
+          line.FillColor = line.FillColor.SetAlpha(alpha);
         }
       }
     }
@@ -240,6 +269,14 @@ namespace Genetic_Cars.Car
       m_physicsManager.World.RemoveBody(m_bodyBody);
 
       m_disposed = true;
+    }
+
+    private void OnDeath()
+    {
+      if (Death != null)
+      {
+        Death(Id);
+      }
     }
 
     /// <summary>
@@ -403,15 +440,28 @@ namespace Genetic_Cars.Car
 
       // update the speed average
       m_speedSampleTime += deltaTime;
-      while (m_speedSampleTime >= HistorySampleInterval)
+      while (m_speedSampleTime >= SpeedHistorySampleInterval)
       {
-        m_speedSampleTime -= HistorySampleInterval;
+        m_speedSampleTime -= SpeedHistorySampleInterval;
         if (++m_speedHistoryIndex >= m_speedHistory.Length)
         {
           m_speedHistoryIndex = 0;
         }
         m_speedHistory[m_speedHistoryIndex] = Speed;
         AverageSpeed = m_speedHistory.Average();
+
+        if (AverageSpeed < LowSpeedThreshold)
+        {
+          if (--m_health == 0)
+          {
+            OnDeath();
+            return;
+          }
+        }
+        else
+        {
+          m_health = MaxHealth;
+        }
       }
 
       // sync the positions of the graphical shapes to the physics bodies

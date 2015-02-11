@@ -45,18 +45,12 @@ namespace Genetic_Cars.Car
     private readonly StringBuilder m_genome = 
       new StringBuilder(new string('0', GenomeLength));
 
-    public override string ToString()
-    {
-      return m_genome.ToString();
-    }
-
     /// <summary>
-    /// Randomizes the genome bit string.
+    /// Creates and randomizes the phenotype.
     /// </summary>
-    public void Randomize()
+    public Phenotype()
     {
       Debug.Assert(Random != null);
-      Debug.Assert(m_genome.Length == GenomeLength);
 
       for (var i = 0; i < m_genome.Length; i++)
       {
@@ -71,6 +65,11 @@ namespace Genetic_Cars.Car
       }
     }
 
+    public override string ToString()
+    {
+      return m_genome.ToString();
+    }
+    
     /// <summary>
     /// Applies a mutation to this individual.
     /// </summary>

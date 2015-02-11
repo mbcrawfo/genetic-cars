@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using FarseerPhysics.Dynamics;
@@ -49,10 +47,7 @@ namespace Genetic_Cars
 
     // game data
     private Track m_track;
-    private readonly List<IDrawable> m_drawables = new List<IDrawable>();
-
-    //TESTING
-    private Entity m_carEntity;
+    private Population m_population;
     
     /// <summary>
     /// The main entry point for the application.
@@ -99,6 +94,7 @@ namespace Genetic_Cars
       m_window.PauseSimulation += PauseSimulation;
       m_window.ResumeSimulation += ResumeSimulation;
       m_window.SeedChanged += WindowOnSeedChanged;
+      m_window.NewPopulation += WindowOnNewPopulation;
       
       m_renderWindow = new RenderWindow(
         m_window.DrawingSurfaceHandle,
@@ -123,7 +119,7 @@ namespace Genetic_Cars
       
       m_initialized = true;
     }
-    
+
     /// <summary>
     /// Executes the program.
     /// </summary>
@@ -164,7 +160,7 @@ namespace Genetic_Cars
       if (disposeManaged)
       {
         m_track.Dispose();
-        m_carEntity.Dispose();
+        m_population.Dispose();
 
         m_view.Dispose();
         m_renderWindow.Dispose();
@@ -176,13 +172,12 @@ namespace Genetic_Cars
 
     private void DoDrawing()
     {
+      m_view.Center = m_population.Leader.Position.ToVector2f().InvertY();
       m_renderWindow.SetView(m_view);
 
       m_renderWindow.Clear(Color.White);
-      foreach (var drawable in m_drawables)
-      {
-        drawable.Draw(m_renderWindow);
-      }
+      m_track.Draw(m_renderWindow);
+      m_population.Draw(m_renderWindow);
       m_renderWindow.Display();
     }
 
@@ -192,17 +187,7 @@ namespace Genetic_Cars
       while (m_lastPhysicsStepDelta >= PhysicsTickInterval)
       {
         m_lastPhysicsStepDelta -= PhysicsTickInterval;
-
         StepWorld(PhysicsTickInterval);
-
-        foreach (Entity car in m_drawables.OfType<Entity>().Where(
-          car => car.DistanceTraveled > m_carEntity.DistanceTraveled)
-          )
-        {
-          m_carEntity = car;
-        }
-
-        m_view.Center = m_carEntity.Position.ToVector2f().InvertY();
       }
       m_physicsTime.Restart();
     }
@@ -212,30 +197,19 @@ namespace Genetic_Cars
       Log.InfoFormat("RNG seed set to 0x{0:X}", seed);
       var random = new Random(seed);
       Track.Random = random;
+      Population.Random = random;
       Phenotype.Random = random;
     }
 
     private void GenerateWorld()
     {
-      m_drawables.Clear();
-
       // create the world
       World = new World(Gravity);
       m_track = new Track(this);
       m_track.Generate();
-      m_drawables.Add(m_track);
       Entity.StartPosition = new Vector2(m_track.StartingLine,
         (2 * Definition.MaxBodyPointDistance) + Definition.MaxWheelRadius);
-
-      var popSize = Settings.Default.PopulationSize;
-      for (var i = 0; i < popSize; i++)
-      {
-        var cp = new Phenotype();
-        cp.Randomize();
-        var def = cp.ToDefinition();
-        m_carEntity = new Entity(i, def, this);
-        m_drawables.Add(m_carEntity);
-      }
+      m_population = new Population(this);
     }
 
     private void PauseSimulation()
@@ -272,6 +246,14 @@ namespace Genetic_Cars
     {
       SetSeed(seed);
       GenerateWorld();
+    }
+
+    private void WindowOnNewPopulation()
+    {
+      if (m_population != null)
+      {
+        m_population.Generate();
+      }
     }
     #endregion
   }

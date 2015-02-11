@@ -46,10 +46,16 @@ namespace Genetic_Cars
     /// <param name="rate">The new mutation rate [0, 1]</param>
     public delegate void MutationRateChangedHandler(float rate);
 
+    /// <summary>
+    /// Handles a request to generate a new population.
+    /// </summary>
+    public delegate void NewPopulationHandler();
+
     public event SeedChangedHandler SeedChanged;
     public event PauseSimulationHandler PauseSimulation;
     public event ResumeSimulationHandler ResumeSimulation;
     public event MutationRateChangedHandler MutationRateChanged;
+    public event NewPopulationHandler NewPopulation;
 
     /// <summary>
     /// The handle for the SFML drawing surface.
@@ -88,6 +94,14 @@ namespace Genetic_Cars
       if (MutationRateChanged != null)
       {
         MutationRateChanged(rate);
+      }
+    }
+
+    private void OnNewPopulation()
+    {
+      if (NewPopulation != null)
+      {
+        NewPopulation();
       }
     }
 
@@ -160,7 +174,15 @@ namespace Genetic_Cars
     private void newPopulationButton_Click(object sender, EventArgs e)
     {
       OnPauseSimulation();
-      MessageBox.Show("I'm not implemented yet :(", "Oops", MessageBoxButtons.OK);
+
+      var result = MessageBox.Show(
+        "Discard the current population and start over?", "",
+        MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+      if (result == DialogResult.Yes)
+      {
+        OnNewPopulation();
+      }
+      
       OnResumeSimulation();
     }
 
