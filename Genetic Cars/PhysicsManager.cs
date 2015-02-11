@@ -47,7 +47,7 @@ namespace Genetic_Cars
     {
       Debug.Assert(World != null);
 
-      OnPostStep(deltaTime);
+      OnPreStep(deltaTime);
       World.Step(deltaTime);
       World.ClearForces();
       OnPostStep(deltaTime);

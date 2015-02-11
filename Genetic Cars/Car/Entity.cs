@@ -47,6 +47,10 @@ namespace Genetic_Cars.Car
     // total number of acceleration steps
     private static readonly int AccelerationSteps =
       (int)Math.Round(AccelerationTime / AccelerationInterval);
+
+    private const int SpeedHistorySecs = 5;
+    private const int HistorySamplesPerSec = 4;
+    private const float HistorySampleInterval = 1f / HistorySamplesPerSec;
     
     /// <summary>
     /// The position where all cars are generated.
@@ -57,6 +61,10 @@ namespace Genetic_Cars.Car
     private readonly PhysicsManager m_physicsManager;
     private EntityType m_type;
     private Vector2 m_lastPosition;
+    private readonly float[] m_speedHistory = 
+      new float[SpeedHistorySecs * HistorySamplesPerSec];
+    private int m_speedHistoryIndex = 0;
+    private float m_speedSampleTime = 0;
 
     // graphics fields
     private ConvexShape m_bodyShape;
@@ -135,6 +143,12 @@ namespace Genetic_Cars.Car
     /// The current speed of the car in m/s.
     /// </summary>
     public float Speed { get; private set; }
+
+    /// <summary>
+    /// Returns the speed of the car, averaged over the interval defined by 
+    /// SpeedHistorySecs.
+    /// </summary>
+    public float AverageSpeed { get; private set; }
 
     /// <summary>
     /// Sets the type of the car entity, affecting how cars are displayed.  
@@ -357,6 +371,8 @@ namespace Genetic_Cars.Car
     private bool WheelInitialCollision(
       Fixture fixtureA, Fixture fixtureB, Contact contact)
     {
+      Log.DebugFormat("Starting the motors of car {0}", Id);
+
       for (int i = 0; i < m_wheelBodies.Length; i++)
       {
         m_wheelJoints[i].MotorEnabled = true;
@@ -371,26 +387,43 @@ namespace Genetic_Cars.Car
     }
 
     /// <summary>
-    /// Syncs the position of the car's graphical elements to the physics 
-    /// objects.
+    /// Updates the state of the car following a physics step.
     /// </summary>
     /// <param name="deltaTime"></param>
     private void PhysicsPostStep(float deltaTime)
     {
-      Speed = (Position - m_lastPosition).Length() / deltaTime;
+      // update the car's speed
+      var moved = Position - m_lastPosition;
+      Speed = moved.Length() / deltaTime;
+      if (moved.X < 0)
+      {
+        Speed = -Speed;
+      }
       m_lastPosition = Position;
 
+      // update the speed average
+      m_speedSampleTime += deltaTime;
+      while (m_speedSampleTime >= HistorySampleInterval)
+      {
+        m_speedSampleTime -= HistorySampleInterval;
+        if (++m_speedHistoryIndex >= m_speedHistory.Length)
+        {
+          m_speedHistoryIndex = 0;
+        }
+        m_speedHistory[m_speedHistoryIndex] = Speed;
+        AverageSpeed = m_speedHistory.Average();
+      }
+
+      // sync the positions of the graphical shapes to the physics bodies
       var pos = m_bodyBody.Position.ToVector2f().InvertY();
       m_bodyShape.Position = pos;
       m_bodyShape.Rotation = 
         (float)-MathExtensions.RadToDeg(m_bodyBody.Rotation);
-
       for (int i = 0; i < m_wheelShapes.Length; i++)
       {
         var wheelPos = m_wheelBodies[i].Position.ToVector2f().InvertY();
         var wheelRot = 
           (float)-MathExtensions.RadToDeg(m_wheelBodies[i].Rotation);
-
         m_wheelShapes[i].Position = wheelPos;
         m_wheelLines[i].Position = wheelPos;
         m_wheelLines[i].Rotation = wheelRot;
@@ -406,7 +439,6 @@ namespace Genetic_Cars.Car
     {
       var done = false;
       m_accelerationTime += deltaTime;
-
       while (m_accelerationTime >= AccelerationInterval)
       {
         m_accelerationTime -= AccelerationInterval;
@@ -421,6 +453,7 @@ namespace Genetic_Cars.Car
 
         if (done)
         {
+          Log.DebugFormat("Car {0} completed acceleration", Id);
           m_physicsManager.PreStep -= ApplyAcceleration;
           break;
         }
