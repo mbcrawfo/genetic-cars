@@ -120,7 +120,7 @@ namespace Genetic_Cars.Car
     /// </summary>
     public Vector2 Position
     {
-      get { return m_bodyShape.Position.ToVector2().InvertY(); }
+      get { return m_bodyBody.Position; }
     }
 
     /// <summary>

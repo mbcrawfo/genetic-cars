@@ -117,7 +117,8 @@ namespace Genetic_Cars
       m_renderWindow.Resized += WindowOnResized;
 
       var seed = DateTime.Now.ToString("F");
-      SetSeed(seed);
+      Log.DebugFormat("Initial seed string: {0}", seed);
+      SetSeed(seed.GetHashCode());
       GenerateWorld();
       
       m_initialized = true;
@@ -206,18 +207,10 @@ namespace Genetic_Cars
       m_physicsTime.Restart();
     }
 
-    private void SetSeed(string seed)
+    private void SetSeed(int seed)
     {
-      if (seed == null)
-      {
-        throw new ArgumentNullException("seed");
-      }
-      
-      var seedHash = seed.GetHashCode();
-      Log.InfoFormat("RNG seed changed to:\n{0}", seed);
-      Log.InfoFormat("Seed hashed to 0x{0:X08}", seedHash);
-
-      var random = new Random(seedHash);
+      Log.InfoFormat("RNG seed set to 0x{0:X}", seed);
+      var random = new Random(seed);
       Track.Random = random;
       Phenotype.Random = random;
     }
@@ -275,7 +268,7 @@ namespace Genetic_Cars
         );
     }
 
-    private void WindowOnSeedChanged(string seed)
+    private void WindowOnSeedChanged(int seed)
     {
       SetSeed(seed);
       GenerateWorld();

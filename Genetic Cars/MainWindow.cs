@@ -27,10 +27,8 @@ namespace Genetic_Cars
     /// <summary>
     /// Handles the request for a seed change.
     /// </summary>
-    /// <param name="seed">
-    /// The string used for the seed.  May be null or empty.
-    /// </param>
-    public delegate void SeedChangedHandler(string seed);
+    /// <param name="seed"></param>
+    public delegate void SeedChangedHandler(int seed);
 
     /// <summary>
     /// Handles a request to pause the world simulation.
@@ -61,7 +59,7 @@ namespace Genetic_Cars
       get { return drawingSurface.Handle; }
     }
 
-    private void OnSeedChanged(string seed)
+    private void OnSeedChanged(int seed)
     {
       if (SeedChanged != null)
       {
@@ -98,18 +96,50 @@ namespace Genetic_Cars
     {
       OnPauseSimulation();
 
+      var str = seedTextBox.Text;
       var apply = true;
-      var seed = seedTextBox.Text;
-      if (string.IsNullOrEmpty(seed))
+      int seed = 0;
+      if (string.IsNullOrEmpty(str))
       {
         var answer = MessageBox.Show(
-          "No seed entered.  Click OK to use the current date/time string.", 
+          "No seed entered.  Click OK to use the current date/time string.",
           "", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
         apply = answer == DialogResult.OK;
         if (apply)
         {
-          seed = DateTime.Now.ToString("F");
+          str = DateTime.Now.ToString("F");
+          Log.InfoFormat("Using seed string: {0}", str);
+          seed = str.GetHashCode();
         }
+      }
+      else if (str.StartsWith(@"\x"))
+      {
+        str = str.Substring(2);
+        const NumberStyles style = NumberStyles.HexNumber;
+        var provider = CultureInfo.CurrentCulture;
+        if (!int.TryParse(str, style, provider, out seed))
+        {
+          MessageBox.Show("Error parsing the hex value.  Seed not changed",
+            "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+          apply = false;
+        }
+      }
+      else if (str.StartsWith(@"\d"))
+      {
+        str = str.Substring(2);
+        const NumberStyles style = NumberStyles.Integer;
+        var provider = CultureInfo.CurrentCulture;
+        if (!int.TryParse(str, style, provider, out seed))
+        {
+          MessageBox.Show("Error parsing the value.  Seed not changed",
+            "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+          apply = false;
+        }
+      }
+      else
+      {
+        Log.InfoFormat("Using seed string: {0}", str);
+        seed = str.GetHashCode();
       }
 
       if (apply)

@@ -34,9 +34,13 @@ namespace Genetic_Cars
     private void InitializeComponent()
     {
       this.components = new System.ComponentModel.Container();
+      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
       this.mainLayout = new System.Windows.Forms.TableLayoutPanel();
       this.drawingSurface = new System.Windows.Forms.Panel();
       this.settingsBox = new System.Windows.Forms.GroupBox();
+      this.mutationRateApplyButton = new System.Windows.Forms.Button();
+      this.mutationRateTextBox = new System.Windows.Forms.TextBox();
+      this.label1 = new System.Windows.Forms.Label();
       this.newPopulationButton = new System.Windows.Forms.Button();
       this.rapidSimButton = new System.Windows.Forms.Button();
       this.pauseButton = new System.Windows.Forms.Button();
@@ -44,9 +48,6 @@ namespace Genetic_Cars
       this.seedTextBox = new System.Windows.Forms.TextBox();
       this.seedLabel = new System.Windows.Forms.Label();
       this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-      this.label1 = new System.Windows.Forms.Label();
-      this.mutationRateTextBox = new System.Windows.Forms.TextBox();
-      this.mutationRateApplyButton = new System.Windows.Forms.Button();
       this.mainLayout.SuspendLayout();
       this.settingsBox.SuspendLayout();
       this.SuspendLayout();
@@ -99,6 +100,36 @@ namespace Genetic_Cars
       this.settingsBox.TabIndex = 1;
       this.settingsBox.TabStop = false;
       this.settingsBox.Text = "Settings";
+      // 
+      // mutationRateApplyButton
+      // 
+      this.mutationRateApplyButton.Location = new System.Drawing.Point(241, 94);
+      this.mutationRateApplyButton.Name = "mutationRateApplyButton";
+      this.mutationRateApplyButton.Size = new System.Drawing.Size(75, 23);
+      this.mutationRateApplyButton.TabIndex = 8;
+      this.mutationRateApplyButton.Text = "Apply";
+      this.mutationRateApplyButton.UseVisualStyleBackColor = true;
+      this.mutationRateApplyButton.Click += new System.EventHandler(this.mutationRateApplyButton_Click);
+      // 
+      // mutationRateTextBox
+      // 
+      this.mutationRateTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.mutationRateTextBox.Location = new System.Drawing.Point(129, 91);
+      this.mutationRateTextBox.Name = "mutationRateTextBox";
+      this.mutationRateTextBox.Size = new System.Drawing.Size(106, 26);
+      this.mutationRateTextBox.TabIndex = 7;
+      this.mutationRateTextBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+      this.toolTip.SetToolTip(this.mutationRateTextBox, "Set the mutation rate for the genetic algorithm.\r\nMust be between 0 and 1.");
+      // 
+      // label1
+      // 
+      this.label1.AutoSize = true;
+      this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.label1.Location = new System.Drawing.Point(9, 94);
+      this.label1.Name = "label1";
+      this.label1.Size = new System.Drawing.Size(114, 20);
+      this.label1.TabIndex = 6;
+      this.label1.Text = "Mutation Rate:";
       // 
       // newPopulationButton
       // 
@@ -159,6 +190,7 @@ namespace Genetic_Cars
       this.seedTextBox.Name = "seedTextBox";
       this.seedTextBox.Size = new System.Drawing.Size(169, 23);
       this.seedTextBox.TabIndex = 1;
+      this.toolTip.SetToolTip(this.seedTextBox, resources.GetString("seedTextBox.ToolTip"));
       // 
       // seedLabel
       // 
@@ -169,35 +201,6 @@ namespace Genetic_Cars
       this.seedLabel.Size = new System.Drawing.Size(51, 20);
       this.seedLabel.TabIndex = 0;
       this.seedLabel.Text = "Seed:";
-      // 
-      // label1
-      // 
-      this.label1.AutoSize = true;
-      this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.label1.Location = new System.Drawing.Point(9, 94);
-      this.label1.Name = "label1";
-      this.label1.Size = new System.Drawing.Size(114, 20);
-      this.label1.TabIndex = 6;
-      this.label1.Text = "Mutation Rate:";
-      // 
-      // mutationRateTextBox
-      // 
-      this.mutationRateTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.mutationRateTextBox.Location = new System.Drawing.Point(129, 91);
-      this.mutationRateTextBox.Name = "mutationRateTextBox";
-      this.mutationRateTextBox.Size = new System.Drawing.Size(106, 26);
-      this.mutationRateTextBox.TabIndex = 7;
-      this.mutationRateTextBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-      // 
-      // mutationRateApplyButton
-      // 
-      this.mutationRateApplyButton.Location = new System.Drawing.Point(241, 94);
-      this.mutationRateApplyButton.Name = "mutationRateApplyButton";
-      this.mutationRateApplyButton.Size = new System.Drawing.Size(75, 23);
-      this.mutationRateApplyButton.TabIndex = 8;
-      this.mutationRateApplyButton.Text = "Apply";
-      this.mutationRateApplyButton.UseVisualStyleBackColor = true;
-      this.mutationRateApplyButton.Click += new System.EventHandler(this.mutationRateApplyButton_Click);
       // 
       // MainWindow
       // 
