@@ -60,9 +60,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CarEntity.cs" />
-    <Compile Include="CarDefinition.cs" />
-    <Compile Include="CarPhenotype.cs" />
+    <Compile Include="Car\Entity.cs" />
+    <Compile Include="Car\Definition.cs" />
+    <Compile Include="Car\Phenotype.cs" />
     <Compile Include="IPhysicsManager.cs" />
     <Compile Include="FarseerDebugView.cs" />
     <Compile Include="IDrawable.cs" />

@@ -5,12 +5,12 @@ using System.Reflection;
 using System.Text;
 using log4net;
 
-namespace Genetic_Cars
+namespace Genetic_Cars.Car
 {
   /// <summary>
   /// Holds the genome for one car individual.
   /// </summary>
-  sealed class CarPhenotype
+  sealed class Phenotype
   {
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
@@ -18,9 +18,9 @@ namespace Genetic_Cars
     private const int WheelSectionLength =
       5 * 8;
     private static readonly int BodySectionLength =
-      (CarDefinition.NumBodyPoints * 8) + 8;
+      (Definition.NumBodyPoints * 8) + 8;
     private static readonly int GenomeLength =
-       BodySectionLength + (CarDefinition.NumWheels * WheelSectionLength);
+       BodySectionLength + (Definition.NumWheels * WheelSectionLength);
 
     /// <summary>
     /// Applies a mutation to the genome.
@@ -83,21 +83,21 @@ namespace Genetic_Cars
     }
 
     /// <summary>
-    /// Converts the genome to a CarDefinition that can be used to create a 
-    /// CarEntity.
+    /// Converts the genome to a Definition that can be used to create a 
+    /// Entity.
     /// </summary>
     /// <returns></returns>
-    public CarDefinition ToCarDefinition()
+    public Definition ToDefinition()
     {
       Debug.Assert(m_genome.Length == GenomeLength);
 
-      var cd = new CarDefinition();
-      for (var i = 0; i < CarDefinition.NumBodyPoints; i++)
+      var cd = new Definition();
+      for (var i = 0; i < Definition.NumBodyPoints; i++)
       {
         cd.BodyPoints[i] = GetBodyPoint(i);
       }
       cd.BodyDensity = GetBodyDensity();
-      for (var i = 0; i < CarDefinition.NumWheels; i++)
+      for (var i = 0; i < Definition.NumWheels; i++)
       {
         cd.WheelAttachment[i] = GetWheelAttachment(i);
         cd.WheelRadius[i] = GetWheelRadius(i);
@@ -110,7 +110,7 @@ namespace Genetic_Cars
 
     private float GetBodyPoint(int i)
     {
-      if (i < 0 || i >= CarDefinition.NumBodyPoints)
+      if (i < 0 || i >= Definition.NumBodyPoints)
       {
         throw new ArgumentOutOfRangeException("i");
       }
@@ -124,14 +124,14 @@ namespace Genetic_Cars
     private float GetBodyDensity()
     {
       Debug.Assert(m_genome.Length == GenomeLength);
-      var offset = CarDefinition.NumBodyPoints * 8;
+      var offset = Definition.NumBodyPoints * 8;
       var str = m_genome.ToString(offset, 8);
       return Convert.ToByte(str, 2) / 255f;
     }
 
     private int GetWheelAttachment(int i)
     {
-      if (i < 0 || i >= CarDefinition.NumWheels)
+      if (i < 0 || i >= Definition.NumWheels)
       {
         throw new ArgumentOutOfRangeException("i");
       }
@@ -141,12 +141,12 @@ namespace Genetic_Cars
       var str = m_genome.ToString(offset, 8);
       // division by 256 is intentional so the percent is < 1
       var percent =  Convert.ToByte(str, 2) / 256f;
-      return (int)(percent * CarDefinition.NumBodyPoints);
+      return (int)(percent * Definition.NumBodyPoints);
     }
 
     private float GetWheelRadius(int i)
     {
-      if (i < 0 || i >= CarDefinition.NumWheels)
+      if (i < 0 || i >= Definition.NumWheels)
       {
         throw new ArgumentOutOfRangeException("i");
       }
@@ -160,7 +160,7 @@ namespace Genetic_Cars
 
     private float GetWheelDensity(int i)
     {
-      if (i < 0 || i >= CarDefinition.NumWheels)
+      if (i < 0 || i >= Definition.NumWheels)
       {
         throw new ArgumentOutOfRangeException("i");
       }
@@ -174,7 +174,7 @@ namespace Genetic_Cars
 
     private float GetWheelSpeed(int i)
     {
-      if (i < 0 || i >= CarDefinition.NumWheels)
+      if (i < 0 || i >= Definition.NumWheels)
       {
         throw new ArgumentOutOfRangeException("i");
       }
@@ -188,7 +188,7 @@ namespace Genetic_Cars
 
     private float GetWheelTorque(int i)
     {
-      if (i < 0 || i >= CarDefinition.NumWheels)
+      if (i < 0 || i >= Definition.NumWheels)
       {
         throw new ArgumentOutOfRangeException("i");
       }

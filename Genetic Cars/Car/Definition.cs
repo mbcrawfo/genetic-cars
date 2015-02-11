@@ -3,7 +3,7 @@ using System.Text;
 using Genetic_Cars.Properties;
 using log4net;
 
-namespace Genetic_Cars
+namespace Genetic_Cars.Car
 {
   /// <summary>
   /// Holds the information defining how a car will be constructed.
@@ -15,7 +15,7 @@ namespace Genetic_Cars
   /// Torque: newton meters
   /// Rotational Speed: degrees per second
   /// </remarks>
-  sealed class CarDefinition
+  sealed class Definition
   {
     /// <summary>
     /// The number of points that make up the car body polygon.
@@ -127,7 +127,7 @@ namespace Genetic_Cars
     /// </summary>
     public float[] WheelTorque { get; private set; }
 
-    public CarDefinition()
+    public Definition()
     {
       BodyPoints = new float[NumBodyPoints];
       WheelAttachment = new int[NumWheels];

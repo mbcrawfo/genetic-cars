@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using FarseerPhysics.Dynamics;
+using Genetic_Cars.Car;
 using Genetic_Cars.Properties;
 using log4net;
 using Microsoft.Xna.Framework;
@@ -50,7 +51,7 @@ namespace Genetic_Cars
     private readonly List<IDrawable> m_drawables = new List<IDrawable>();
 
     //TESTING
-    private CarEntity m_carEntity;
+    private Entity m_carEntity;
     
     /// <summary>
     /// The main entry point for the application.
@@ -69,7 +70,7 @@ namespace Genetic_Cars
       FarseerPhysics.Settings.UseFPECollisionCategories = true;
       FarseerPhysics.Settings.VelocityIterations = 10;
       FarseerPhysics.Settings.PositionIterations = 8;
-      FarseerPhysics.Settings.MaxPolygonVertices = CarDefinition.NumBodyPoints;
+      FarseerPhysics.Settings.MaxPolygonVertices = Definition.NumBodyPoints;
 
       // not sure what this does, leftover from the project generation
       System.Windows.Forms.Application.EnableVisualStyles();
@@ -208,7 +209,7 @@ namespace Genetic_Cars
           PostStep(this, PhysicsTickInterval);
         }
 
-        foreach (CarEntity car in m_drawables.OfType<CarEntity>().Where(
+        foreach (Entity car in m_drawables.OfType<Entity>().Where(
           car => car.DistanceTraveled > m_carEntity.DistanceTraveled)
           )
         {
@@ -233,7 +234,7 @@ namespace Genetic_Cars
 
       var random = new Random(seedHash);
       Track.Random = random;
-      CarPhenotype.Random = random;
+      Phenotype.Random = random;
     }
 
     private void GenerateWorld()
@@ -245,16 +246,16 @@ namespace Genetic_Cars
       m_track = new Track(this);
       m_track.Generate();
       m_drawables.Add(m_track);
-      CarEntity.StartPosition = new Vector2f(m_track.StartingLine,
-        (2 * CarDefinition.MaxBodyPointDistance) + CarDefinition.MaxWheelRadius);
+      Entity.StartPosition = new Vector2f(m_track.StartingLine,
+        (2 * Definition.MaxBodyPointDistance) + Definition.MaxWheelRadius);
 
       var popSize = Settings.Default.PopulationSize;
       for (var i = 0; i < popSize; i++)
       {
-        var cp = new CarPhenotype();
+        var cp = new Phenotype();
         cp.Randomize();
-        var def = cp.ToCarDefinition();
-        m_carEntity = new CarEntity(def, this);
+        var def = cp.ToDefinition();
+        m_carEntity = new Entity(def, this);
         m_drawables.Add(m_carEntity);
       }
     }
