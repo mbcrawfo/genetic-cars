@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Globalization;
 using System.Reflection;
 using System.Windows.Forms;
+using Genetic_Cars.Properties;
 using log4net;
+// ReSharper disable LocalizableElement
+// ReSharper disable RedundantDefaultMemberInitializer
 
 namespace Genetic_Cars
 {
@@ -10,15 +14,14 @@ namespace Genetic_Cars
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
 
-    private const float AspectRatio = 4f / 3f;
-
     private bool m_paused = false;
 
     public MainWindow()
     {
       InitializeComponent();
       mutationRateTextBox.Text = 
-        Properties.Settings.Default.DefaultMutationRate.ToString();
+        Settings.Default.DefaultMutationRate.ToString(
+        CultureInfo.CurrentCulture);
     }
 
     /// <summary>
@@ -156,7 +159,7 @@ namespace Genetic_Cars
 
     private void mutationRateApplyButton_Click(object sender, EventArgs e)
     {
-      float rate = -1;
+      float rate;
       if (float.TryParse(mutationRateTextBox.Text, out rate) && 
         (rate >= 0 || rate <= 1))
       {

@@ -143,6 +143,8 @@ namespace Genetic_Cars.Car
     /// <exception cref="ArgumentOutOfRangeException">
     /// Specifies the property that is out of range.
     /// </exception>
+    // ReSharper disable NotResolvedInText
+    // ReSharper disable LocalizableElement
     public void Validate()
     {
       for (int i = 0; i < BodyPoints.Length; i++)
@@ -199,6 +201,8 @@ namespace Genetic_Cars.Car
         }
       }
     }
+    // ReSharper restore NotResolvedInText
+    // ReSharper restore LocalizableElement
 
     /// <summary>
     /// Calculates the position of the requested body point.

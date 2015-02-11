@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FarseerPhysics;
+﻿using FarseerPhysics;
 using FarseerPhysics.Dynamics;
 using Microsoft.Xna.Framework;
 using SFML.Graphics;
-using SFML.Window;
 using Transform = FarseerPhysics.Common.Transform;
 
 namespace Genetic_Cars

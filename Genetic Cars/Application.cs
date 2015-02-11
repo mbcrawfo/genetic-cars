@@ -13,6 +13,8 @@ using Microsoft.Xna.Framework;
 using SFML.Graphics;
 using SFML.Window;
 
+// ReSharper disable RedundantDefaultMemberInitializer
+
 namespace Genetic_Cars
 {
   sealed class Application : PhysicsManager, IDisposable
@@ -21,7 +23,7 @@ namespace Genetic_Cars
       MethodBase.GetCurrentMethod().DeclaringType);
 
     // logic updates at 30 fps, time in ms
-    private const long LogicTickInterval = (long)(1000f / 30f);
+    //private const long LogicTickInterval = (long)(1000f / 30f);
     // physics updates at 60 fps, Farseer uses time in seconds
     private const float PhysicsTickInterval = 1f / 60f;
     // attempt to maintain 30 fps in ms
@@ -35,7 +37,6 @@ namespace Genetic_Cars
     // frame state variables
     private readonly Stopwatch m_frameTime = new Stopwatch();
     private readonly Stopwatch m_physicsTime = new Stopwatch();
-    private long m_lastFrameTotalTime;
     private float m_lastPhysicsStepDelta;
     private bool m_paused = false;
 
@@ -129,7 +130,6 @@ namespace Genetic_Cars
     {
       while (m_window.Visible)
       {
-        m_lastFrameTotalTime = m_frameTime.ElapsedMilliseconds;
         m_frameTime.Restart();
 
         if (!m_paused)

@@ -9,6 +9,7 @@ using log4net;
 using Microsoft.Xna.Framework;
 using SFML.Graphics;
 using SFML.Window;
+// ReSharper disable RedundantDefaultMemberInitializer
 
 namespace Genetic_Cars
 {
