@@ -203,6 +203,12 @@ namespace Genetic_Cars
 
     private void GenerateWorld()
     {
+      if (m_initialized)
+      {
+        m_track.Dispose();
+        m_population.Dispose();
+      }
+
       // create the world
       World = new World(Gravity);
       m_track = new Track(this);
