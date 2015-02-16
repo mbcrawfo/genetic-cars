@@ -60,6 +60,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Car\Car.cs" />
     <Compile Include="Car\Entity.cs" />
     <Compile Include="Car\Definition.cs" />
     <Compile Include="Car\Phenotype.cs" />

@@ -92,10 +92,9 @@ namespace Genetic_Cars.Car
     /// <summary>
     /// Builds a car.
     /// </summary>
-    /// <param name="id"></param>
     /// <param name="def">The parameters used to generate the car.</param>
     /// <param name="physics">The program physics system.</param>
-    public Entity(int id, Definition def, PhysicsManager physics)
+    public Entity(Definition def, PhysicsManager physics)
     {
       if (physics == null)
       {
@@ -107,8 +106,6 @@ namespace Genetic_Cars.Car
       }
       // will throw on failure
       def.Validate();
-
-      Id = id;
       Definition = def;
       m_physicsManager = physics;
       m_physicsManager.PostStep += PhysicsPostStep;
@@ -152,7 +149,7 @@ namespace Genetic_Cars.Car
     {
       get { return m_bodyBody.Position; }
     }
-
+    
     /// <summary>
     /// The total distance traveled by the car.
     /// </summary>
@@ -226,7 +223,7 @@ namespace Genetic_Cars.Car
 
     public void Draw(RenderTarget target)
     {
-      for (int i = 0; i < m_wheelShapes.Length; i++)
+      for (var i = 0; i < m_wheelShapes.Length; i++)
       {
         target.Draw(m_wheelShapes[i]);
         target.Draw(m_wheelLines[i]);
@@ -261,8 +258,9 @@ namespace Genetic_Cars.Car
       m_physicsManager.PreStep -= ApplyAcceleration;
       m_physicsManager.PostStep -= PhysicsPostStep;
 
-      for (int i = 0; i < m_wheelShapes.Length; i++)
+      for (var i = 0; i < m_wheelShapes.Length; i++)
       {
+        m_wheelBodies[i].OnCollision -= WheelInitialCollision;
         m_physicsManager.World.RemoveJoint(m_wheelJoints[i]);
         m_physicsManager.World.RemoveBody(m_wheelBodies[i]);
       }

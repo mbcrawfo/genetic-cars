@@ -121,6 +121,8 @@ namespace Genetic_Cars.Car
       m_genome = genome;
     }
 
+    public int Id { get; set; }
+
     public override string ToString()
     {
       return m_genome;
