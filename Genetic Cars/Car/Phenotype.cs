@@ -19,31 +19,60 @@ namespace Genetic_Cars.Car
       5 * 8;
     private static readonly int BodySectionLength =
       (Definition.NumBodyPoints * 8) + 8;
-    private static readonly int GenomeLength =
+    public static readonly int GenomeLength =
        BodySectionLength + (Definition.NumWheels * WheelSectionLength);
 
     /// <summary>
-    /// Applies a mutation to the genome.
+    /// Applies a mutation to the genome. Should use Phenotype.Random as the 
+    /// RNG for the mutation.
     /// </summary>
     /// <param name="genome">
-    /// The genome string.  The length may not be changed, and all the 
-    /// characters in the string must be 0 or 1.
+    /// The genome string.
     /// </param>
-    public delegate void GenomeMutator(StringBuilder genome);
+    /// <returns>
+    /// The new, mutated genome string.
+    /// </returns>
+    public delegate string GenomeMutator(string genome);
+
+    /// <summary>
+    /// Takes two parent genome strings and produces a child genome string.  
+    /// Should use Phonetype.Random as the RNG for the mutation.
+    /// </summary>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <returns></returns>
+    public delegate string GenomeCrossover(string a, string b);
 
     /// <summary>
     /// The mutation strategy for the phenotype.  Must be set before any 
     /// cars are constructed.
     /// </summary>
-    public static GenomeMutator Mutator { get; set; }
+    public static GenomeMutator MutateStrategy;
+
+    /// <summary>
+    /// The crossover strategy for the phenotype.  Must be set before any 
+    /// cars are constructed.
+    /// </summary>
+    public static GenomeCrossover CrossoverStrategy;
 
     /// <summary>
     /// The RNG used for all actions in this class.
     /// </summary>
     public static Random Random { get; set; }
 
-    private readonly StringBuilder m_genome = 
-      new StringBuilder(new string('0', GenomeLength));
+    /// <summary>
+    /// Generates a new Phenotype by crossing the two parents.
+    /// </summary>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <returns></returns>
+    public static Phenotype CrossOver(Phenotype a, Phenotype b)
+    {
+      Debug.Assert(CrossoverStrategy != null);
+      return new Phenotype(CrossoverStrategy(a.m_genome, b.m_genome));
+    }
+
+    private string m_genome;
 
     /// <summary>
     /// Creates and randomizes the phenotype.
@@ -52,22 +81,49 @@ namespace Genetic_Cars.Car
     {
       Debug.Assert(Random != null);
 
-      for (var i = 0; i < m_genome.Length; i++)
+      StringBuilder sb = new StringBuilder();
+      for (var i = 0; i < GenomeLength; i++)
       {
         if (Random.NextDouble() < 0.5)
         {
-          m_genome[i] = '0';
+          sb.Append('0');
         }
         else
         {
-          m_genome[i] = '1';
+          sb.Append('1');
         }
       }
+
+      m_genome = sb.ToString();
+    }
+
+    /// <summary>
+    /// Creates a phenotype using a genome string.
+    /// </summary>
+    /// <param name="genome"></param>
+    public Phenotype(string genome)
+    {
+      if (genome == null)
+      {
+        throw  new ArgumentNullException("genome");
+      }
+      if (genome.Length != GenomeLength)
+      {
+        throw new ArgumentOutOfRangeException("genome",
+          "length is incorrect");
+      }
+      if (!genome.All(c => c == '0' || c == '1'))
+      {
+        throw new ArgumentOutOfRangeException("genome",
+          "genome is not binary");
+      }
+
+      m_genome = genome;
     }
 
     public override string ToString()
     {
-      return m_genome.ToString();
+      return m_genome;
     }
     
     /// <summary>
@@ -75,12 +131,27 @@ namespace Genetic_Cars.Car
     /// </summary>
     public void Mutate()
     {
-      Debug.Assert(Mutator != null);
-      Mutator(m_genome);
-      Debug.Assert(m_genome.Length == GenomeLength);
-      Debug.Assert(m_genome.ToString().All(c => c == '0' || c == '1'));
-    }
+      Debug.Assert(MutateStrategy != null);
+      m_genome = MutateStrategy(m_genome);
 
+      if (m_genome == null)
+      {
+        Log.Error("Genome null after mutation");
+        throw new InvalidOperationException("Invalid mutation");
+      }
+      if (m_genome.Length != GenomeLength)
+      {
+        Log.ErrorFormat("Expected genome length {0} after mutation, got {1}",
+          GenomeLength, m_genome.Length);
+        throw new InvalidOperationException("Invalid mutation");
+      }
+      if (!m_genome.All(c => c == '0' || c == '1'))
+      {
+        Log.Error("Genome is not binary after mutation");
+        throw new InvalidOperationException("Invalid mutation");
+      }
+    }
+    
     /// <summary>
     /// Converts the genome to a Definition that can be used to create a 
     /// Entity.
@@ -88,8 +159,6 @@ namespace Genetic_Cars.Car
     /// <returns></returns>
     public Definition ToDefinition()
     {
-      Debug.Assert(m_genome.Length == GenomeLength);
-
       var cd = new Definition();
       for (var i = 0; i < Definition.NumBodyPoints; i++)
       {
@@ -113,18 +182,16 @@ namespace Genetic_Cars.Car
       {
         throw new ArgumentOutOfRangeException("i");
       }
-      Debug.Assert(m_genome.Length == GenomeLength);
 
       var offset = i * 8;
-      var str = m_genome.ToString(offset, 8);
+      var str = m_genome.Substring(offset, 8);
       return Convert.ToByte(str, 2) / 255f;
     }
 
     private float GetBodyDensity()
     {
-      Debug.Assert(m_genome.Length == GenomeLength);
       var offset = Definition.NumBodyPoints * 8;
-      var str = m_genome.ToString(offset, 8);
+      var str = m_genome.Substring(offset, 8);
       return Convert.ToByte(str, 2) / 255f;
     }
 
@@ -134,10 +201,9 @@ namespace Genetic_Cars.Car
       {
         throw new ArgumentOutOfRangeException("i");
       }
-      Debug.Assert(m_genome.Length == GenomeLength);
-
+      
       var offset = BodySectionLength + (i * WheelSectionLength);
-      var str = m_genome.ToString(offset, 8);
+      var str = m_genome.Substring(offset, 8);
       // division by 256 is intentional so the percent is < 1
       var percent =  Convert.ToByte(str, 2) / 256f;
       return (int)(percent * Definition.NumBodyPoints);
@@ -149,11 +215,10 @@ namespace Genetic_Cars.Car
       {
         throw new ArgumentOutOfRangeException("i");
       }
-      Debug.Assert(m_genome.Length == GenomeLength);
 
       var offset = BodySectionLength + 
         ((i * WheelSectionLength) + 8);
-      var str = m_genome.ToString(offset, 8);
+      var str = m_genome.Substring(offset, 8);
       return Convert.ToByte(str, 2) / 255f;
     }
 
@@ -163,11 +228,10 @@ namespace Genetic_Cars.Car
       {
         throw new ArgumentOutOfRangeException("i");
       }
-      Debug.Assert(m_genome.Length == GenomeLength);
 
       var offset = BodySectionLength + 
         ((i * WheelSectionLength) + 16);
-      var str = m_genome.ToString(offset, 8);
+      var str = m_genome.Substring(offset, 8);
       return Convert.ToByte(str, 2) / 255f;
     }
 
@@ -177,11 +241,10 @@ namespace Genetic_Cars.Car
       {
         throw new ArgumentOutOfRangeException("i");
       }
-      Debug.Assert(m_genome.Length == GenomeLength);
 
       var offset = BodySectionLength + 
         ((i * WheelSectionLength) + 24);
-      var str = m_genome.ToString(offset, 8);
+      var str = m_genome.Substring(offset, 8);
       return Convert.ToByte(str, 2) / 255f;
     }
 
@@ -191,11 +254,10 @@ namespace Genetic_Cars.Car
       {
         throw new ArgumentOutOfRangeException("i");
       }
-      Debug.Assert(m_genome.Length == GenomeLength);
 
       var offset = BodySectionLength + 
         ((i * WheelSectionLength) + 32);
-      var str = m_genome.ToString(offset, 8);
+      var str = m_genome.Substring(offset, 8);
       return Convert.ToByte(str, 2) / 255f;
     }
   }

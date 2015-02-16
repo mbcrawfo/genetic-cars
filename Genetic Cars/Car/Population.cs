@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using log4net;
@@ -22,14 +23,17 @@ namespace Genetic_Cars.Car
 
     private bool m_disposed = false;
     private readonly PhysicsManager m_physicsManager;
+    private int m_numClones = 5;
+    private float m_mutationRate;
 
-    private readonly List<Phenotype> m_phenotypes = 
+    private List<Phenotype> m_phenotypes = 
       new List<Phenotype>(PopulationSize);
     private readonly List<Entity> m_entities = new List<Entity>(PopulationSize);
     private readonly float[] m_scores = new float[PopulationSize];
 
     private Phenotype m_championPhenotype;
     private Entity m_championEntity;
+    private float m_championDistance;
     
 
     public Population(PhysicsManager physicsManager)
@@ -55,6 +59,32 @@ namespace Genetic_Cars.Car
     public int Generation { get; private set; }
 
     public int LiveCount { get; private set; }
+
+    public int NumClones
+    {
+      get { return m_numClones; }
+      set
+      {
+        if (value < 0 || value > PopulationSize)
+        {
+          throw new ArgumentOutOfRangeException("value");
+        }
+        m_numClones = value;
+      }
+    }
+
+    public float MutationRate
+    {
+      get { return m_mutationRate; }
+      set
+      {
+        if (value < 0 || value > 1)
+        {
+          throw new ArgumentOutOfRangeException("value");
+        }
+        m_mutationRate = value;
+      }
+    }
 
     public void Draw(RenderTarget target)
     {
@@ -86,8 +116,8 @@ namespace Genetic_Cars.Car
         entity.Dispose();
       }
       m_entities.Clear();
-//       m_championPhenotype = null;
-//       m_championEntity = null;
+      m_championPhenotype = null;
+      m_championEntity = null;
       Array.Clear(m_scores, 0, m_scores.Length);
 
       // build the new
@@ -104,6 +134,93 @@ namespace Genetic_Cars.Car
       Leader = m_entities[0];
       Generation = 1;
       LiveCount = PopulationSize;
+    }
+
+    /// <summary>
+    /// Creates the next generation of cars.
+    /// </summary>
+    public void NextGeneration()
+    {
+      // clean up the old, just in case
+      foreach (var entity in m_entities.Where(e => e != null))
+      {
+        entity.Dispose();
+      }
+      m_entities.Clear();
+      if (m_championEntity != null)
+      {
+        m_championEntity.Dispose();
+        m_championEntity = null;
+      }
+
+      BuildNewPhenotypes();
+      Array.Clear(m_scores, 0, m_scores.Length);
+      Debug.Assert(m_championPhenotype != null);
+
+      m_championEntity = new Entity(-1, m_championPhenotype.ToDefinition(),
+        m_physicsManager);
+      m_championEntity.Type = EntityType.Champion;
+
+      for (var i = 0; i < m_phenotypes.Count; i++)
+      {
+        var phenotype = m_phenotypes[i];
+        var entity = new Entity(i, phenotype.ToDefinition(), m_physicsManager);
+        if (i < NumClones)
+        {
+          entity.Type = EntityType.Clone;
+        }
+
+        entity.Death += EntityDeath;
+        m_entities.Add(entity);
+      }
+
+      Leader = m_entities[0];
+      Generation++;
+      LiveCount = PopulationSize;
+    }
+
+    private void BuildNewPhenotypes()
+    {
+      var result = new List<Phenotype>(PopulationSize);
+
+      var orderedScores = m_scores.OrderByDescending(s => s).ToArray();
+      var midScore = m_scores[m_scores.Length / 2];
+      var bestHalf = m_phenotypes.Where((t, i) => m_scores[i] >= midScore).ToArray();
+
+      if (m_championPhenotype == null || 
+        orderedScores[0] > m_championDistance)
+      {
+        m_championDistance = orderedScores[0];
+        m_championPhenotype = 
+          m_phenotypes[m_scores.ToList().IndexOf(m_championDistance)];
+      }
+
+      if (NumClones > 0)
+      {
+        // phenotypes who had a score >= this will be kept
+        var keepThreshold = orderedScores[NumClones];
+        result.AddRange(
+          m_phenotypes.Where((t, i) => m_scores[i] >= keepThreshold));
+      }
+
+      while (result.Count < PopulationSize)
+      {
+        Phenotype a = bestHalf[Random.Next(bestHalf.Length)];
+        Phenotype b = a;
+        while (a == b)
+        {
+          b = bestHalf[Random.Next(bestHalf.Length)];
+        }
+
+        var c = Phenotype.CrossOver(a, b);
+        if (Random.NextDouble() < MutationRate)
+        {
+          c.Mutate();
+        }
+        result.Add(c);
+      }
+
+      m_phenotypes = result;
     }
 
     private void Dispose(bool disposeManaged)
@@ -138,26 +255,7 @@ namespace Genetic_Cars.Car
     {
       if (LiveCount == 0)
       {
-        var bestIdx = 0;
-        var bestVal = 0f;
-        for (var i = 0; i < m_scores.Length; i++)
-        {
-          if (m_scores[i] > bestVal)
-          {
-            bestIdx = i;
-            bestVal = m_scores[i];
-          }
-        }
-
-        if (m_championEntity == null || 
-          bestVal > m_championEntity.DistanceTraveled)
-        {
-          m_championPhenotype = m_phenotypes[bestIdx];
-        }
-        m_championEntity = new Entity(
-          -1, m_championPhenotype.ToDefinition(), m_physicsManager);
-        m_championEntity.Type = EntityType.Champion;
-        Generate();
+        NextGeneration();
       }
 
       SetLeader();

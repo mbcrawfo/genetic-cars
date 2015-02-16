@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.Diagnostics;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using FarseerPhysics.Dynamics;
 using Genetic_Cars.Car;
@@ -116,6 +117,38 @@ namespace Genetic_Cars
       Log.DebugFormat("Initial seed string: {0}", seed);
       SetSeed(seed.GetHashCode());
       GenerateWorld();
+
+      Phenotype.MutateStrategy = genome =>
+      {
+        StringBuilder sb = new StringBuilder(genome);
+        var idx = Phenotype.Random.Next(sb.Length);
+        if (sb[idx] == '0')
+        {
+          sb[idx] = '1';
+        }
+        else
+        {
+          sb[idx] = '0';
+        }
+        return sb.ToString();
+      };
+
+      Phenotype.CrossoverStrategy = (a, b) =>
+      {
+        StringBuilder sb = new StringBuilder(Phenotype.GenomeLength);
+        var parent = Phenotype.Random.NextDouble() < 0.5 ? a : b;
+
+        for (var i = 0; i < Phenotype.GenomeLength; i++)
+        {
+          sb.Append(parent[i]);
+          if (Phenotype.Random.NextDouble() < 0.4)
+          {
+            parent = parent == a ? b : a;
+          }
+        }
+
+        return sb.ToString();
+      };
       
       m_initialized = true;
     }
