@@ -13,9 +13,11 @@ namespace Genetic_Cars.Car
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
 
-    private static readonly int PopulationSize =
+    private static readonly int Size =
       Properties.Settings.Default.PopulationSize;
 
+    private const int ChampionId = -1;
+    
     /// <summary>
     /// The RNG used for all actions in this class.
     /// </summary>
@@ -26,15 +28,10 @@ namespace Genetic_Cars.Car
     private int m_numClones = 5;
     private float m_mutationRate;
 
-    private List<Phenotype> m_phenotypes = 
-      new List<Phenotype>(PopulationSize);
-    private readonly List<Entity> m_entities = new List<Entity>(PopulationSize);
-    private readonly float[] m_scores = new float[PopulationSize];
+    private readonly List<Car> m_cars = new List<Car>(Size); 
 
-    private Phenotype m_championPhenotype;
-    private Entity m_championEntity;
+    private Car m_championCar;
     private float m_championDistance;
-    
 
     public Population(PhysicsManager physicsManager)
     {
@@ -44,8 +41,6 @@ namespace Genetic_Cars.Car
       }
 
       m_physicsManager = physicsManager;
-      m_physicsManager.PostStep += PhysicsPostStep;
-
       Generate();
     }
 
@@ -54,7 +49,7 @@ namespace Genetic_Cars.Car
       Dispose(false);
     }
 
-    public Entity Leader { get; private set; }
+    public Car Leader { get; private set; }
 
     public int Generation { get; private set; }
 
@@ -65,7 +60,7 @@ namespace Genetic_Cars.Car
       get { return m_numClones; }
       set
       {
-        if (value < 0 || value > PopulationSize)
+        if (value < 0 || value > Size)
         {
           throw new ArgumentOutOfRangeException("value");
         }
@@ -86,15 +81,32 @@ namespace Genetic_Cars.Car
       }
     }
 
+    public void Update(float deltaTime)
+    {
+      foreach (var car in m_cars)
+      {
+        car.Update(deltaTime);
+      }
+
+      if (m_cars.Count(c => c.IsAlive) == 0)
+      {
+        NextGeneration();
+        return;
+      }
+
+      Leader = m_cars.OrderByDescending(c => c.MaxForwardDistance)
+        .First(c => c.IsAlive);
+    }
+
     public void Draw(RenderTarget target)
     {
-      if (m_championEntity != null)
+      if (m_championCar != null)
       {
-        m_championEntity.Draw(target);
+        m_championCar.Draw(target);
       }
-      foreach (var entity in m_entities.Where(e => e != null))
+      foreach (var car in m_cars)
       {
-        entity.Draw(target);
+        car.Draw(target);
       }
     }
 
@@ -109,31 +121,32 @@ namespace Genetic_Cars.Car
     /// </summary>
     public void Generate()
     {
-      // clear the old
-      m_phenotypes.Clear();
-      foreach (var entity in m_entities.Where(e => e != null))
+      if (m_championCar != null)
       {
-        entity.Dispose();
-      }
-      m_entities.Clear();
-      m_championPhenotype = null;
-      m_championEntity = null;
-      Array.Clear(m_scores, 0, m_scores.Length);
-
-      // build the new
-      for (var i = 0; i < PopulationSize; i++)
-      {
-        var phenotype = new Phenotype();
-        m_phenotypes.Add(phenotype);
-
-        var entity = new Entity(i, phenotype.ToDefinition(), m_physicsManager);
-        entity.Death += EntityDeath;
-        m_entities.Add(entity);
+        m_championCar.Dispose();
+        m_championCar = null;
       }
 
-      Leader = m_entities[0];
+      if (m_cars.Count == 0)
+      {
+        for (var i = 0; i < Size; i++)
+        {
+          var car = new Car(m_physicsManager) {Id = i};
+          m_cars.Add(car);
+        }
+      }
+      else
+      {
+        foreach (var car in m_cars)
+        {
+          car.Generate();
+        }
+      }
+      
+      m_championDistance = 0;
+      Leader = m_cars[0];
       Generation = 1;
-      LiveCount = PopulationSize;
+      LiveCount = Size;
     }
 
     /// <summary>
@@ -141,86 +154,59 @@ namespace Genetic_Cars.Car
     /// </summary>
     public void NextGeneration()
     {
-      // clean up the old, just in case
-      foreach (var entity in m_entities.Where(e => e != null))
-      {
-        entity.Dispose();
-      }
-      m_entities.Clear();
-      if (m_championEntity != null)
-      {
-        m_championEntity.Dispose();
-        m_championEntity = null;
-      }
+      m_cars.Sort(CarMaxDistanceComparator);
+      UpdateChamption();
 
-      BuildNewPhenotypes();
-      Array.Clear(m_scores, 0, m_scores.Length);
-      Debug.Assert(m_championPhenotype != null);
+      var phenotypes = m_cars.GetRange(0, Size / 2)
+        .Select(c => c.Phenotype).ToList();
 
-      m_championEntity = new Entity(-1, m_championPhenotype.ToDefinition(),
-        m_physicsManager);
-      m_championEntity.Type = EntityType.Champion;
-
-      for (var i = 0; i < m_phenotypes.Count; i++)
+      for (var i = 0; i < Size; i++)
       {
-        var phenotype = m_phenotypes[i];
-        var entity = new Entity(i, phenotype.ToDefinition(), m_physicsManager);
         if (i < NumClones)
         {
-          entity.Type = EntityType.Clone;
+          m_cars[i].Id = 0;
+          m_cars[i].ResetEntity();
+          m_cars[i].SetType(EntityType.Clone);
         }
+        else
+        {
+          var a = phenotypes[Random.Next(phenotypes.Count())];
+          var b = a;
+          while (b == a)
+          {
+            b = phenotypes[Random.Next(phenotypes.Count())];
+          }
 
-        entity.Death += EntityDeath;
-        m_entities.Add(entity);
+          m_cars[i].Id = i;
+          m_cars[i].ReplaceWithCrossover(a, b, 
+            Random.NextDouble() < MutationRate);
+        }
       }
-
-      Leader = m_entities[0];
-      Generation++;
-      LiveCount = PopulationSize;
     }
 
-    private void BuildNewPhenotypes()
+    private void UpdateChamption()
     {
-      var result = new List<Phenotype>(PopulationSize);
-
-      var orderedScores = m_scores.OrderByDescending(s => s).ToArray();
-      var midScore = m_scores[m_scores.Length / 2];
-      var bestHalf = m_phenotypes.Where((t, i) => m_scores[i] >= midScore).ToArray();
-
-      if (m_championPhenotype == null || 
-        orderedScores[0] > m_championDistance)
+      if (m_cars[0].MaxForwardDistance > m_championDistance)
       {
-        m_championDistance = orderedScores[0];
-        m_championPhenotype = 
-          m_phenotypes[m_scores.ToList().IndexOf(m_championDistance)];
-      }
-
-      if (NumClones > 0)
-      {
-        // phenotypes who had a score >= this will be kept
-        var keepThreshold = orderedScores[NumClones];
-        result.AddRange(
-          m_phenotypes.Where((t, i) => m_scores[i] >= keepThreshold));
-      }
-
-      while (result.Count < PopulationSize)
-      {
-        Phenotype a = bestHalf[Random.Next(bestHalf.Length)];
-        Phenotype b = a;
-        while (a == b)
+        m_championDistance = m_cars[0].MaxForwardDistance;
+        if (m_championCar == null)
         {
-          b = bestHalf[Random.Next(bestHalf.Length)];
+          m_championCar = new Car(m_physicsManager, m_cars[0].Phenotype)
+          {
+            Id = ChampionId
+          };
         }
-
-        var c = Phenotype.CrossOver(a, b);
-        if (Random.NextDouble() < MutationRate)
+        else
         {
-          c.Mutate();
+          m_championCar.Phenotype = m_cars[0].Phenotype;
+          m_championCar.ResetEntity();
         }
-        result.Add(c);
       }
-
-      m_phenotypes = result;
+      else
+      {
+        m_championCar.ResetEntity();
+      }
+      m_championCar.SetType(EntityType.Champion);
     }
 
     private void Dispose(bool disposeManaged)
@@ -232,47 +218,38 @@ namespace Genetic_Cars.Car
 
       if (disposeManaged)
       {
-        foreach (var entity in m_entities.Where(e => e != null))
+        if (m_championCar != null)
         {
-          entity.Dispose();
+          m_championCar.Dispose();
         }
-        if (m_championEntity != null)
+        foreach (var car in m_cars)
         {
-          m_championEntity.Dispose();
+          car.Dispose();
         }
       }
 
       m_disposed = true;
     }
-
-    private void SetLeader()
+    
+    /// <summary>
+    /// Sorts two cars with the greater distance first.
+    /// </summary>
+    /// <param name="c1"></param>
+    /// <param name="c2"></param>
+    /// <returns></returns>
+    private static int CarMaxDistanceComparator(Car c1, Car c2)
     {
-      Leader = m_entities.Where(e => e != null)
-        .OrderByDescending(e => e.DistanceTraveled).First();
-    }
-
-    private void PhysicsPostStep(float deltaTime)
-    {
-      if (LiveCount == 0)
+      if (c1.MaxForwardDistance > c2.MaxForwardDistance)
       {
-        NextGeneration();
+        return -1;
       }
-
-      SetLeader();
-    }
-
-    private void EntityDeath(int id)
-    {
-      Log.DebugFormat("Handling death of car {0}", id);
-      
-      var entity = m_entities[id];
-      m_scores[id] = entity.DistanceTraveled;
-      entity.Dispose();
-      m_entities[id] = null;
-
-      if (--LiveCount > 0)
+      else if (c1.MaxForwardDistance == c2.MaxForwardDistance)
       {
-        SetLeader();
+        return 0;
+      }
+      else
+      {
+        return 1;
       }
     }
   }

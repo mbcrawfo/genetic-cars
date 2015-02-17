@@ -33,9 +33,7 @@ namespace Genetic_Cars.Car
 
     // collision category for all car components
     public static readonly Category CollisionCategory = Category.Cat2;
-
-    public delegate void DeathHandler(int id);
-
+    
     // graphical properties for the car
     private static readonly Color OutlineColor = Color.Black;
     private const float OutlineThickness = -.05f;
@@ -49,33 +47,12 @@ namespace Genetic_Cars.Car
     // total number of acceleration steps
     private static readonly int AccelerationSteps =
       (int)Math.Round(AccelerationTime / AccelerationInterval);
-
-    private const int SpeedHistorySecs = 5;
-    private const int SpeedHistorySamplesPerSec = 4;
-    private const float SpeedHistorySampleInterval = 
-      1f / SpeedHistorySamplesPerSec;
-
-    // roughly the number of seconds the car's speed must be below the 
-    // threshold before it will die
-    private const int SecondsTilDeath = 5;
-    private const int MaxHealth = SecondsTilDeath * SpeedHistorySamplesPerSec;
-    private const float LowSpeedThreshold = 0.5f;
     
-    /// <summary>
-    /// The position where all cars are generated.
-    /// </summary>
-    public static Vector2 StartPosition { get; set; }
-
     private bool m_disposed = false;
+    
     private readonly PhysicsManager m_physicsManager;
+    private readonly Definition m_definition;
     private EntityType m_type;
-    private Vector2 m_lastPosition;
-    private int m_health = MaxHealth;
-
-    private readonly float[] m_speedHistory = 
-      new float[SpeedHistorySecs * SpeedHistorySamplesPerSec];
-    private int m_speedHistoryIndex = 0;
-    private float m_speedSampleTime = 0;
 
     // graphics fields
     private ConvexShape m_bodyShape;
@@ -106,10 +83,9 @@ namespace Genetic_Cars.Car
       }
       // will throw on failure
       def.Validate();
-      Definition = def;
+      m_definition = def;
       m_physicsManager = physics;
       m_physicsManager.PostStep += PhysicsPostStep;
-      m_lastPosition = StartPosition;
       
       CreateBody();
       CreateWheels();
@@ -122,26 +98,11 @@ namespace Genetic_Cars.Car
       Dispose(false);
     }
 
-    public event DeathHandler Death;
-
     /// <summary>
     /// Just an identifier for this car.
     /// </summary>
     public int Id { get; set; }
-
-    /// <summary>
-    /// The car definition used to build this car.
-    /// </summary>
-    public Definition Definition { get; private set; }
-
-    /// <summary>
-    /// The car's health as a percentage.
-    /// </summary>
-    public float Health
-    {
-      get { return m_health / (float) MaxHealth; }
-    }
-
+    
     /// <summary>
     /// The geometric center of the car's body.
     /// </summary>
@@ -150,25 +111,6 @@ namespace Genetic_Cars.Car
       get { return m_bodyBody.Position; }
     }
     
-    /// <summary>
-    /// The total distance traveled by the car.
-    /// </summary>
-    public float DistanceTraveled
-    {
-      get { return (Position - StartPosition).X; }
-    }
-
-    /// <summary>
-    /// The current speed of the car in m/s.
-    /// </summary>
-    public float Speed { get; private set; }
-
-    /// <summary>
-    /// Returns the speed of the car, averaged over the interval defined by 
-    /// SpeedHistorySecs.
-    /// </summary>
-    public float AverageSpeed { get; private set; }
-
     /// <summary>
     /// Sets the type of the car entity, affecting how cars are displayed.  
     /// Defaults to normal.
@@ -187,7 +129,8 @@ namespace Genetic_Cars.Car
         m_type = value;
         Log.DebugFormat("Car {0} type set to {1}", Id, m_type);
 
-        var density = Definition.CalcBodyDensity() / Definition.MaxBodyDensity;
+        var density = 
+          m_definition.CalcBodyDensity() / Definition.MaxBodyDensity;
         // greater density = darker color
         byte color = (byte)(255 - (125 * density));
         byte alpha = 255;
@@ -248,7 +191,7 @@ namespace Genetic_Cars.Car
       {
         m_bodyShape.Dispose();
 
-        for (int i = 0; i < m_wheelShapes.Length; i++)
+        for (var i = 0; i < m_wheelShapes.Length; i++)
         {
           m_wheelShapes[i].Dispose();
           m_wheelLines[i].Dispose();
@@ -269,14 +212,6 @@ namespace Genetic_Cars.Car
       m_disposed = true;
     }
 
-    private void OnDeath()
-    {
-      if (Death != null)
-      {
-        Death(Id);
-      }
-    }
-
     /// <summary>
     /// Creates the graphics and physics objects for the body of the car.
     /// </summary>
@@ -286,7 +221,7 @@ namespace Genetic_Cars.Car
       {
         OutlineColor = OutlineColor,
         OutlineThickness = OutlineThickness,
-        Position = StartPosition.ToVector2f().InvertY()
+        Position = Car.StartPosition.ToVector2f().InvertY()
       };
 
       // build the vertex list for the polygon
@@ -296,7 +231,7 @@ namespace Genetic_Cars.Car
       for (int i = 0; i < Definition.NumBodyPoints; i++)
       {
         // the distance this point is from the center
-        var distance = Definition.CalcBodyPoint(i);
+        var distance = m_definition.CalcBodyPoint(i);
         // turn the distance into a point centered around (0,0)
         var point = new Vector2f
         {
@@ -311,8 +246,8 @@ namespace Genetic_Cars.Car
 
       // build the physics shape
       m_bodyBody = BodyFactory.CreatePolygon(
-        m_physicsManager.World, vertices, Definition.CalcBodyDensity(),
-        StartPosition
+        m_physicsManager.World, vertices, m_definition.CalcBodyDensity(),
+        Car.StartPosition
         );
       m_bodyBody.BodyType = BodyType.Dynamic;
       m_bodyBody.Friction = 1;
@@ -338,11 +273,11 @@ namespace Genetic_Cars.Car
       {
         // the offset of the attachment point from the center of the main body
         var attachOffset =
-          m_bodyShape.GetPoint((uint) Definition.WheelAttachment[i]);
+          m_bodyShape.GetPoint((uint) m_definition.WheelAttachment[i]);
         // the world position of the attachment point
         var attachPos = attachOffset + m_bodyShape.Position;
-        var radius = Definition.CalcWheelRadius(i);
-        var density = Definition.CalcWheelDensity(i);
+        var radius = m_definition.CalcWheelRadius(i);
+        var density = m_definition.CalcWheelDensity(i);
         var densityFraction = density / Definition.MaxWheelDensity;
         // greater density = darker color
         byte color = (byte)(255 - (210 * densityFraction));
@@ -383,8 +318,8 @@ namespace Genetic_Cars.Car
           MotorEnabled = false, 
           MaxMotorTorque = 0, 
           // speed must be negative for clockwise rotation
-          MotorSpeed = 
-            -(float)MathExtensions.DegToRad(Definition.CalcWheelSpeed(i))
+          MotorSpeed =
+            -(float)MathExtensions.DegToRad(m_definition.CalcWheelSpeed(i))
         };
         m_physicsManager.World.AddJoint(joint);
 
@@ -408,10 +343,10 @@ namespace Genetic_Cars.Car
     {
       Log.DebugFormat("Starting the motors of car {0}", Id);
 
-      for (int i = 0; i < m_wheelBodies.Length; i++)
+      for (var i = 0; i < m_wheelBodies.Length; i++)
       {
         m_wheelJoints[i].MotorEnabled = true;
-        m_torqueStep[i] = Definition.CalcWheelTorque(i) / AccelerationSteps;
+        m_torqueStep[i] = m_definition.CalcWheelTorque(i) / AccelerationSteps;
         m_wheelBodies[i].OnCollision -= WheelInitialCollision;
       }
       
@@ -427,41 +362,6 @@ namespace Genetic_Cars.Car
     /// <param name="deltaTime"></param>
     private void PhysicsPostStep(float deltaTime)
     {
-      // update the car's speed
-      var moved = Position - m_lastPosition;
-      Speed = moved.Length() / deltaTime;
-      if (moved.X < 0)
-      {
-        Speed = -Speed;
-      }
-      m_lastPosition = Position;
-
-      // update the speed average
-      m_speedSampleTime += deltaTime;
-      while (m_speedSampleTime >= SpeedHistorySampleInterval)
-      {
-        m_speedSampleTime -= SpeedHistorySampleInterval;
-        if (++m_speedHistoryIndex >= m_speedHistory.Length)
-        {
-          m_speedHistoryIndex = 0;
-        }
-        m_speedHistory[m_speedHistoryIndex] = Speed;
-        AverageSpeed = m_speedHistory.Average();
-
-        if (AverageSpeed < LowSpeedThreshold)
-        {
-          if (--m_health == 0)
-          {
-            OnDeath();
-            return;
-          }
-        }
-        else
-        {
-          m_health = MaxHealth;
-        }
-      }
-
       // sync the positions of the graphical shapes to the physics bodies
       var pos = m_bodyBody.Position.ToVector2f().InvertY();
       m_bodyShape.Position = pos;
@@ -490,10 +390,11 @@ namespace Genetic_Cars.Car
       while (m_accelerationTime >= AccelerationInterval)
       {
         m_accelerationTime -= AccelerationInterval;
-        for (int i = 0; i < m_wheelJoints.Length; i++)
+        for (var i = 0; i < m_wheelJoints.Length; i++)
         {
           m_wheelJoints[i].MaxMotorTorque += m_torqueStep[i];
-          if (m_wheelJoints[i].MaxMotorTorque >= Definition.CalcWheelTorque(i))
+          if (m_wheelJoints[i].MaxMotorTorque >= 
+            m_definition.CalcWheelTorque(i))
           {
             done = true;
           }

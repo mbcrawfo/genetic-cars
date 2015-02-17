@@ -21,8 +21,8 @@ namespace Genetic_Cars
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
 
-    // logic updates at 30 fps, time in ms
-    //private const long LogicTickInterval = (long)(1000f / 30f);
+    // logic updates at 30 fps, time in s
+    private const float LogicTickInterval = 1f / 30f;
     // physics updates at 60 fps, Farseer uses time in seconds
     private const float PhysicsTickInterval = 1f / 60f;
     // attempt to maintain 30 fps in ms
@@ -36,7 +36,9 @@ namespace Genetic_Cars
     // frame state variables
     private readonly Stopwatch m_frameTime = new Stopwatch();
     private readonly Stopwatch m_physicsTime = new Stopwatch();
+    private readonly Stopwatch m_logicTime = new Stopwatch();
     private float m_lastPhysicsStepDelta;
+    private float m_lastLogicStepDelta;
     private bool m_paused = false;
 
     // rendering state variables
@@ -118,37 +120,8 @@ namespace Genetic_Cars
       SetSeed(seed.GetHashCode());
       GenerateWorld();
 
-      Phenotype.MutateStrategy = genome =>
-      {
-        StringBuilder sb = new StringBuilder(genome);
-        var idx = Phenotype.Random.Next(sb.Length);
-        if (sb[idx] == '0')
-        {
-          sb[idx] = '1';
-        }
-        else
-        {
-          sb[idx] = '0';
-        }
-        return sb.ToString();
-      };
-
-      Phenotype.CrossoverStrategy = (a, b) =>
-      {
-        StringBuilder sb = new StringBuilder(Phenotype.GenomeLength);
-        var parent = Phenotype.Random.NextDouble() < 0.5 ? a : b;
-
-        for (var i = 0; i < Phenotype.GenomeLength; i++)
-        {
-          sb.Append(parent[i]);
-          if (Phenotype.Random.NextDouble() < 0.4)
-          {
-            parent = parent == a ? b : a;
-          }
-        }
-
-        return sb.ToString();
-      };
+      Phenotype.MutateStrategy = Mutate;
+      Phenotype.CrossoverStrategy = CrossOver;
       
       m_initialized = true;
     }
@@ -166,6 +139,7 @@ namespace Genetic_Cars
         {
           DoDrawing();
           DoPhysics();
+          DoLogic();
         }
         System.Windows.Forms.Application.DoEvents();
         m_renderWindow.DispatchEvents();
@@ -225,6 +199,17 @@ namespace Genetic_Cars
       m_physicsTime.Restart();
     }
 
+    private void DoLogic()
+    {
+      m_lastLogicStepDelta += (float)m_logicTime.Elapsed.TotalSeconds;
+      while (m_lastLogicStepDelta >= LogicTickInterval)
+      {
+        m_lastLogicStepDelta -= LogicTickInterval;
+        m_population.Update(LogicTickInterval);
+      }
+      m_logicTime.Restart();
+    }
+
     private void SetSeed(int seed)
     {
       Log.InfoFormat("RNG seed set to 0x{0:X}", seed);
@@ -246,7 +231,7 @@ namespace Genetic_Cars
       World = new World(Gravity);
       m_track = new Track(this);
       m_track.Generate();
-      Entity.StartPosition = new Vector2(m_track.StartingLine,
+      Car.Car.StartPosition = new Vector2(m_track.StartingLine,
         (2 * Definition.MaxBodyPointDistance) + Definition.MaxWheelRadius);
       m_population = new Population(this);
     }
@@ -256,6 +241,7 @@ namespace Genetic_Cars
       m_paused = true;
       m_frameTime.Stop();
       m_physicsTime.Stop();
+      m_logicTime.Stop();
     }
 
     private void ResumeSimulation()
@@ -263,6 +249,39 @@ namespace Genetic_Cars
       m_paused = false;
       m_frameTime.Start();
       m_frameTime.Start();
+      m_logicTime.Start();
+    }
+
+    private static string Mutate(string genome)
+    {
+      StringBuilder sb = new StringBuilder(genome);
+      var idx = Phenotype.Random.Next(sb.Length);
+      if (sb[idx] == '0')
+      {
+        sb[idx] = '1';
+      }
+      else
+      {
+        sb[idx] = '0';
+      }
+      return sb.ToString();
+    }
+
+    private static string CrossOver(string a, string b)
+    {
+      StringBuilder sb = new StringBuilder(Phenotype.GenomeLength);
+      var parent = Phenotype.Random.NextDouble() < 0.5 ? a : b;
+
+      for (var i = 0; i < Phenotype.GenomeLength; i++)
+      {
+        sb.Append(parent[i]);
+        if (Phenotype.Random.NextDouble() < 0.4)
+        {
+          parent = parent == a ? b : a;
+        }
+      }
+
+      return sb.ToString();
     }
 
     #region Event Handlers
