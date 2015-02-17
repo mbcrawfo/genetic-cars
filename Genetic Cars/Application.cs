@@ -100,7 +100,7 @@ namespace Genetic_Cars
       m_window.NewPopulation += WindowOnNewPopulation;
       
       m_renderWindow = new RenderWindow(
-        m_window.DrawingSurfaceHandle,
+        m_window.DrawingPanelHandle,
         new ContextSettings { AntialiasingLevel = 8 }
         );
       Log.DebugFormat("RenderWindow created size {0}", m_renderWindow.Size);
@@ -119,6 +119,20 @@ namespace Genetic_Cars
       Log.DebugFormat("Initial seed string: {0}", seed);
       SetSeed(seed.GetHashCode());
       GenerateWorld();
+
+      //m_population.NewGeneration += num => m_window.SetGeneration(num);
+      m_window.MutationRateChanged += rate =>
+      {
+        Debug.Assert(m_population != null);
+        Log.InfoFormat("Setting mutation rate to {0}", rate);
+        m_population.MutationRate = rate;
+      };
+      m_window.NumClonesChanged += num =>
+      {
+        Debug.Assert(m_population != null);
+        Log.InfoFormat("Setting number of clones to {0}", num);
+        m_population.NumClones = num;
+      };
 
       Phenotype.MutateStrategy = Mutate;
       Phenotype.CrossoverStrategy = CrossOver;
@@ -206,6 +220,11 @@ namespace Genetic_Cars
       {
         m_lastLogicStepDelta -= LogicTickInterval;
         m_population.Update(LogicTickInterval);
+
+        // sync the gui text
+        m_window.SetDistance(m_population.Leader.MaxForwardDistance);
+        m_window.SetGeneration(m_population.Generation);
+        m_window.SetLiveCount(m_population.LiveCount);
       }
       m_logicTime.Restart();
     }
@@ -295,9 +314,9 @@ namespace Genetic_Cars
       var newWidth = (ViewBaseWidth / m_renderWindowBaseWidth) * e.Width;
       var ratio = (float)e.Height / e.Width;
       m_view.Size = new Vector2f(newWidth, newWidth * ratio);
-      Log.DebugFormat("Window resized to {0} new view size {1}",
-        e, m_view.Size
-        );
+//       Log.DebugFormat("Window resized to {0} new view size {1}",
+//         e, m_view.Size
+//         );
     }
 
     private void WindowOnSeedChanged(int seed)

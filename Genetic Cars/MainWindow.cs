@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Globalization;
 using System.Reflection;
 using System.Windows.Forms;
@@ -19,9 +20,20 @@ namespace Genetic_Cars
     public MainWindow()
     {
       InitializeComponent();
+
+      // initialize default values
       mutationRateTextBox.Text = 
         Settings.Default.DefaultMutationRate.ToString(
         CultureInfo.CurrentCulture);
+
+      
+      clonesComboBox.Items.Clear();
+      var maxClones = Settings.Default.PopulationSize / 2;
+      for (var i = 0; i <= maxClones; i++)
+      {
+        clonesComboBox.Items.Add(i);
+      }
+      clonesComboBox.SelectedIndex = 2;
     }
 
     /// <summary>
@@ -51,18 +63,62 @@ namespace Genetic_Cars
     /// </summary>
     public delegate void NewPopulationHandler();
 
+    /// <summary>
+    /// Handles a request to changed the number of clones in each generation.
+    /// </summary>
+    /// <param name="num"></param>
+    public delegate void NumClonesChangedHandler(int num);
+
     public event SeedChangedHandler SeedChanged;
     public event PauseSimulationHandler PauseSimulation;
     public event ResumeSimulationHandler ResumeSimulation;
     public event MutationRateChangedHandler MutationRateChanged;
     public event NewPopulationHandler NewPopulation;
+    public event NumClonesChangedHandler NumClonesChanged;
 
     /// <summary>
-    /// The handle for the SFML drawing surface.
+    /// The handle for the main SFML drawing surface.
     /// </summary>
-    public IntPtr DrawingSurfaceHandle
+    public IntPtr DrawingPanelHandle
     {
-      get { return drawingSurface.Handle; }
+      get { return drawingPanel.Handle; }
+    }
+
+    /// <summary>
+    /// The handle for the overview SFML drawing surface.
+    /// </summary>
+    public IntPtr OverviewPanelHandle
+    {
+      get { return overviewPanel.Handle; }
+    }
+
+    /// <summary>
+    /// Set the text indicating the current generation.
+    /// </summary>
+    /// <param name="generation"></param>
+    public void SetGeneration(int generation)
+    {
+      generationLabel.Text = string.Format("Generation: {0}",
+        generation);
+    }
+
+    /// <summary>
+    /// Set the text indicating the number of live cars.
+    /// </summary>
+    /// <param name="count"></param>
+    public void SetLiveCount(int count)
+    {
+      liveCountLabel.Text = string.Format("Live Cars: {0}", count);
+    }
+
+    /// <summary>
+    /// Set the text indicating the distance traveled for the currently 
+    /// watched car.
+    /// </summary>
+    /// <param name="distance"></param>
+    public void SetDistance(float distance)
+    {
+      distanceLabel.Text = string.Format("Distance: {0:F2} m", distance);
     }
 
     private void OnSeedChanged(int seed)
@@ -102,6 +158,14 @@ namespace Genetic_Cars
       if (NewPopulation != null)
       {
         NewPopulation();
+      }
+    }
+
+    private void OnNumClonesChanged(int num)
+    {
+      if (NumClonesChanged != null)
+      {
+        NumClonesChanged(num);
       }
     }
 
@@ -186,7 +250,7 @@ namespace Genetic_Cars
       OnResumeSimulation();
     }
 
-    private void rapidSimButton_Click(object sender, EventArgs e)
+    private void graphicsButton_Click(object sender, EventArgs e)
     {
       OnPauseSimulation();
       MessageBox.Show("I'm not implemented yet :(", "Oops", MessageBoxButtons.OK);
@@ -223,6 +287,50 @@ namespace Genetic_Cars
         MessageBox.Show("Invalid mutation rate value.", "Error",
           MessageBoxButtons.OK, MessageBoxIcon.Error);
         OnResumeSimulation();
+      }
+    }
+
+    private void clonesComboBox_SelectedIndexChanged(object sender, EventArgs e)
+    {
+      var num = clonesComboBox.SelectedItem as int?;
+      if (num == null)
+      {
+        Log.Error("Selected num clones was null");
+      }
+      OnNumClonesChanged(num.GetValueOrDefault());
+    }
+    
+    private void clonesComboBox_DrawItem(object sender, DrawItemEventArgs e)
+    {
+      // see: http://stackoverflow.com/questions/11817062/align-text-in-combobox
+
+      ComboBox cbx = sender as ComboBox;
+      if (cbx != null)
+      {
+        // Always draw the background
+        e.DrawBackground();
+
+        // Drawing one of the items?
+        if (e.Index >= 0)
+        {
+          // Set the string alignment.  Choices are Center, Near and Far
+          StringFormat sf = new StringFormat();
+          sf.LineAlignment = StringAlignment.Center;
+          sf.Alignment = StringAlignment.Center;
+
+          // Set the Brush to ComboBox ForeColor to maintain any ComboBox color 
+          // settings
+          // Assumes Brush is solid
+          Brush brush = new SolidBrush(cbx.ForeColor);
+
+          // If drawing highlighted selection, change brush
+          if ((e.State & DrawItemState.Selected) == DrawItemState.Selected)
+            brush = SystemBrushes.HighlightText;
+
+          // Draw the string
+          e.Graphics.DrawString(
+            cbx.Items[e.Index].ToString(), cbx.Font, brush, e.Bounds, sf);
+        }
       }
     }
     #endregion

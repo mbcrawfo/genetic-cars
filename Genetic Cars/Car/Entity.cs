@@ -127,7 +127,7 @@ namespace Genetic_Cars.Car
         Debug.Assert(m_wheelShapes.All(s => s != null));
 
         m_type = value;
-        Log.DebugFormat("Car {0} type set to {1}", Id, m_type);
+        //Log.DebugFormat("Car {0} type set to {1}", Id, m_type);
 
         var density = 
           m_definition.CalcBodyDensity() / Definition.MaxBodyDensity;
@@ -341,7 +341,7 @@ namespace Genetic_Cars.Car
     private bool WheelInitialCollision(
       Fixture fixtureA, Fixture fixtureB, Contact contact)
     {
-      Log.DebugFormat("Starting the motors of car {0}", Id);
+      //Log.DebugFormat("Starting the motors of car {0}", Id);
 
       for (var i = 0; i < m_wheelBodies.Length; i++)
       {
@@ -402,7 +402,7 @@ namespace Genetic_Cars.Car
 
         if (done)
         {
-          Log.DebugFormat("Car {0} completed acceleration", Id);
+          //Log.DebugFormat("Car {0} completed acceleration", Id);
           m_physicsManager.PreStep -= ApplyAcceleration;
           break;
         }

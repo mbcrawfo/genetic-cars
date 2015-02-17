@@ -178,8 +178,8 @@ namespace Genetic_Cars
       }
 
       m_generated = true;
-      Log.DebugFormat("Generated {0} track pieces in {1} ms", 
-        m_trackShapes.Count, stopwatch.ElapsedMilliseconds);
+//       Log.DebugFormat("Generated {0} track pieces in {1} ms", 
+//         m_trackShapes.Count, stopwatch.ElapsedMilliseconds);
     }
 
     /// <summary>

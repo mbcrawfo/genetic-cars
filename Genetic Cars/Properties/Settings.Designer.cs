@@ -226,5 +226,17 @@ namespace Genetic_Cars.Properties {
                 this["DefaultMutationRate"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public int DefaultNumClones {
+            get {
+                return ((int)(this["DefaultNumClones"]));
+            }
+            set {
+                this["DefaultNumClones"] = value;
+            }
+        }
     }
 }

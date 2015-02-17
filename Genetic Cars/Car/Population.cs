@@ -23,9 +23,11 @@ namespace Genetic_Cars.Car
     /// </summary>
     public static Random Random { get; set; }
 
+    public delegate void NewGenerationHandler(int num);
+
     private bool m_disposed = false;
     private readonly PhysicsManager m_physicsManager;
-    private int m_numClones = 5;
+    private int m_numClones = Properties.Settings.Default.DefaultNumClones;
     private float m_mutationRate;
 
     private readonly List<Car> m_cars = new List<Car>(Size); 
@@ -49,11 +51,13 @@ namespace Genetic_Cars.Car
       Dispose(false);
     }
 
+    public event NewGenerationHandler NewGeneration;
+
     public Car Leader { get; private set; }
 
     public int Generation { get; private set; }
 
-    public int LiveCount { get; private set; }
+    public int LiveCount { get { return m_cars.Count(c => c.IsAlive); } }
 
     public int NumClones
     {
@@ -81,6 +85,10 @@ namespace Genetic_Cars.Car
       }
     }
 
+    /// <summary>
+    /// Does a logic update for the population.
+    /// </summary>
+    /// <param name="deltaTime"></param>
     public void Update(float deltaTime)
     {
       foreach (var car in m_cars)
@@ -88,7 +96,7 @@ namespace Genetic_Cars.Car
         car.Update(deltaTime);
       }
 
-      if (m_cars.Count(c => c.IsAlive) == 0)
+      if (LiveCount == 0)
       {
         NextGeneration();
         return;
@@ -146,13 +154,13 @@ namespace Genetic_Cars.Car
       m_championDistance = 0;
       Leader = m_cars[0];
       Generation = 1;
-      LiveCount = Size;
+      OnNewGeneration(Generation);
     }
 
     /// <summary>
     /// Creates the next generation of cars.
     /// </summary>
-    public void NextGeneration()
+    private void NextGeneration()
     {
       m_cars.Sort(CarMaxDistanceComparator);
       UpdateChamption();
@@ -181,6 +189,17 @@ namespace Genetic_Cars.Car
           m_cars[i].ReplaceWithCrossover(a, b, 
             Random.NextDouble() < MutationRate);
         }
+      }
+
+      Generation++;
+      OnNewGeneration(Generation);
+    }
+
+    private void OnNewGeneration(int num)
+    {
+      if (NewGeneration != null)
+      {
+        NewGeneration(num);
       }
     }
 

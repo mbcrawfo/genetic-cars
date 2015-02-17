@@ -152,6 +152,10 @@ namespace Genetic_Cars.Car
       }
     }
 
+    /// <summary>
+    /// Does a logic update for the car.
+    /// </summary>
+    /// <param name="deltaTime"></param>
     public void Update(float deltaTime)
     {
       if (m_entity == null)
