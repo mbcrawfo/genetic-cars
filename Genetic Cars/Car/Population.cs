@@ -106,8 +106,17 @@ namespace Genetic_Cars.Car
         .First(c => c.IsAlive);
     }
 
+    /// <summary>
+    /// Draws the cars onto the target.
+    /// </summary>
+    /// <param name="target"></param>
     public void Draw(RenderTarget target)
     {
+      if (target == null)
+      {
+        return;
+      }
+
       if (m_championCar != null)
       {
         m_championCar.Draw(target);
@@ -115,6 +124,23 @@ namespace Genetic_Cars.Car
       foreach (var car in m_cars)
       {
         car.Draw(target);
+      }
+    }
+
+    /// <summary>
+    /// Draws a vertical line representing each car onto the overview.
+    /// </summary>
+    /// <param name="target"></param>
+    public void DrawOverview(RenderTarget target)
+    {
+      if (target == null)
+      {
+        return;
+      }
+
+      foreach (var car in m_cars)
+      {
+        car.DrawOverview(target);
       }
     }
 
@@ -139,7 +165,11 @@ namespace Genetic_Cars.Car
       {
         for (var i = 0; i < Size; i++)
         {
-          var car = new Car(m_physicsManager) {Id = i};
+          var car = new Car(m_physicsManager)
+          {
+            Id = i, 
+            Type = EntityType.Normal
+          };
           m_cars.Add(car);
         }
       }
@@ -148,6 +178,7 @@ namespace Genetic_Cars.Car
         foreach (var car in m_cars)
         {
           car.Generate();
+          car.Type = EntityType.Normal;
         }
       }
       
@@ -174,7 +205,7 @@ namespace Genetic_Cars.Car
         {
           m_cars[i].Id = 0;
           m_cars[i].ResetEntity();
-          m_cars[i].SetType(EntityType.Clone);
+          m_cars[i].Type = EntityType.Clone;
         }
         else
         {
@@ -188,6 +219,7 @@ namespace Genetic_Cars.Car
           m_cars[i].Id = i;
           m_cars[i].ReplaceWithCrossover(a, b, 
             Random.NextDouble() < MutationRate);
+          m_cars[i].Type = EntityType.Normal;
         }
       }
 
@@ -225,7 +257,7 @@ namespace Genetic_Cars.Car
       {
         m_championCar.ResetEntity();
       }
-      m_championCar.SetType(EntityType.Champion);
+      m_championCar.Type = EntityType.Champion;
     }
 
     private void Dispose(bool disposeManaged)

@@ -2,9 +2,11 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using FarseerPhysics.Dynamics;
 using log4net;
 using Microsoft.Xna.Framework;
 using SFML.Graphics;
+using SFML.Window;
 
 namespace Genetic_Cars.Car
 {
@@ -40,6 +42,17 @@ namespace Genetic_Cars.Car
       new float[SpeedHistorySecs * SpeedHistorySamplesPerSec];
     private int m_speedHistoryIndex = 0;
     private float m_speedSampleTime = 0;
+
+    private RenderStates m_overviewRenderStates = new RenderStates
+    {
+      BlendMode = BlendMode.Alpha,
+      Transform = Transform.Identity
+    };
+    private Vertex[] m_overviewLine =
+    {
+      new Vertex(new Vector2f(0, -1000)), 
+      new Vertex(new Vector2f(0, 1000))
+    };
 
     /// <summary>
     /// Creates a new car.
@@ -136,19 +149,38 @@ namespace Genetic_Cars.Car
     public float AverageSpeed { get; private set; }
 
     /// <summary>
-    /// Returns
+    /// Returns true if the car is alive.
     /// </summary>
     public bool IsAlive { get { return m_health > 0; } }
 
-    /// <summary>
-    /// Sets the entity type and visual style of the car.
-    /// </summary>
-    /// <param name="type"></param>
-    public void SetType(EntityType type)
+    public EntityType Type
     {
-      if (m_entity != null)
+      get
       {
-        m_entity.Type = type;
+        return m_entity == null ? EntityType.Normal : m_entity.Type;
+      }
+      set
+      {
+        if (m_entity != null)
+        {
+          m_entity.Type = value;
+        }
+        
+        for (var i = 0; i < m_overviewLine.Length; i++)
+        {
+          switch (value)
+          {
+            case EntityType.Normal:
+              m_overviewLine[i].Color = Color.Red;
+              break;
+            case EntityType.Clone:
+              m_overviewLine[i].Color = Color.Blue;
+              break;
+            case EntityType.Champion:
+              m_overviewLine[i].Color = Color.Green;
+              break;
+          }
+        }
       }
     }
 
@@ -190,12 +222,35 @@ namespace Genetic_Cars.Car
       }
     }
 
+    /// <summary>
+    /// Draws the car onto the target.
+    /// </summary>
+    /// <param name="target"></param>
     public void Draw(RenderTarget target)
     {
+      if (target == null)
+      {
+        return;
+      }
+
       if (m_entity != null)
       {
         m_entity.Draw(target);
       }
+    }
+
+    /// <summary>
+    /// Draw a line representing the car onto the overview.
+    /// </summary>
+    /// <param name="target"></param>
+    public void DrawOverview(RenderTarget target)
+    {
+      if (target == null)
+      {
+        return;
+      }
+
+      target.Draw(m_overviewLine, PrimitiveType.Lines, m_overviewRenderStates);
     }
 
     public void Dispose()
@@ -258,6 +313,12 @@ namespace Genetic_Cars.Car
       m_entity = new Entity(definition, m_physicsManager) { Id = Id };
       m_physicsManager.PostStep += PhysicsPostStep;
 
+      // reset the overview line alpha
+      for (var i = 0; i < m_overviewLine.Length; i++)
+      {
+        m_overviewLine[i].Color.A = 255;
+      }
+
       m_lastPosition = StartPosition;
       MaxForwardDistance = 0;
       DistanceTraveled = 0;
@@ -271,6 +332,12 @@ namespace Genetic_Cars.Car
       if (m_entity == null)
       {
         return;
+      }
+
+      // change the alpha of the overview line to 25%
+      for (var i = 0; i < m_overviewLine.Length; i++)
+      {
+        m_overviewLine[i].Color.A = 64;
       }
 
       m_physicsManager.PostStep -= PhysicsPostStep;
@@ -301,6 +368,11 @@ namespace Genetic_Cars.Car
     private void PhysicsPostStep(float deltaTime)
     {
       Debug.Assert(m_entity != null);
+
+      // position the overview line
+      var transform = Transform.Identity;
+      transform.Translate(m_entity.Position.X, 0);
+      m_overviewRenderStates.Transform = transform;
 
       // update the car's speed
       var moved = m_entity.Position - m_lastPosition;

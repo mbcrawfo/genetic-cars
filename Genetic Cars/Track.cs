@@ -262,7 +262,7 @@ namespace Genetic_Cars
     /// <param name="target"></param>
     public void Draw(RenderTarget target)
     {
-      if (!m_generated)
+      if (target == null || !m_generated)
       {
         return;
       }
@@ -273,9 +273,13 @@ namespace Genetic_Cars
       }
     }
 
+    /// <summary>
+    /// Draws an outline of the track onto the overview.
+    /// </summary>
+    /// <param name="target"></param>
     public void DrawOverview(RenderTarget target)
     {
-      if (!m_generated)
+      if (target == null || !m_generated)
       {
         return;
       }

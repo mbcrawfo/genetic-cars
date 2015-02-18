@@ -164,8 +164,17 @@ namespace Genetic_Cars.Car
       }
     }
 
+    /// <summary>
+    /// Draws the car onto the target.
+    /// </summary>
+    /// <param name="target"></param>
     public void Draw(RenderTarget target)
     {
+      if (target == null)
+      {
+        return;
+      }
+
       for (var i = 0; i < m_wheelShapes.Length; i++)
       {
         target.Draw(m_wheelShapes[i]);

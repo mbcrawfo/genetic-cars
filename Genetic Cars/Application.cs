@@ -216,12 +216,6 @@ namespace Genetic_Cars
       m_track.Draw(m_drawingWindow);
       m_population.Draw(m_drawingWindow);
       m_drawingWindow.Display();
-
-      // draw overview
-      m_overviewWindow.SetView(m_overviewView);
-      m_overviewWindow.Clear(Color.White);
-      m_track.DrawOverview(m_overviewWindow);
-      m_overviewWindow.Display();
     }
 
     private void DoPhysics()
@@ -242,6 +236,14 @@ namespace Genetic_Cars
       {
         m_lastLogicStepDelta -= LogicTickInterval;
         m_population.Update(LogicTickInterval);
+
+        // draw overview
+        // done here to minimize framerate impact
+        m_overviewWindow.SetView(m_overviewView);
+        m_overviewWindow.Clear(Color.White);
+        m_track.DrawOverview(m_overviewWindow);
+        m_population.DrawOverview(m_overviewWindow);
+        m_overviewWindow.Display();
 
         // sync the gui text
         m_window.SetDistance(m_population.Leader.MaxForwardDistance);
@@ -347,14 +349,12 @@ namespace Genetic_Cars
       var newWidth = (ViewBaseWidth / m_renderWindowBaseWidth) * e.Width;
       var ratio = (float)e.Height / e.Width;
       m_drawingView.Size = new Vector2f(newWidth, newWidth * ratio);
-      Log.DebugFormat("Window resized to {0} new view size {1}",
-        e, m_drawingView.Size
-         );
+//       Log.DebugFormat("Window resized to {0} new view size {1}",
+//         e, m_drawingView.Size);
     }
 
     private void OverviewWindowOnResized(object sender, SizeEventArgs e)
     {
-      Log.Debug("Overview resized");
       var ratio = (float)e.Height / e.Width;
       m_overviewView.Size =
         new Vector2f(m_track.Dimensions.X, m_track.Dimensions.X * ratio);
