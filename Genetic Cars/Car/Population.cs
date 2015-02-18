@@ -91,6 +91,11 @@ namespace Genetic_Cars.Car
     /// <param name="deltaTime"></param>
     public void Update(float deltaTime)
     {
+      if (m_championCar != null)
+      {
+        m_championCar.Update(deltaTime);
+      }
+
       foreach (var car in m_cars)
       {
         car.Update(deltaTime);
@@ -203,8 +208,8 @@ namespace Genetic_Cars.Car
       {
         if (i < NumClones)
         {
-          m_cars[i].Id = 0;
           m_cars[i].ResetEntity();
+          m_cars[i].Id = i;
           m_cars[i].Type = EntityType.Clone;
         }
         else
