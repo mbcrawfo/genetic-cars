@@ -51,13 +51,13 @@ namespace Genetic_Cars
       this.seedLabel = new System.Windows.Forms.Label();
       this.historyBox = new System.Windows.Forms.GroupBox();
       this.populationBox = new System.Windows.Forms.GroupBox();
+      this.populationListBox = new System.Windows.Forms.ListBox();
       this.distanceLabel = new System.Windows.Forms.Label();
       this.liveCountLabel = new System.Windows.Forms.Label();
       this.generationLabel = new System.Windows.Forms.Label();
-      this.toolTip = new System.Windows.Forms.ToolTip(this.components);
       this.overviewBox = new System.Windows.Forms.GroupBox();
-      this.populationListBox = new System.Windows.Forms.ListBox();
       this.overviewPanel = new System.Windows.Forms.Panel();
+      this.toolTip = new System.Windows.Forms.ToolTip(this.components);
       this.mainLayout.SuspendLayout();
       this.settingsBox.SuspendLayout();
       this.populationBox.SuspendLayout();
@@ -88,10 +88,8 @@ namespace Genetic_Cars
       // 
       // drawingPanel
       // 
-      this.drawingPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
       this.mainLayout.SetColumnSpan(this.drawingPanel, 3);
+      this.drawingPanel.Dock = System.Windows.Forms.DockStyle.Fill;
       this.drawingPanel.Location = new System.Drawing.Point(0, 0);
       this.drawingPanel.Margin = new System.Windows.Forms.Padding(0);
       this.drawingPanel.Name = "drawingPanel";
@@ -272,6 +270,14 @@ namespace Genetic_Cars
       this.populationBox.TabStop = false;
       this.populationBox.Text = "Population";
       // 
+      // populationListBox
+      // 
+      this.populationListBox.FormattingEnabled = true;
+      this.populationListBox.Location = new System.Drawing.Point(6, 72);
+      this.populationListBox.Name = "populationListBox";
+      this.populationListBox.Size = new System.Drawing.Size(126, 420);
+      this.populationListBox.TabIndex = 3;
+      // 
       // distanceLabel
       // 
       this.distanceLabel.AutoSize = true;
@@ -316,18 +322,11 @@ namespace Genetic_Cars
       this.overviewBox.TabStop = false;
       this.overviewBox.Text = "Overview";
       // 
-      // populationListBox
-      // 
-      this.populationListBox.FormattingEnabled = true;
-      this.populationListBox.Location = new System.Drawing.Point(6, 72);
-      this.populationListBox.Name = "populationListBox";
-      this.populationListBox.Size = new System.Drawing.Size(126, 420);
-      this.populationListBox.TabIndex = 3;
-      // 
       // overviewPanel
       // 
       this.overviewPanel.Dock = System.Windows.Forms.DockStyle.Fill;
       this.overviewPanel.Location = new System.Drawing.Point(3, 16);
+      this.overviewPanel.Margin = new System.Windows.Forms.Padding(5, 3, 5, 5);
       this.overviewPanel.Name = "overviewPanel";
       this.overviewPanel.Size = new System.Drawing.Size(527, 201);
       this.overviewPanel.TabIndex = 0;

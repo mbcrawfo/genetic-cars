@@ -93,7 +93,7 @@ namespace Genetic_Cars
     /// </summary>
     public void Initialize()
     {
-      // ui window
+      // gui window
       m_window = new MainWindow();
       m_window.Show();
       m_window.PauseSimulation += PauseSimulation;
@@ -116,13 +116,14 @@ namespace Genetic_Cars
         Center = new Vector2f(0, -2),
         Viewport = new FloatRect(0, 0, 1, 1)
       };
-      m_drawingWindow.Resized += WindowOnResized;
+      m_drawingWindow.Resized += DrawingWindowOnResized;
 
-      // overview SFML panel and view
+      // overview SFML panel
       m_overviewWindow = new RenderWindow(
         m_window.OverviewPanelHandle,
         new ContextSettings { AntialiasingLevel = 8 }
         );
+      m_overviewWindow.Resized += OverviewWindowOnResized;
 
       var seed = DateTime.Now.ToString("F");
       Log.DebugFormat("Initial seed string: {0}", seed);
@@ -148,7 +149,7 @@ namespace Genetic_Cars
       
       m_initialized = true;
     }
-
+    
     /// <summary>
     /// Executes the program.
     /// </summary>
@@ -164,8 +165,10 @@ namespace Genetic_Cars
           DoPhysics();
           DoLogic();
         }
+        
         System.Windows.Forms.Application.DoEvents();
         m_drawingWindow.DispatchEvents();
+        m_overviewWindow.DispatchEvents();
 
         if (m_frameTime.ElapsedMilliseconds < TargetFrameTime)
         {
@@ -275,10 +278,12 @@ namespace Genetic_Cars
       m_population = new Population(this);
 
       // rebuild the view to match the track
+      var size = m_overviewWindow.Size;
+      var ratio = (float) size.Y / size.X;
       m_overviewView = new View
       {
         Center = m_track.Center.ToVector2f().InvertY(),
-        Size = m_track.Dimensions.ToVector2f().InvertY(),
+        Size = new Vector2f(m_track.Dimensions.X, m_track.Dimensions.X * ratio),
         Viewport = new FloatRect(0, 0, 1, 1)
       };
     }
@@ -337,14 +342,22 @@ namespace Genetic_Cars
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private void WindowOnResized(object sender, SizeEventArgs e)
+    private void DrawingWindowOnResized(object sender, SizeEventArgs e)
     {
       var newWidth = (ViewBaseWidth / m_renderWindowBaseWidth) * e.Width;
       var ratio = (float)e.Height / e.Width;
       m_drawingView.Size = new Vector2f(newWidth, newWidth * ratio);
-//       Log.DebugFormat("Window resized to {0} new view size {1}",
-//         e, m_drawingView.Size
-//         );
+      Log.DebugFormat("Window resized to {0} new view size {1}",
+        e, m_drawingView.Size
+         );
+    }
+
+    private void OverviewWindowOnResized(object sender, SizeEventArgs e)
+    {
+      Log.Debug("Overview resized");
+      var ratio = (float)e.Height / e.Width;
+      m_overviewView.Size =
+        new Vector2f(m_track.Dimensions.X, m_track.Dimensions.X * ratio);
     }
 
     private void WindowOnSeedChanged(int seed)
