@@ -68,9 +68,9 @@ namespace Genetic_Cars
       // 
       this.mainLayout.ColumnCount = 4;
       this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 307F));
-      this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 162F));
+      this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 169F));
       this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-      this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 144F));
+      this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 156F));
       this.mainLayout.Controls.Add(this.drawingPanel, 0, 0);
       this.mainLayout.Controls.Add(this.settingsBox, 0, 1);
       this.mainLayout.Controls.Add(this.historyBox, 1, 1);
@@ -93,7 +93,7 @@ namespace Genetic_Cars
       this.drawingPanel.Location = new System.Drawing.Point(0, 0);
       this.drawingPanel.Margin = new System.Windows.Forms.Padding(0);
       this.drawingPanel.Name = "drawingPanel";
-      this.drawingPanel.Size = new System.Drawing.Size(864, 504);
+      this.drawingPanel.Size = new System.Drawing.Size(852, 504);
       this.drawingPanel.TabIndex = 0;
       // 
       // settingsBox
@@ -251,7 +251,7 @@ namespace Genetic_Cars
       this.historyBox.Dock = System.Windows.Forms.DockStyle.Fill;
       this.historyBox.Location = new System.Drawing.Point(310, 507);
       this.historyBox.Name = "historyBox";
-      this.historyBox.Size = new System.Drawing.Size(156, 220);
+      this.historyBox.Size = new System.Drawing.Size(163, 220);
       this.historyBox.TabIndex = 2;
       this.historyBox.TabStop = false;
       this.historyBox.Text = "High Scores";
@@ -263,19 +263,22 @@ namespace Genetic_Cars
       this.populationBox.Controls.Add(this.liveCountLabel);
       this.populationBox.Controls.Add(this.generationLabel);
       this.populationBox.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.populationBox.Location = new System.Drawing.Point(867, 3);
+      this.populationBox.Location = new System.Drawing.Point(855, 3);
       this.populationBox.Name = "populationBox";
-      this.populationBox.Size = new System.Drawing.Size(138, 498);
+      this.populationBox.Size = new System.Drawing.Size(150, 498);
       this.populationBox.TabIndex = 3;
       this.populationBox.TabStop = false;
       this.populationBox.Text = "Population";
       // 
       // populationListBox
       // 
+      this.populationListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
       this.populationListBox.FormattingEnabled = true;
       this.populationListBox.Location = new System.Drawing.Point(6, 72);
       this.populationListBox.Name = "populationListBox";
-      this.populationListBox.Size = new System.Drawing.Size(126, 420);
+      this.populationListBox.Size = new System.Drawing.Size(138, 420);
       this.populationListBox.TabIndex = 3;
       // 
       // distanceLabel
@@ -315,10 +318,10 @@ namespace Genetic_Cars
       this.mainLayout.SetColumnSpan(this.overviewBox, 2);
       this.overviewBox.Controls.Add(this.overviewPanel);
       this.overviewBox.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.overviewBox.Location = new System.Drawing.Point(472, 507);
+      this.overviewBox.Location = new System.Drawing.Point(479, 507);
       this.overviewBox.Name = "overviewBox";
       this.overviewBox.Padding = new System.Windows.Forms.Padding(5, 0, 5, 5);
-      this.overviewBox.Size = new System.Drawing.Size(533, 220);
+      this.overviewBox.Size = new System.Drawing.Size(526, 220);
       this.overviewBox.TabIndex = 4;
       this.overviewBox.TabStop = false;
       this.overviewBox.Text = "Overview";
@@ -328,7 +331,7 @@ namespace Genetic_Cars
       this.overviewPanel.Dock = System.Windows.Forms.DockStyle.Fill;
       this.overviewPanel.Location = new System.Drawing.Point(5, 13);
       this.overviewPanel.Name = "overviewPanel";
-      this.overviewPanel.Size = new System.Drawing.Size(523, 202);
+      this.overviewPanel.Size = new System.Drawing.Size(516, 202);
       this.overviewPanel.TabIndex = 0;
       // 
       // MainWindow
