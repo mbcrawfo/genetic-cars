@@ -21,6 +21,8 @@ namespace Genetic_Cars
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
 
+    // cap framerate to 60 fps
+    private const float DrawingTickInterval = 1f / 60f;
     // logic updates at 30 fps, time in s
     private const float LogicTickInterval = 1f / 30f;
     // physics updates at 60 fps, Farseer uses time in seconds
@@ -35,8 +37,10 @@ namespace Genetic_Cars
 
     // frame state variables
     private readonly Stopwatch m_frameTime = new Stopwatch();
+    private readonly Stopwatch m_drawingTime = new Stopwatch();
     private readonly Stopwatch m_physicsTime = new Stopwatch();
     private readonly Stopwatch m_logicTime = new Stopwatch();
+    private float m_lastDrawingStepDelta;
     private float m_lastPhysicsStepDelta;
     private float m_lastLogicStepDelta;
     private bool m_paused = false;
@@ -209,29 +213,37 @@ namespace Genetic_Cars
 
     private void DoDrawing()
     {
-      // draw main window (track and cars)
-      m_drawingView.Center = m_population.Leader.Position.ToVector2f().InvertY();
-      m_drawingWindow.SetView(m_drawingView);
-      m_drawingWindow.Clear(Color.White);
-      m_track.Draw(m_drawingWindow);
-      m_population.Draw(m_drawingWindow);
-      m_drawingWindow.Display();
+      m_lastDrawingStepDelta += (float) m_drawingTime.Elapsed.TotalSeconds;
+      m_drawingTime.Restart();
+      while (m_lastDrawingStepDelta >= DrawingTickInterval)
+      {
+        m_lastDrawingStepDelta -= DrawingTickInterval;
+
+        // draw main window (track and cars)
+        m_drawingView.Center = m_population.Leader.Position.ToVector2f().InvertY();
+        m_drawingWindow.SetView(m_drawingView);
+        m_drawingWindow.Clear(Color.White);
+        m_track.Draw(m_drawingWindow);
+        m_population.Draw(m_drawingWindow);
+        m_drawingWindow.Display();
+      }
     }
 
     private void DoPhysics()
     {
       m_lastPhysicsStepDelta += (float)m_physicsTime.Elapsed.TotalSeconds;
+      m_physicsTime.Restart();
       while (m_lastPhysicsStepDelta >= PhysicsTickInterval)
       {
         m_lastPhysicsStepDelta -= PhysicsTickInterval;
         StepWorld(PhysicsTickInterval);
       }
-      m_physicsTime.Restart();
     }
 
     private void DoLogic()
     {
       m_lastLogicStepDelta += (float)m_logicTime.Elapsed.TotalSeconds;
+      m_logicTime.Restart();
       while (m_lastLogicStepDelta >= LogicTickInterval)
       {
         m_lastLogicStepDelta -= LogicTickInterval;
@@ -250,7 +262,6 @@ namespace Genetic_Cars
         m_window.SetGeneration(m_population.Generation);
         m_window.SetLiveCount(m_population.LiveCount);
       }
-      m_logicTime.Restart();
     }
 
     private void SetSeed(int seed)

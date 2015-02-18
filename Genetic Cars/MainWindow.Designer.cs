@@ -317,6 +317,7 @@ namespace Genetic_Cars
       this.overviewBox.Dock = System.Windows.Forms.DockStyle.Fill;
       this.overviewBox.Location = new System.Drawing.Point(472, 507);
       this.overviewBox.Name = "overviewBox";
+      this.overviewBox.Padding = new System.Windows.Forms.Padding(5, 0, 5, 5);
       this.overviewBox.Size = new System.Drawing.Size(533, 220);
       this.overviewBox.TabIndex = 4;
       this.overviewBox.TabStop = false;
@@ -325,10 +326,9 @@ namespace Genetic_Cars
       // overviewPanel
       // 
       this.overviewPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.overviewPanel.Location = new System.Drawing.Point(3, 16);
-      this.overviewPanel.Margin = new System.Windows.Forms.Padding(5, 3, 5, 5);
+      this.overviewPanel.Location = new System.Drawing.Point(5, 13);
       this.overviewPanel.Name = "overviewPanel";
-      this.overviewPanel.Size = new System.Drawing.Size(527, 201);
+      this.overviewPanel.Size = new System.Drawing.Size(523, 202);
       this.overviewPanel.TabIndex = 0;
       // 
       // MainWindow
