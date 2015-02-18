@@ -324,7 +324,7 @@ namespace Genetic_Cars
       this.overviewBox.Size = new System.Drawing.Size(526, 220);
       this.overviewBox.TabIndex = 4;
       this.overviewBox.TabStop = false;
-      this.overviewBox.Text = "Overview";
+      this.overviewBox.Text = "Track Overview";
       // 
       // overviewPanel
       // 

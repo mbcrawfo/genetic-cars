@@ -57,6 +57,12 @@ namespace Genetic_Cars
     // game data
     private Track m_track;
     private Population m_population;
+    private readonly RectangleShape m_viewShape = new RectangleShape
+    {
+      FillColor = Color.Transparent,
+      OutlineColor = Color.Black,
+      OutlineThickness = 1
+    };
     
     /// <summary>
     /// The main entry point for the application.
@@ -121,6 +127,8 @@ namespace Genetic_Cars
         Viewport = new FloatRect(0, 0, 1, 1)
       };
       m_drawingWindow.Resized += DrawingWindowOnResized;
+      m_viewShape.Size = m_drawingView.Size;
+      m_viewShape.Origin = m_drawingView.Size / 2;
 
       // overview SFML panel
       m_overviewWindow = new RenderWindow(
@@ -219,13 +227,24 @@ namespace Genetic_Cars
       {
         m_lastDrawingStepDelta -= DrawingTickInterval;
 
+        var viewPos = m_population.Leader.Position.ToVector2f().InvertY();
+        m_drawingView.Center = viewPos;
+        m_viewShape.Position = viewPos;
+
         // draw main window (track and cars)
-        m_drawingView.Center = m_population.Leader.Position.ToVector2f().InvertY();
         m_drawingWindow.SetView(m_drawingView);
         m_drawingWindow.Clear(Color.White);
         m_track.Draw(m_drawingWindow);
         m_population.Draw(m_drawingWindow);
         m_drawingWindow.Display();
+
+        // draw overview
+        m_overviewWindow.SetView(m_overviewView);
+        m_overviewWindow.Clear(Color.White);
+        m_track.DrawOverview(m_overviewWindow);
+        m_population.DrawOverview(m_overviewWindow);
+        m_overviewWindow.Draw(m_viewShape);
+        m_overviewWindow.Display();
       }
     }
 
@@ -248,15 +267,7 @@ namespace Genetic_Cars
       {
         m_lastLogicStepDelta -= LogicTickInterval;
         m_population.Update(LogicTickInterval);
-
-        // draw overview
-        // done here to minimize framerate impact
-        m_overviewWindow.SetView(m_overviewView);
-        m_overviewWindow.Clear(Color.White);
-        m_track.DrawOverview(m_overviewWindow);
-        m_population.DrawOverview(m_overviewWindow);
-        m_overviewWindow.Display();
-
+        
         // sync the gui text
         m_window.SetDistance(m_population.Leader.MaxForwardDistance);
         m_window.SetGeneration(m_population.Generation);
@@ -360,8 +371,8 @@ namespace Genetic_Cars
       var newWidth = (ViewBaseWidth / m_renderWindowBaseWidth) * e.Width;
       var ratio = (float)e.Height / e.Width;
       m_drawingView.Size = new Vector2f(newWidth, newWidth * ratio);
-//       Log.DebugFormat("Window resized to {0} new view size {1}",
-//         e, m_drawingView.Size);
+      m_viewShape.Size = m_drawingView.Size;
+      m_viewShape.Origin = m_drawingView.Size / 2;
     }
 
     private void OverviewWindowOnResized(object sender, SizeEventArgs e)
