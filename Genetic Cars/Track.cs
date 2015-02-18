@@ -16,7 +16,7 @@ namespace Genetic_Cars
   /// <summary>
   /// Holds the track for the cars to race on.
   /// </summary>
-  sealed class Track : IDisposable, IDrawable
+  sealed class Track : IDisposable
   {
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
@@ -51,6 +51,8 @@ namespace Genetic_Cars
     private readonly World m_world;
     private readonly List<Body> m_trackBodies = new List<Body>(NumPieces);
     private readonly List<Shape> m_trackShapes = new List<Shape>(NumPieces);
+    private readonly VertexArray m_trackOutline = 
+      new VertexArray(PrimitiveType.LinesStrip);
     private float m_startingLine;
 
     /// <summary>
@@ -83,6 +85,16 @@ namespace Genetic_Cars
       }
     }
 
+    /// <summary>
+    /// The width and height of the track.
+    /// </summary>
+    public Vector2 Dimensions { get; private set; }
+
+    /// <summary>
+    /// The center point of the track.
+    /// </summary>
+    public Vector2 Center { get; private set; }
+
     public void Dispose()
     {
       Dispose(true);
@@ -102,6 +114,8 @@ namespace Genetic_Cars
         {
           shape.Dispose();
         }
+
+        m_trackOutline.Dispose();
       }
 
       foreach (var body in m_trackBodies)
@@ -123,9 +137,15 @@ namespace Genetic_Cars
       var stopwatch = new Stopwatch();
       stopwatch.Start();
 
+      float maxX = 0;
+      float minX = 0;
+      float maxY = 0;
+      float minY = 0;
+
       // first an invisible physics piece to block cars from running off the 
       // track to the left
       var start = new Vector2f(-10, 0);
+      minX = start.X;
       var body = BodyFactory.CreateEdge(
         m_world, start.ToVector2(), start.ToVector2() + new Vector2(0, 10));
       body.CollidesWith = Category.All;
@@ -149,6 +169,8 @@ namespace Genetic_Cars
       body = CreateBody(start, end);
       m_trackBodies.Add(body);
       m_startingLine = (start / 2f).X;
+      m_trackOutline.Append(new Vertex(start.InvertY(), FillColor));
+      m_trackOutline.Append(new Vertex(end.InvertY(), FillColor));
       
       // place the rest of the pieces
       for (int i = 0; i < NumPieces; i++)
@@ -172,10 +194,36 @@ namespace Genetic_Cars
         shape = CreateShape(start, rot);
         end = CalcEndPoint(start, shape.Size, rot);
         body = CreateBody(start, end);
+        m_trackOutline.Append(new Vertex(end.InvertY(), FillColor));
 
         m_trackShapes.Add(shape);
         m_trackBodies.Add(body);
+
+        maxY = Math.Max(maxY, end.Y);
+        minY = Math.Min(minY, end.Y);
       }
+
+      // create a landing pad at the end of the track
+      start = end;
+      shape = new RectangleShape
+      {
+        FillColor = FillColor,
+        OutlineColor = OutlineColor,
+        OutlineThickness = OutlineSize,
+        Position = start.InvertY(),
+        Size = new Vector2f(10, PieceSize.Y),
+        Rotation = 0f
+      };
+      end = start + shape.Size;
+      body = CreateBody(start, end);
+      m_trackShapes.Add(shape);
+      m_trackBodies.Add(body);
+      m_trackOutline.Append(new Vertex(end.InvertY(), FillColor));
+      maxX = end.X;
+
+      Dimensions = new Vector2(maxX - minX, maxY - minY + 10);
+      Center = new Vector2(
+        minX + (Dimensions.X / 2f), minY + (Dimensions.Y / 2f));
 
       m_generated = true;
 //       Log.DebugFormat("Generated {0} track pieces in {1} ms", 
@@ -191,7 +239,7 @@ namespace Genetic_Cars
       {
         return;
       }
-      Log.DebugFormat("Clearing {0} track pieces", m_trackShapes.Count);
+      //Log.DebugFormat("Clearing {0} track pieces", m_trackShapes.Count);
 
       foreach (var body in m_trackBodies)
       {
@@ -204,6 +252,7 @@ namespace Genetic_Cars
 
       m_trackBodies.Clear();
       m_trackShapes.Clear();
+      m_trackOutline.Clear();
       m_generated = false;
     }
 
@@ -213,10 +262,25 @@ namespace Genetic_Cars
     /// <param name="target"></param>
     public void Draw(RenderTarget target)
     {
+      if (!m_generated)
+      {
+        return;
+      }
+
       foreach (var shape in m_trackShapes)
       {
         target.Draw(shape);
       }
+    }
+
+    public void DrawOverview(RenderTarget target)
+    {
+      if (!m_generated)
+      {
+        return;
+      }
+
+      target.Draw(m_trackOutline);
     }
 
     /// <summary>

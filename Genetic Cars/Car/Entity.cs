@@ -26,7 +26,7 @@ namespace Genetic_Cars.Car
   /// <summary>
   /// Holds the graphics and physics objects for a car.
   /// </summary>
-  sealed class Entity : IDisposable, IDrawable
+  sealed class Entity : IDisposable
   {
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);

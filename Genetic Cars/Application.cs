@@ -44,9 +44,11 @@ namespace Genetic_Cars
     // rendering state variables
     private MainWindow m_window;
     // can't be initialized until after the window is shown
-    private RenderWindow m_renderWindow;
-    private View m_view;
+    private RenderWindow m_drawingWindow;
+    private View m_drawingView;
     private float m_renderWindowBaseWidth;
+    private RenderWindow m_overviewWindow;
+    private View m_overviewView;
 
     // game data
     private Track m_track;
@@ -91,7 +93,7 @@ namespace Genetic_Cars
     /// </summary>
     public void Initialize()
     {
-      // initialize the rendering components
+      // ui window
       m_window = new MainWindow();
       m_window.Show();
       m_window.PauseSimulation += PauseSimulation;
@@ -99,21 +101,28 @@ namespace Genetic_Cars
       m_window.SeedChanged += WindowOnSeedChanged;
       m_window.NewPopulation += WindowOnNewPopulation;
       
-      m_renderWindow = new RenderWindow(
+      // main SFML panel and view
+      m_drawingWindow = new RenderWindow(
         m_window.DrawingPanelHandle,
         new ContextSettings { AntialiasingLevel = 8 }
         );
-      Log.DebugFormat("RenderWindow created size {0}", m_renderWindow.Size);
-      var size = m_renderWindow.Size;
+      Log.DebugFormat("RenderWindow created size {0}", m_drawingWindow.Size);
+      var size = m_drawingWindow.Size;
       m_renderWindowBaseWidth = size.X;
       var ratio = (float)size.Y / size.X;
-      m_view = new View
+      m_drawingView = new View
       {
         Size = new Vector2f(ViewBaseWidth, ViewBaseWidth * ratio),
         Center = new Vector2f(0, -2),
         Viewport = new FloatRect(0, 0, 1, 1)
       };
-      m_renderWindow.Resized += WindowOnResized;
+      m_drawingWindow.Resized += WindowOnResized;
+
+      // overview SFML panel and view
+      m_overviewWindow = new RenderWindow(
+        m_window.OverviewPanelHandle,
+        new ContextSettings { AntialiasingLevel = 8 }
+        );
 
       var seed = DateTime.Now.ToString("F");
       Log.DebugFormat("Initial seed string: {0}", seed);
@@ -156,7 +165,7 @@ namespace Genetic_Cars
           DoLogic();
         }
         System.Windows.Forms.Application.DoEvents();
-        m_renderWindow.DispatchEvents();
+        m_drawingWindow.DispatchEvents();
 
         if (m_frameTime.ElapsedMilliseconds < TargetFrameTime)
         {
@@ -183,8 +192,12 @@ namespace Genetic_Cars
         m_track.Dispose();
         m_population.Dispose();
 
-        m_view.Dispose();
-        m_renderWindow.Dispose();
+        m_overviewView.Dispose();
+        m_overviewWindow.Dispose();
+
+        m_drawingView.Dispose();
+        m_drawingWindow.Dispose();
+        
         m_window.Dispose();
       }
 
@@ -193,13 +206,19 @@ namespace Genetic_Cars
 
     private void DoDrawing()
     {
-      m_view.Center = m_population.Leader.Position.ToVector2f().InvertY();
-      m_renderWindow.SetView(m_view);
+      // draw main window (track and cars)
+      m_drawingView.Center = m_population.Leader.Position.ToVector2f().InvertY();
+      m_drawingWindow.SetView(m_drawingView);
+      m_drawingWindow.Clear(Color.White);
+      m_track.Draw(m_drawingWindow);
+      m_population.Draw(m_drawingWindow);
+      m_drawingWindow.Display();
 
-      m_renderWindow.Clear(Color.White);
-      m_track.Draw(m_renderWindow);
-      m_population.Draw(m_renderWindow);
-      m_renderWindow.Display();
+      // draw overview
+      m_overviewWindow.SetView(m_overviewView);
+      m_overviewWindow.Clear(Color.White);
+      m_track.DrawOverview(m_overviewWindow);
+      m_overviewWindow.Display();
     }
 
     private void DoPhysics()
@@ -244,6 +263,7 @@ namespace Genetic_Cars
       {
         m_track.Dispose();
         m_population.Dispose();
+        m_overviewView.Dispose();
       }
 
       // create the world
@@ -253,6 +273,14 @@ namespace Genetic_Cars
       Car.Car.StartPosition = new Vector2(m_track.StartingLine,
         (2 * Definition.MaxBodyPointDistance) + Definition.MaxWheelRadius);
       m_population = new Population(this);
+
+      // rebuild the view to match the track
+      m_overviewView = new View
+      {
+        Center = m_track.Center.ToVector2f().InvertY(),
+        Size = m_track.Dimensions.ToVector2f().InvertY(),
+        Viewport = new FloatRect(0, 0, 1, 1)
+      };
     }
 
     private void PauseSimulation()
@@ -313,9 +341,9 @@ namespace Genetic_Cars
     {
       var newWidth = (ViewBaseWidth / m_renderWindowBaseWidth) * e.Width;
       var ratio = (float)e.Height / e.Width;
-      m_view.Size = new Vector2f(newWidth, newWidth * ratio);
+      m_drawingView.Size = new Vector2f(newWidth, newWidth * ratio);
 //       Log.DebugFormat("Window resized to {0} new view size {1}",
-//         e, m_view.Size
+//         e, m_drawingView.Size
 //         );
     }
 

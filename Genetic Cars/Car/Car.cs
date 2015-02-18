@@ -8,7 +8,7 @@ using SFML.Graphics;
 
 namespace Genetic_Cars.Car
 {
-  sealed class Car : IDrawable, IDisposable
+  sealed class Car : IDisposable
   {
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
