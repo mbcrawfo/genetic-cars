@@ -15,6 +15,8 @@ namespace Genetic_Cars.Car
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
 
+    private static readonly Font Font = new Font(@"fonts/arial.ttf");
+
     /// <summary>
     /// The position where all cars are generated.
     /// </summary>
@@ -48,11 +50,14 @@ namespace Genetic_Cars.Car
       BlendMode = BlendMode.Alpha,
       Transform = Transform.Identity
     };
-    private Vertex[] m_overviewLine =
+    private Transform m_overviewLineTransform = Transform.Identity;
+    private Transform m_overviewTextTransform = Transform.Identity;
+    private readonly Vertex[] m_overviewLine =
     {
       new Vertex(new Vector2f(0, -1000)), 
       new Vertex(new Vector2f(0, 1000))
     };
+    private Text m_overviewText;
 
     /// <summary>
     /// Creates a new car.
@@ -102,6 +107,10 @@ namespace Genetic_Cars.Car
         {
           m_entity.Id = m_id;
         }
+        m_overviewText = new Text(m_id.ToString(), Font, 8)
+        {
+          Color = Color.Black
+        };
       }
     }
 
@@ -250,7 +259,11 @@ namespace Genetic_Cars.Car
         return;
       }
 
+      m_overviewRenderStates.Transform = m_overviewLineTransform;
       target.Draw(m_overviewLine, PrimitiveType.Lines, m_overviewRenderStates);
+      
+      m_overviewRenderStates.Transform = m_overviewTextTransform;
+      target.Draw(m_overviewText, m_overviewRenderStates);
     }
 
     public void Dispose()
@@ -358,6 +371,7 @@ namespace Genetic_Cars.Car
         {
           m_entity.Dispose();
         }
+        m_overviewText.Dispose();
       }
 
       m_physicsManager.PostStep -= PhysicsPostStep;
@@ -370,9 +384,11 @@ namespace Genetic_Cars.Car
       Debug.Assert(m_entity != null);
 
       // position the overview line
-      var transform = Transform.Identity;
-      transform.Translate(m_entity.Position.X, 0);
-      m_overviewRenderStates.Transform = transform;
+      m_overviewLineTransform = Transform.Identity;
+      m_overviewLineTransform.Translate(m_entity.Position.X, 0);
+      // offset the text from the line
+      m_overviewTextTransform = m_overviewLineTransform;
+      m_overviewTextTransform.Translate(2, -(m_entity.Position.Y + 20));
 
       // update the car's speed
       var moved = m_entity.Position - m_lastPosition;
