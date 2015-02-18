@@ -304,7 +304,7 @@ namespace Genetic_Cars
     private void PauseSimulation()
     {
       m_paused = true;
-      m_frameTime.Stop();
+      m_drawingTime.Stop();
       m_physicsTime.Stop();
       m_logicTime.Stop();
     }
@@ -312,7 +312,7 @@ namespace Genetic_Cars
     private void ResumeSimulation()
     {
       m_paused = false;
-      m_frameTime.Start();
+      m_drawingTime.Start();
       m_frameTime.Start();
       m_logicTime.Start();
     }
