@@ -21,8 +21,8 @@ namespace Genetic_Cars
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
 
-    // cap framerate to 60 fps
-    private const float DrawingTickInterval = 1f / 60f;
+    // cap framerate to 65 fps
+    private const float DrawingTickInterval = 1f / 65f;
     // logic updates at 30 fps, time in s
     private const float LogicTickInterval = 1f / 30f;
     // physics updates at 60 fps, Farseer uses time in seconds
@@ -216,9 +216,9 @@ namespace Genetic_Cars
     {
       m_lastDrawingStepDelta += (float) m_drawingTime.Elapsed.TotalSeconds;
       m_drawingTime.Restart();
-      while (m_lastDrawingStepDelta >= DrawingTickInterval)
+      if (m_lastDrawingStepDelta >= DrawingTickInterval)
       {
-        m_lastDrawingStepDelta -= DrawingTickInterval;
+        m_lastDrawingStepDelta = 0;
 
         var viewPos = m_population.Leader.Position.ToVector2f().InvertY();
         m_drawingView.Center = viewPos;
