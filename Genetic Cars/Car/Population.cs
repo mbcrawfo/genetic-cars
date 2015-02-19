@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using log4net;
 using SFML.Graphics;
+using SFML.Window;
 
 namespace Genetic_Cars.Car
 {
@@ -37,6 +38,16 @@ namespace Genetic_Cars.Car
 
     private Car m_championCar;
     private float m_championDistance;
+    private RenderStates m_overviewRenderStates = new RenderStates
+    {
+      BlendMode = BlendMode.Alpha,
+      Transform = Transform.Identity
+    };
+    private readonly Vertex[] m_championLine =
+    {
+      new Vertex(new Vector2f(0, -1000), Color.Green),
+      new Vertex(new Vector2f(0, 1000), Color.Green),
+    };
 
     public Population(PhysicsManager physicsManager)
     {
@@ -145,6 +156,11 @@ namespace Genetic_Cars.Car
       if (target == null)
       {
         return;
+      }
+
+      if (m_championCar != null)
+      {
+        target.Draw(m_championLine, PrimitiveType.Lines, m_overviewRenderStates);
       }
 
       foreach (var car in m_cars)
@@ -265,6 +281,11 @@ namespace Genetic_Cars.Car
         Log.DebugFormat(
           "New champion in generation {0}, car {1} distance {2:F2} m",
           Generation, champ.Id, m_championDistance);
+
+        var transform = Transform.Identity;
+        transform.Translate(m_championDistance, 0);
+        m_overviewRenderStates.Transform = transform;
+
         if (m_championCar == null)
         {
           m_championCar = new Car(m_physicsManager, m_cars[0].Phenotype)
