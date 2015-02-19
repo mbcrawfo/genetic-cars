@@ -23,7 +23,7 @@ namespace Genetic_Cars
 
       // initialize default values
       mutationRateTextBox.Text = 
-        Settings.Default.DefaultMutationRate.ToString(
+        Settings.Default.MutationRate.ToString(
         CultureInfo.CurrentCulture);
 
       
@@ -33,7 +33,7 @@ namespace Genetic_Cars
       {
         clonesComboBox.Items.Add(i);
       }
-      clonesComboBox.SelectedIndex = 2;
+      clonesComboBox.SelectedIndex = Properties.Settings.Default.NumClones;
     }
 
     /// <summary>
@@ -53,28 +53,14 @@ namespace Genetic_Cars
     public delegate void ResumeSimulationHandler();
 
     /// <summary>
-    /// Handles a request to change the GA mutation rate.
-    /// </summary>
-    /// <param name="rate">The new mutation rate [0, 1]</param>
-    public delegate void MutationRateChangedHandler(float rate);
-
-    /// <summary>
     /// Handles a request to generate a new population.
     /// </summary>
     public delegate void NewPopulationHandler();
 
-    /// <summary>
-    /// Handles a request to changed the number of clones in each generation.
-    /// </summary>
-    /// <param name="num"></param>
-    public delegate void NumClonesChangedHandler(int num);
-
     public event SeedChangedHandler SeedChanged;
     public event PauseSimulationHandler PauseSimulation;
     public event ResumeSimulationHandler ResumeSimulation;
-    public event MutationRateChangedHandler MutationRateChanged;
     public event NewPopulationHandler NewPopulation;
-    public event NumClonesChangedHandler NumClonesChanged;
 
     /// <summary>
     /// The handle for the main SFML drawing surface.
@@ -145,27 +131,11 @@ namespace Genetic_Cars
       }
     }
 
-    private void OnMutationRateChanged(float rate)
-    {
-      if (MutationRateChanged != null)
-      {
-        MutationRateChanged(rate);
-      }
-    }
-
     private void OnNewPopulation()
     {
       if (NewPopulation != null)
       {
         NewPopulation();
-      }
-    }
-
-    private void OnNumClonesChanged(int num)
-    {
-      if (NumClonesChanged != null)
-      {
-        NumClonesChanged(num);
       }
     }
 
@@ -279,7 +249,7 @@ namespace Genetic_Cars
       if (float.TryParse(mutationRateTextBox.Text, out rate) && 
         (rate >= 0 || rate <= 1))
       {
-        OnMutationRateChanged(rate);
+        Properties.Settings.Default.MutationRate = rate;
       }
       else
       {
@@ -292,12 +262,8 @@ namespace Genetic_Cars
 
     private void clonesComboBox_SelectedIndexChanged(object sender, EventArgs e)
     {
-      var num = clonesComboBox.SelectedItem as int?;
-      if (num == null)
-      {
-        Log.Error("Selected num clones was null");
-      }
-      OnNumClonesChanged(num.GetValueOrDefault());
+      var num = (int)clonesComboBox.SelectedItem;
+      Properties.Settings.Default.NumClones = num;
     }
     
     private void clonesComboBox_DrawItem(object sender, DrawItemEventArgs e)

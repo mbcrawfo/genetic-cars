@@ -70,14 +70,6 @@ namespace Genetic_Cars
     [STAThread]
     static void Main()
     {
-      // dump settings to the log
-      Log.Info("Loaded settings:");
-      foreach (SettingsProperty property in Settings.Default.Properties)
-      {
-        Log.InfoFormat("{0}={1}", 
-          property.Name, Settings.Default[property.Name]);
-      }
-
       FarseerPhysics.Settings.UseFPECollisionCategories = true;
       FarseerPhysics.Settings.VelocityIterations = 10;
       FarseerPhysics.Settings.PositionIterations = 8;
@@ -90,6 +82,7 @@ namespace Genetic_Cars
       var app = new Application();
       app.Initialize();
       app.Run();
+      Settings.Default.Save();
     }
 
     ~Application()
@@ -141,24 +134,24 @@ namespace Genetic_Cars
       Log.DebugFormat("Initial seed string: {0}", seed);
       SetSeed(seed.GetHashCode());
       GenerateWorld();
-
-      //m_population.NewGeneration += num => m_window.SetGeneration(num);
-      m_window.MutationRateChanged += rate =>
-      {
-        Debug.Assert(m_population != null);
-        Log.InfoFormat("Setting mutation rate to {0}", rate);
-        m_population.MutationRate = rate;
-      };
-      m_window.NumClonesChanged += num =>
-      {
-        Debug.Assert(m_population != null);
-        Log.InfoFormat("Setting number of clones to {0}", num);
-        m_population.NumClones = num;
-      };
-
+      
       Phenotype.MutateStrategy = Mutate;
       Phenotype.CrossoverStrategy = CrossOver;
-      
+
+      Properties.Settings.Default.PropertyChanged += (sender, args) =>
+      {
+        switch (args.PropertyName)
+        {
+          case "NumClones":
+            m_population.NumClones = Properties.Settings.Default.NumClones;
+            break;
+
+          case "MutationRate":
+            m_population.MutationRate = Properties.Settings.Default.MutationRate;
+            break;
+        }
+      };
+
       m_initialized = true;
     }
     

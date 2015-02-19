@@ -27,7 +27,7 @@ namespace Genetic_Cars.Car
 
     private bool m_disposed = false;
     private readonly PhysicsManager m_physicsManager;
-    private int m_numClones = Properties.Settings.Default.DefaultNumClones;
+    private int m_numClones = Properties.Settings.Default.NumClones;
     private float m_mutationRate;
 
     private readonly List<Car> m_cars = new List<Car>(Size); 

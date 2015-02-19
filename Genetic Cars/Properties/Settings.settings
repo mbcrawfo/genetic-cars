@@ -2,58 +2,58 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Genetic_Cars.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="MinBodyPointDistance" Type="System.Single" Scope="User">
+    <Setting Name="MinBodyPointDistance" Type="System.Single" Scope="Application">
       <Value Profile="(Default)">0.5</Value>
     </Setting>
-    <Setting Name="MaxBodyPointDistance" Type="System.Single" Scope="User">
+    <Setting Name="MaxBodyPointDistance" Type="System.Single" Scope="Application">
       <Value Profile="(Default)">2</Value>
     </Setting>
-    <Setting Name="MinBodyDensity" Type="System.Single" Scope="User">
+    <Setting Name="MinBodyDensity" Type="System.Single" Scope="Application">
       <Value Profile="(Default)">0.1</Value>
     </Setting>
-    <Setting Name="MaxBodyDensity" Type="System.Single" Scope="User">
+    <Setting Name="MaxBodyDensity" Type="System.Single" Scope="Application">
       <Value Profile="(Default)">1</Value>
     </Setting>
-    <Setting Name="MinWheelRadius" Type="System.Single" Scope="User">
+    <Setting Name="MinWheelRadius" Type="System.Single" Scope="Application">
       <Value Profile="(Default)">0.15</Value>
     </Setting>
-    <Setting Name="MaxWheelRadius" Type="System.Single" Scope="User">
+    <Setting Name="MaxWheelRadius" Type="System.Single" Scope="Application">
       <Value Profile="(Default)">0.75</Value>
     </Setting>
-    <Setting Name="MinWheelDensity" Type="System.Single" Scope="User">
+    <Setting Name="MinWheelDensity" Type="System.Single" Scope="Application">
       <Value Profile="(Default)">0.1</Value>
     </Setting>
-    <Setting Name="MaxWheelDensity" Type="System.Single" Scope="User">
+    <Setting Name="MaxWheelDensity" Type="System.Single" Scope="Application">
       <Value Profile="(Default)">1</Value>
     </Setting>
-    <Setting Name="NumBodyPoints" Type="System.Int32" Scope="User">
+    <Setting Name="NumBodyPoints" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">16</Value>
     </Setting>
-    <Setting Name="NumWheels" Type="System.Int32" Scope="User">
+    <Setting Name="NumWheels" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">2</Value>
     </Setting>
-    <Setting Name="MinWheelSpeed" Type="System.Single" Scope="User">
+    <Setting Name="MinWheelSpeed" Type="System.Single" Scope="Application">
       <Value Profile="(Default)">360</Value>
     </Setting>
-    <Setting Name="MaxWheelSpeed" Type="System.Single" Scope="User">
+    <Setting Name="MaxWheelSpeed" Type="System.Single" Scope="Application">
       <Value Profile="(Default)">1440</Value>
     </Setting>
-    <Setting Name="MinWheelTorque" Type="System.Single" Scope="User">
+    <Setting Name="MinWheelTorque" Type="System.Single" Scope="Application">
       <Value Profile="(Default)">0.5</Value>
     </Setting>
-    <Setting Name="MaxWheelTorque" Type="System.Single" Scope="User">
+    <Setting Name="MaxWheelTorque" Type="System.Single" Scope="Application">
       <Value Profile="(Default)">10</Value>
     </Setting>
-    <Setting Name="NumTrackPieces" Type="System.Int32" Scope="User">
+    <Setting Name="NumTrackPieces" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">100</Value>
     </Setting>
-    <Setting Name="PopulationSize" Type="System.Int32" Scope="User">
+    <Setting Name="PopulationSize" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">25</Value>
     </Setting>
-    <Setting Name="DefaultMutationRate" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">0.1</Value>
+    <Setting Name="MutationRate" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">0.25</Value>
     </Setting>
-    <Setting Name="DefaultNumClones" Type="System.Int32" Scope="User">
+    <Setting Name="NumClones" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">2</Value>
     </Setting>
   </Settings>
