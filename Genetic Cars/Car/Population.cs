@@ -296,7 +296,7 @@ namespace Genetic_Cars.Car
         OnNewChampion(Generation, champ.Id, m_championDistance);
 
         var transform = Transform.Identity;
-        transform.Translate(m_championDistance, 0);
+        transform.Translate(champ.Position.X, 0);
         m_overviewRenderStates.Transform = transform;
 
         if (m_championCar == null)

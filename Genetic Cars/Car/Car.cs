@@ -123,10 +123,7 @@ namespace Genetic_Cars.Car
     /// <summary>
     /// Gets the position of the car.
     /// </summary>
-    public Vector2 Position
-    {
-      get { return m_entity == null ? Vector2.Zero : m_entity.Position; }
-    }
+    public Vector2 Position { get; set; }
 
     /// <summary>
     /// The score of the car is the max forward distance it has traveled.
@@ -332,6 +329,7 @@ namespace Genetic_Cars.Car
         m_overviewLine[i].Color.A = 255;
       }
 
+      Position = StartPosition;
       m_lastPosition = StartPosition;
       MaxForwardDistance = 0;
       DistanceTraveled = 0;
@@ -383,15 +381,17 @@ namespace Genetic_Cars.Car
     {
       Debug.Assert(m_entity != null);
 
+      Position = m_entity.Position;
+
       // position the overview line
       m_overviewLineTransform = Transform.Identity;
-      m_overviewLineTransform.Translate(m_entity.Position.X, 0);
+      m_overviewLineTransform.Translate(Position.X, 0);
       // offset the text from the line
       m_overviewTextTransform = m_overviewLineTransform;
-      m_overviewTextTransform.Translate(2, -(m_entity.Position.Y + 20));
+      m_overviewTextTransform.Translate(2, -(Position.Y + 20));
 
       // update the car's speed
-      var moved = m_entity.Position - m_lastPosition;
+      var moved = Position - m_lastPosition;
       var movedLen = moved.Length();
       Speed = movedLen / deltaTime;
       if (moved.X < 0)
@@ -403,7 +403,7 @@ namespace Genetic_Cars.Car
       {
         DistanceTraveled += movedLen;
       }
-      m_lastPosition = m_entity.Position;
+      m_lastPosition = Position;
       MaxForwardDistance = Math.Max(MaxForwardDistance, DistanceTraveled);
     }
   }
