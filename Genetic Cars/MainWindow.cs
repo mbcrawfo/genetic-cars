@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Globalization;
 using System.Reflection;
@@ -15,7 +17,10 @@ namespace Genetic_Cars
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
 
+    private const int MaxHighScores = 20;
+
     private bool m_paused = false;
+    private readonly List<HighScore> m_highScores = new List<HighScore>();
 
     public MainWindow()
     {
@@ -105,6 +110,36 @@ namespace Genetic_Cars
     public void SetDistance(float distance)
     {
       distanceLabel.Text = string.Format("Distance: {0:F2} m", distance);
+    }
+
+    public void AddChampion(int generation, int id, float distance)
+    {
+      m_highScores.Add(new HighScore
+      {
+        Index = 0,
+        Generation = generation,
+        Id = id,
+        Distance = distance
+      });
+
+      m_highScores.Sort();
+      if (m_highScores.Count > MaxHighScores)
+      {
+        m_highScores.RemoveAt(m_highScores.Count - 1);
+      }
+
+      highScoreListBox.Items.Clear();
+      for (var i = 0; i < m_highScores.Count; i++)
+      {
+        m_highScores[i].Index = i + 1;
+        highScoreListBox.Items.Add(m_highScores[i].DisplayValue);
+      }
+    }
+
+    private void ResetUI()
+    {
+      m_highScores.Clear();
+      highScoreListBox.Items.Clear();
     }
 
     private void OnSeedChanged(int seed)
@@ -198,6 +233,7 @@ namespace Genetic_Cars
           );
         if (result == DialogResult.Yes)
         {
+          ResetUI();
           OnSeedChanged(seed);
         }
       }
@@ -214,6 +250,7 @@ namespace Genetic_Cars
         MessageBoxButtons.YesNo, MessageBoxIcon.Question);
       if (result == DialogResult.Yes)
       {
+        ResetUI();
         OnNewPopulation();
       }
       
@@ -300,5 +337,46 @@ namespace Genetic_Cars
       }
     }
     #endregion
+
+    private sealed class HighScore : IComparable
+    {
+      public int Index { get; set; }
+      public int Generation { get; set; }
+      public int Id { get; set; }
+      public float Distance { get; set; }
+
+      public string DisplayValue
+      {
+        get { return ToString(); }
+      }
+
+      public override string ToString()
+      {
+        return string.Format("{0}. Generation {1}, {2:F2} m",
+          Index, Generation, Distance);
+      }
+
+      public int CompareTo(object obj)
+      {
+        HighScore hs = obj as HighScore;
+        if (hs == null)
+        {
+          return 1;
+        }
+
+        if (hs.Distance < Distance)
+        {
+          return -1;
+        }
+        else if (hs.Distance == Distance)
+        {
+          return 0;
+        }
+        else
+        {
+          return 1;
+        }
+      }
+    }
   }
 }

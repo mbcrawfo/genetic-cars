@@ -58,8 +58,10 @@ namespace Genetic_Cars
       this.overviewBox = new System.Windows.Forms.GroupBox();
       this.overviewPanel = new System.Windows.Forms.Panel();
       this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+      this.highScoreListBox = new System.Windows.Forms.ListBox();
       this.mainLayout.SuspendLayout();
       this.settingsBox.SuspendLayout();
+      this.historyBox.SuspendLayout();
       this.populationBox.SuspendLayout();
       this.overviewBox.SuspendLayout();
       this.SuspendLayout();
@@ -248,6 +250,7 @@ namespace Genetic_Cars
       // 
       // historyBox
       // 
+      this.historyBox.Controls.Add(this.highScoreListBox);
       this.historyBox.Dock = System.Windows.Forms.DockStyle.Fill;
       this.historyBox.Location = new System.Drawing.Point(310, 507);
       this.historyBox.Name = "historyBox";
@@ -334,6 +337,18 @@ namespace Genetic_Cars
       this.overviewPanel.Size = new System.Drawing.Size(516, 202);
       this.overviewPanel.TabIndex = 0;
       // 
+      // highScoreListBox
+      // 
+      this.highScoreListBox.BackColor = System.Drawing.SystemColors.Control;
+      this.highScoreListBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+      this.highScoreListBox.Dock = System.Windows.Forms.DockStyle.Fill;
+      this.highScoreListBox.FormattingEnabled = true;
+      this.highScoreListBox.Location = new System.Drawing.Point(3, 16);
+      this.highScoreListBox.Name = "highScoreListBox";
+      this.highScoreListBox.SelectionMode = System.Windows.Forms.SelectionMode.None;
+      this.highScoreListBox.Size = new System.Drawing.Size(157, 201);
+      this.highScoreListBox.TabIndex = 0;
+      // 
       // MainWindow
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -347,6 +362,7 @@ namespace Genetic_Cars
       this.mainLayout.ResumeLayout(false);
       this.settingsBox.ResumeLayout(false);
       this.settingsBox.PerformLayout();
+      this.historyBox.ResumeLayout(false);
       this.populationBox.ResumeLayout(false);
       this.populationBox.PerformLayout();
       this.overviewBox.ResumeLayout(false);
@@ -379,6 +395,7 @@ namespace Genetic_Cars
     private GroupBox overviewBox;
     private ListBox populationListBox;
     private Panel overviewPanel;
+    private ListBox highScoreListBox;
 
 
   }

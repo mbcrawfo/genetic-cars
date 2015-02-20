@@ -138,6 +138,7 @@ namespace Genetic_Cars
       Phenotype.MutateStrategy = Mutate;
       Phenotype.CrossoverStrategy = CrossOver;
 
+      m_population.NewChampion += m_window.AddChampion;
       Properties.Settings.Default.PropertyChanged += (sender, args) =>
       {
         switch (args.PropertyName)

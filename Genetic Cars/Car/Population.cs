@@ -29,6 +29,9 @@ namespace Genetic_Cars.Car
 
     public delegate void NewGenerationHandler(int num);
 
+    public delegate void NewChampionHandler(int generation, int id, 
+      float distance);
+
     private bool m_disposed = false;
     private readonly PhysicsManager m_physicsManager;
     private int m_numClones = Properties.Settings.Default.NumClones;
@@ -67,6 +70,7 @@ namespace Genetic_Cars.Car
     }
 
     public event NewGenerationHandler NewGeneration;
+    public event NewChampionHandler NewChampion;
 
     public Car Leader { get; private set; }
 
@@ -272,6 +276,14 @@ namespace Genetic_Cars.Car
       }
     }
 
+    private void OnNewChampion(int gen, int id, float dist)
+    {
+      if (NewChampion != null)
+      {
+        NewChampion(gen, id, dist);
+      }
+    }
+
     private void UpdateChamption()
     {
       if (m_cars[0].MaxForwardDistance > m_championDistance + ChampionThreshold)
@@ -281,6 +293,7 @@ namespace Genetic_Cars.Car
         Log.DebugFormat(
           "New champion in generation {0}, car {1} distance {2:F2} m",
           Generation, champ.Id, m_championDistance);
+        OnNewChampion(Generation, champ.Id, m_championDistance);
 
         var transform = Transform.Identity;
         transform.Translate(m_championDistance, 0);
