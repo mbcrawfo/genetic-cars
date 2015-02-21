@@ -137,8 +137,7 @@ namespace Genetic_Cars
       
       Phenotype.MutateStrategy = Mutate;
       Phenotype.CrossoverStrategy = CrossOver;
-
-      m_population.NewChampion += m_window.AddChampion;
+      
       Properties.Settings.Default.PropertyChanged += (sender, args) =>
       {
         switch (args.PropertyName)
@@ -295,6 +294,7 @@ namespace Genetic_Cars
       
       m_population = new Population(this);
       m_population.NewGeneration += m_window.NewGeneration;
+      m_population.NewChampion += m_window.AddChampion;
       m_population.Generate();
 
       // rebuild the view to match the track
