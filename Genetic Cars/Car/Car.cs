@@ -24,28 +24,23 @@ namespace Genetic_Cars.Car
 
     public delegate void HealthChangedHandler(int id, float health);
 
-    private const int SpeedHistorySecs = 5;
-    private const int SpeedHistorySamplesPerSec = 4;
-    private const float SpeedHistorySampleInterval =
-      1f / SpeedHistorySamplesPerSec;
-
     // roughly the number of seconds the car's speed must be below the 
     // threshold before it will die
-    private const int SecondsTilDeath = 5;
-    private const int MaxHealth = SecondsTilDeath * SpeedHistorySamplesPerSec;
+    private const float SecondsTilDeath = 5;
+    private const float MaxHealth = 100;
+    private const float HealthPerSec = MaxHealth / SecondsTilDeath;
     private const float LowSpeedThreshold = 0.5f;
+    private const float SpeedSampleDelay = 5;
 
     private bool m_disposed = false;
     private int m_id;
     private readonly PhysicsManager m_physicsManager;
     private Entity m_entity;
     private Vector2 m_lastPosition;
-    
-    private int m_health = MaxHealth;
-    private readonly float[] m_speedHistory =
-      new float[SpeedHistorySecs * SpeedHistorySamplesPerSec];
-    private int m_speedHistoryIndex = 0;
-    private float m_speedSampleTime = 0;
+
+    private bool m_losingHealth = false;
+    private float m_health = MaxHealth;
+    private float m_speedSampleDelay = 0;
 
     private RenderStates m_overviewRenderStates = new RenderStates
     {
@@ -144,19 +139,13 @@ namespace Genetic_Cars.Car
     /// </summary>
     public float Health
     {
-      get { return m_health / (float)MaxHealth; }
+      get { return m_health / MaxHealth; }
     }
 
     /// <summary>
     /// The current speed of the car in m/s.
     /// </summary>
     public float Speed { get; private set; }
-
-    /// <summary>
-    /// Returns the speed of the car, averaged over the interval defined by 
-    /// SpeedHistorySecs.
-    /// </summary>
-    public float AverageSpeed { get; private set; }
 
     /// <summary>
     /// Returns true if the car is alive.
@@ -205,33 +194,28 @@ namespace Genetic_Cars.Car
         return;
       }
 
-      // update the speed average
-      m_speedSampleTime += deltaTime;
-      while (m_speedSampleTime >= SpeedHistorySampleInterval)
+      if (m_speedSampleDelay > 0)
       {
-        m_speedSampleTime -= SpeedHistorySampleInterval;
-        if (++m_speedHistoryIndex >= m_speedHistory.Length)
-        {
-          m_speedHistoryIndex = 0;
-        }
-        m_speedHistory[m_speedHistoryIndex] = Speed;
-        AverageSpeed = m_speedHistory.Average();
+        m_speedSampleDelay -= deltaTime;
+        return;
+      }
 
-        if (AverageSpeed < LowSpeedThreshold)
+      if (Speed < LowSpeedThreshold)
+      {
+        m_losingHealth = true;
+        m_health -= HealthPerSec * deltaTime;
+        if (m_health <= 0)
         {
-          m_health--;
-          if (m_health == 0)
-          {
-            ClearEntity();
-            return;
-          }
-          OnHealthChanged();
+          ClearEntity();
+          return;
         }
-        else
-        {
-          m_health = MaxHealth;
-          OnHealthChanged();
-        }
+        OnHealthChanged();
+      }
+      else if (m_losingHealth)
+      {
+        m_losingHealth = false;
+        m_health = MaxHealth;
+        OnHealthChanged();
       }
     }
 
@@ -343,7 +327,8 @@ namespace Genetic_Cars.Car
       DistanceTraveled = 0;
       m_health = MaxHealth;
       Speed = 0;
-      AverageSpeed = 0;
+      m_losingHealth = false;
+      m_speedSampleDelay = SpeedSampleDelay;
     }
 
     private void OnHealthChanged()

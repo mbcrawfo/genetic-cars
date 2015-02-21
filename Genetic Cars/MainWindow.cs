@@ -460,7 +460,7 @@ namespace Genetic_Cars
         }
         rec.Height = rec.Height - 4;
         e.Graphics.FillRectangle(m_brush, 2, 2, rec.Width, rec.Height);
-
+        
         if (!string.IsNullOrEmpty(Text))
         {
           SizeF len = e.Graphics.MeasureString(Text, Font);
