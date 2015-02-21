@@ -134,6 +134,7 @@ namespace Genetic_Cars
             break;
         }
 
+        pb.Visible = true;
         pb.Refresh();
       }
     }
@@ -184,7 +185,13 @@ namespace Genetic_Cars
     private void SetHealthValue(int id, float health)
     {
       var pb = (ColorProgressBar)populationList.Controls[id];
-      pb.Value = (int)Math.Round(health * 100);
+      var value = (int)Math.Round(health * 100); 
+      pb.Value = value;
+
+      if (value <= 0)
+      {
+        pb.Visible = false;
+      }
     }
 
     private void ResetUI()

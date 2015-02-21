@@ -211,11 +211,15 @@ namespace Genetic_Cars.Car
         }
         OnHealthChanged();
       }
-      else if (m_losingHealth)
+      else if (m_losingHealth && m_health < MaxHealth)
       {
-        m_losingHealth = false;
-        m_health = MaxHealth;
+        m_health += HealthPerSec * deltaTime;
         OnHealthChanged();
+
+        if (m_health >= MaxHealth)
+        {
+          m_losingHealth = false;
+        }
       }
     }
 
