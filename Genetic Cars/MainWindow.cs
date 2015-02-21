@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Printing;
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using Genetic_Cars.Car;
 using Genetic_Cars.Properties;
 using log4net;
 // ReSharper disable LocalizableElement
@@ -12,11 +16,13 @@ using log4net;
 
 namespace Genetic_Cars
 {
-  public partial class MainWindow : Form
+  partial class MainWindow : Form
   {
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
 
+    private static readonly int PopulationSize =
+      Settings.Default.PopulationSize;
     private const int MaxHighScores = 20;
 
     private bool m_paused = false;
@@ -33,12 +39,26 @@ namespace Genetic_Cars
 
       
       clonesComboBox.Items.Clear();
-      var maxClones = Settings.Default.PopulationSize / 2;
+      var maxClones = PopulationSize / 2;
       for (var i = 0; i <= maxClones; i++)
       {
         clonesComboBox.Items.Add(i);
       }
       clonesComboBox.SelectedIndex = Properties.Settings.Default.NumClones;
+
+      for (var i = 0; i < PopulationSize; i++)
+      {
+        var pb = new ColorProgressBar
+        {
+          Minimum = 0,
+          Maximum = 100,
+          Value = 100,
+          Text = i.ToString(),
+          Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold),
+          Margin = new Padding(0)
+        };
+        populationList.Controls.Add(pb);
+      }
     }
 
     /// <summary>
@@ -87,10 +107,35 @@ namespace Genetic_Cars
     /// Set the text indicating the current generation.
     /// </summary>
     /// <param name="generation"></param>
-    public void SetGeneration(int generation)
+    /// <param name="cars"></param>
+    public void NewGeneration(int generation, List<Car.Car> cars)
     {
-      generationLabel.Text = string.Format("Generation: {0}",
-        generation);
+      Debug.Assert(PopulationSize == cars.Count);
+
+      generationLabel.Text = string.Format(
+        "Generation: {0}", generation);
+
+      for (var i = 0; i < PopulationSize; i++)
+      {
+        var pb = (ColorProgressBar)populationList.Controls[i];
+        var car = cars[i];
+        car.HealthChanged += SetHealthValue;
+
+        // setting them to max value makes drawing bug?  whatever...
+        pb.Value = 99;
+        switch (car.Type)
+        {
+          case EntityType.Normal:
+            pb.FillColor = Color.Red;
+            break;
+
+          case EntityType.Clone:
+            pb.FillColor = Color.Blue;
+            break;
+        }
+
+        pb.Refresh();
+      }
     }
 
     /// <summary>
@@ -134,6 +179,12 @@ namespace Genetic_Cars
         m_highScores[i].Index = i + 1;
         highScoreListBox.Items.Add(m_highScores[i].DisplayValue);
       }
+    }
+
+    private void SetHealthValue(int id, float health)
+    {
+      var pb = (ColorProgressBar)populationList.Controls[id];
+      pb.Value = (int)Math.Round(health * 100);
     }
 
     private void ResetUI()
@@ -375,6 +426,49 @@ namespace Genetic_Cars
         else
         {
           return 1;
+        }
+      }
+    }
+
+    /// <summary>
+    /// Simple progress bar that is colorable.
+    /// </summary>
+    private sealed class ColorProgressBar : ProgressBar
+    {
+      private SolidBrush m_brush;
+
+      public ColorProgressBar()
+      {
+        SetStyle(ControlStyles.UserPaint, true);
+        FillColor = Color.ForestGreen;
+      }
+
+      public Color FillColor
+      {
+        get { return m_brush.Color; }
+        set { m_brush = new SolidBrush(value); }
+      }
+
+      protected override void OnPaint(PaintEventArgs e)
+      {
+        Rectangle rec = e.ClipRectangle;
+
+        rec.Width = (int)(rec.Width * ((double)Value / Maximum)) - 4;
+        if (ProgressBarRenderer.IsSupported)
+        {
+          ProgressBarRenderer.DrawHorizontalBar(e.Graphics, e.ClipRectangle);
+        }
+        rec.Height = rec.Height - 4;
+        e.Graphics.FillRectangle(m_brush, 2, 2, rec.Width, rec.Height);
+
+        if (!string.IsNullOrEmpty(Text))
+        {
+          SizeF len = e.Graphics.MeasureString(Text, Font);
+          Point location = 
+            new Point(Convert.ToInt32((Width / 2) - len.Width / 2), 
+              Convert.ToInt32((Height / 2) - len.Height / 2)
+              );
+          e.Graphics.DrawString(Text, Font, Brushes.Black, location);
         }
       }
     }

@@ -50,15 +50,15 @@ namespace Genetic_Cars
       this.seedTextBox = new System.Windows.Forms.TextBox();
       this.seedLabel = new System.Windows.Forms.Label();
       this.historyBox = new System.Windows.Forms.GroupBox();
+      this.highScoreListBox = new System.Windows.Forms.ListBox();
       this.populationBox = new System.Windows.Forms.GroupBox();
-      this.populationListBox = new System.Windows.Forms.ListBox();
       this.distanceLabel = new System.Windows.Forms.Label();
       this.liveCountLabel = new System.Windows.Forms.Label();
       this.generationLabel = new System.Windows.Forms.Label();
       this.overviewBox = new System.Windows.Forms.GroupBox();
       this.overviewPanel = new System.Windows.Forms.Panel();
       this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-      this.highScoreListBox = new System.Windows.Forms.ListBox();
+      this.populationList = new System.Windows.Forms.FlowLayoutPanel();
       this.mainLayout.SuspendLayout();
       this.settingsBox.SuspendLayout();
       this.historyBox.SuspendLayout();
@@ -259,9 +259,21 @@ namespace Genetic_Cars
       this.historyBox.TabStop = false;
       this.historyBox.Text = "High Scores";
       // 
+      // highScoreListBox
+      // 
+      this.highScoreListBox.BackColor = System.Drawing.SystemColors.Control;
+      this.highScoreListBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+      this.highScoreListBox.Dock = System.Windows.Forms.DockStyle.Fill;
+      this.highScoreListBox.FormattingEnabled = true;
+      this.highScoreListBox.Location = new System.Drawing.Point(3, 16);
+      this.highScoreListBox.Name = "highScoreListBox";
+      this.highScoreListBox.SelectionMode = System.Windows.Forms.SelectionMode.None;
+      this.highScoreListBox.Size = new System.Drawing.Size(157, 201);
+      this.highScoreListBox.TabIndex = 0;
+      // 
       // populationBox
       // 
-      this.populationBox.Controls.Add(this.populationListBox);
+      this.populationBox.Controls.Add(this.populationList);
       this.populationBox.Controls.Add(this.distanceLabel);
       this.populationBox.Controls.Add(this.liveCountLabel);
       this.populationBox.Controls.Add(this.generationLabel);
@@ -272,17 +284,6 @@ namespace Genetic_Cars
       this.populationBox.TabIndex = 3;
       this.populationBox.TabStop = false;
       this.populationBox.Text = "Population";
-      // 
-      // populationListBox
-      // 
-      this.populationListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-      this.populationListBox.FormattingEnabled = true;
-      this.populationListBox.Location = new System.Drawing.Point(6, 72);
-      this.populationListBox.Name = "populationListBox";
-      this.populationListBox.Size = new System.Drawing.Size(138, 420);
-      this.populationListBox.TabIndex = 3;
       // 
       // distanceLabel
       // 
@@ -337,17 +338,18 @@ namespace Genetic_Cars
       this.overviewPanel.Size = new System.Drawing.Size(516, 202);
       this.overviewPanel.TabIndex = 0;
       // 
-      // highScoreListBox
+      // populationList
       // 
-      this.highScoreListBox.BackColor = System.Drawing.SystemColors.Control;
-      this.highScoreListBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-      this.highScoreListBox.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.highScoreListBox.FormattingEnabled = true;
-      this.highScoreListBox.Location = new System.Drawing.Point(3, 16);
-      this.highScoreListBox.Name = "highScoreListBox";
-      this.highScoreListBox.SelectionMode = System.Windows.Forms.SelectionMode.None;
-      this.highScoreListBox.Size = new System.Drawing.Size(157, 201);
-      this.highScoreListBox.TabIndex = 0;
+      this.populationList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.populationList.AutoScroll = true;
+      this.populationList.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+      this.populationList.Location = new System.Drawing.Point(6, 70);
+      this.populationList.Name = "populationList";
+      this.populationList.Size = new System.Drawing.Size(138, 422);
+      this.populationList.TabIndex = 3;
+      this.populationList.WrapContents = false;
       // 
       // MainWindow
       // 
@@ -393,9 +395,9 @@ namespace Genetic_Cars
     private Label liveCountLabel;
     private Label distanceLabel;
     private GroupBox overviewBox;
-    private ListBox populationListBox;
     private Panel overviewPanel;
     private ListBox highScoreListBox;
+    private FlowLayoutPanel populationList;
 
 
   }

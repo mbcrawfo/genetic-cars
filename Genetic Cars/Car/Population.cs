@@ -27,7 +27,7 @@ namespace Genetic_Cars.Car
     /// </summary>
     public static Random Random { get; set; }
 
-    public delegate void NewGenerationHandler(int num);
+    public delegate void NewGenerationHandler(int num, List<Car> cars);
 
     public delegate void NewChampionHandler(int generation, int id, 
       float distance);
@@ -61,7 +61,6 @@ namespace Genetic_Cars.Car
 
       MutationRate = Properties.Settings.Default.MutationRate;
       m_physicsManager = physicsManager;
-      Generate();
     }
 
     ~Population()
@@ -214,7 +213,7 @@ namespace Genetic_Cars.Car
       m_championDistance = 0;
       Leader = m_cars[0];
       Generation = 1;
-      OnNewGeneration(Generation);
+      OnNewGeneration(Generation, m_cars);
     }
 
     /// <summary>
@@ -265,14 +264,14 @@ namespace Genetic_Cars.Car
         }
       }
       
-      OnNewGeneration(Generation);
+      OnNewGeneration(Generation, m_cars);
     }
 
-    private void OnNewGeneration(int num)
+    private void OnNewGeneration(int num, List<Car> cars)
     {
       if (NewGeneration != null)
       {
-        NewGeneration(num);
+        NewGeneration(num, cars);
       }
     }
 

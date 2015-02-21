@@ -264,7 +264,6 @@ namespace Genetic_Cars
         
         // sync the gui text
         m_window.SetDistance(m_population.Leader.MaxForwardDistance);
-        m_window.SetGeneration(m_population.Generation);
         m_window.SetLiveCount(m_population.LiveCount);
       }
     }
@@ -293,7 +292,10 @@ namespace Genetic_Cars
       m_track.Generate();
       Car.Car.StartPosition = new Vector2(m_track.StartingLine,
         (2 * Definition.MaxBodyPointDistance) + Definition.MaxWheelRadius);
+      
       m_population = new Population(this);
+      m_population.NewGeneration += m_window.NewGeneration;
+      m_population.Generate();
 
       // rebuild the view to match the track
       var size = m_overviewWindow.Size;

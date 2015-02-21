@@ -22,6 +22,8 @@ namespace Genetic_Cars.Car
     /// </summary>
     public static Vector2 StartPosition { get; set; }
 
+    public delegate void HealthChangedHandler(int id, float health);
+
     private const int SpeedHistorySecs = 5;
     private const int SpeedHistorySamplesPerSec = 4;
     private const float SpeedHistorySampleInterval =
@@ -89,6 +91,8 @@ namespace Genetic_Cars.Car
     {
       Dispose(false);
     }
+
+    public event HealthChangedHandler HealthChanged;
     
     /// <summary>
     /// The id of the car (shared by all the car components).
@@ -215,15 +219,18 @@ namespace Genetic_Cars.Car
 
         if (AverageSpeed < LowSpeedThreshold)
         {
-          if (--m_health == 0)
+          m_health--;
+          if (m_health == 0)
           {
             ClearEntity();
             return;
           }
+          OnHealthChanged();
         }
         else
         {
           m_health = MaxHealth;
+          OnHealthChanged();
         }
       }
     }
@@ -329,6 +336,7 @@ namespace Genetic_Cars.Car
         m_overviewLine[i].Color.A = 255;
       }
 
+      HealthChanged = null;
       Position = StartPosition;
       m_lastPosition = StartPosition;
       MaxForwardDistance = 0;
@@ -336,6 +344,14 @@ namespace Genetic_Cars.Car
       m_health = MaxHealth;
       Speed = 0;
       AverageSpeed = 0;
+    }
+
+    private void OnHealthChanged()
+    {
+      if (HealthChanged != null)
+      {
+        HealthChanged(Id, Health);
+      }
     }
 
     private void ClearEntity()
