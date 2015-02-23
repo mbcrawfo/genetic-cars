@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 using FarseerPhysics.Dynamics;
 using Genetic_Cars.Car;
 using Genetic_Cars.Properties;
@@ -11,6 +12,7 @@ using log4net;
 using Microsoft.Xna.Framework;
 using SFML.Graphics;
 using SFML.Window;
+using View = SFML.Graphics.View;
 
 // ReSharper disable RedundantDefaultMemberInitializer
 
@@ -34,6 +36,8 @@ namespace Genetic_Cars
 
     private bool m_disposed = false;
     private bool m_initialized = false;
+    private bool m_newWorld = false;
+    private bool m_exit = false;
 
     // frame state variables
     private readonly Stopwatch m_frameTime = new Stopwatch();
@@ -160,7 +164,7 @@ namespace Genetic_Cars
     /// </summary>
     public void Run()
     {
-      while (m_window.Visible)
+      while (m_window.Visible && !m_exit)
       {
         m_frameTime.Restart();
 
@@ -273,6 +277,15 @@ namespace Genetic_Cars
       while (m_lastLogicStepDelta >= LogicTickInterval)
       {
         m_lastLogicStepDelta -= LogicTickInterval;
+
+        if (m_newWorld)
+        {
+          m_newWorld = false;
+          var seed = DateTime.Now.ToString("F");
+          SetSeed(seed.GetHashCode());
+          GenerateWorld();
+        }
+
         m_population.Update(LogicTickInterval);
         
         // sync the gui text
@@ -306,6 +319,7 @@ namespace Genetic_Cars
       World = new World(Gravity);
       m_track = new Track(this);
       m_track.Generate();
+      m_track.FinishLineCrossed += TrackOnFinishLineCrossed;
       Car.Car.StartPosition = new Vector2(m_track.StartingLine,
         (2 * Definition.MaxBodyPointDistance) + Definition.MaxWheelRadius);
       
@@ -324,7 +338,7 @@ namespace Genetic_Cars
         Viewport = new FloatRect(0, 0, 1, 1)
       };
     }
-
+    
     private void PauseSimulation()
     {
       m_paused = true;
@@ -407,6 +421,29 @@ namespace Genetic_Cars
       {
         m_population.Generate();
       }
+    }
+
+    private void TrackOnFinishLineCrossed(int id)
+    {
+      PauseSimulation();
+
+      var message = string.Format(
+        "Track defeated in generation {0} by car {1}.\n" +
+        "Click Yes to generate a new world with a new seed, or No to exit.",
+        m_population.Generation, id
+        );
+      var result = MessageBox.Show(message, "Great Success", 
+        MessageBoxButtons.YesNo, MessageBoxIcon.None);
+      if (result == DialogResult.Yes)
+      {
+        m_newWorld = true;
+      }
+      else
+      {
+        m_exit = true;
+      }
+
+      ResumeSimulation();
     }
     #endregion
   }

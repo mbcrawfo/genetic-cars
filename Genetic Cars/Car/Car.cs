@@ -29,7 +29,7 @@ namespace Genetic_Cars.Car
     private const float SecondsTilDeath = 5;
     private const float MaxHealth = 100;
     private const float HealthPerSec = MaxHealth / SecondsTilDeath;
-    private const float LowSpeedThreshold = 0.5f;
+    private const float LowSpeedThreshold = 0.25f;
     private const float SpeedSampleDelay = 5;
 
     private bool m_disposed = false;

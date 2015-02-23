@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using FarseerPhysics.Dynamics;
+using FarseerPhysics.Dynamics.Contacts;
 using FarseerPhysics.Factories;
 using Genetic_Cars.Properties;
 using log4net;
@@ -20,8 +21,7 @@ namespace Genetic_Cars
   {
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
-    
-    
+
     // track properties
     private static readonly int NumPieces = 
       Settings.Default.NumTrackPieces;
@@ -40,6 +40,13 @@ namespace Genetic_Cars
     public static readonly Category CollisionCategory = Category.Cat1;
 
     /// <summary>
+    /// The collision category for the track's finish line sensor.
+    /// </summary>
+    public static readonly Category FinishLineCategory = Category.Cat3;
+    
+    public delegate void FinishLineCrossedHandler(int id);
+
+    /// <summary>
     /// The RNG used for all track generation.  Must be set before any tracks 
     /// are created.
     /// </summary>
@@ -54,6 +61,7 @@ namespace Genetic_Cars
     private readonly VertexArray m_trackOutline = 
       new VertexArray(PrimitiveType.LinesStrip);
     private float m_startingLine;
+    private bool m_finishLineCrossed = false;
 
     /// <summary>
     /// Initializes, but does not generate the track.
@@ -72,6 +80,8 @@ namespace Genetic_Cars
     {
       Dispose(false);
     }
+
+    public event FinishLineCrossedHandler FinishLineCrossed;
 
     /// <summary>
     /// The X position of the world where cars should start.
@@ -203,6 +213,17 @@ namespace Genetic_Cars
         minY = Math.Min(minY, end.Y);
       }
 
+      // the finish line sensor is halfway down the finish line piece
+      var sensor = BodyFactory.CreateEdge(m_world, 
+        (end + new Vector2f(5, 0)).ToVector2(), 
+        (end + new Vector2f(5, 10)).ToVector2()
+        );
+      sensor.IsSensor = true;
+      sensor.CollisionCategories = FinishLineCategory;
+      sensor.CollidesWith = Car.Entity.CollisionCategory;
+      sensor.OnCollision += FinishLineOnCollision;
+      m_trackBodies.Add(sensor);
+
       // create a landing pad at the end of the track
       start = end;
       shape = new RectangleShape
@@ -214,12 +235,18 @@ namespace Genetic_Cars
         Size = new Vector2f(10, PieceSize.Y),
         Rotation = 0f
       };
-      end = start + shape.Size;
+      end = start + new Vector2f(shape.Size.X, 0);
       body = CreateBody(start, end);
       m_trackShapes.Add(shape);
       m_trackBodies.Add(body);
       m_trackOutline.Append(new Vertex(end.InvertY(), FillColor));
       maxX = end.X;
+
+      // create a holder so cars don't go off the end of the track
+      start = end;
+      end = start + new Vector2f(0, 10);
+      body = CreateBody(start, end);
+      m_trackBodies.Add(body);
 
       Dimensions = new Vector2(maxX - minX, maxY - minY + 10);
       Center = new Vector2(
@@ -229,7 +256,7 @@ namespace Genetic_Cars
 //       Log.DebugFormat("Generated {0} track pieces in {1} ms", 
 //         m_trackShapes.Count, stopwatch.ElapsedMilliseconds);
     }
-
+    
     /// <summary>
     /// Clears the track allowing a new track to be generated.
     /// </summary>
@@ -254,6 +281,7 @@ namespace Genetic_Cars
       m_trackShapes.Clear();
       m_trackOutline.Clear();
       m_generated = false;
+      m_finishLineCrossed = false;
     }
 
     /// <summary>
@@ -285,6 +313,25 @@ namespace Genetic_Cars
       }
 
       target.Draw(m_trackOutline);
+    }
+
+    private bool FinishLineOnCollision(Fixture fixtureA, Fixture fixtureB, 
+      Contact contact)
+    {
+      if (m_finishLineCrossed)
+      {
+        return true;
+      }
+
+      var car = fixtureA.IsSensor ? fixtureB.Body : fixtureA.Body;
+      m_finishLineCrossed = true;
+      Log.DebugFormat("Car {0} hit finish line", (int)car.UserData);
+      if (FinishLineCrossed != null)
+      {
+        FinishLineCrossed((int)car.UserData);
+      }
+      
+      return true;
     }
 
     /// <summary>

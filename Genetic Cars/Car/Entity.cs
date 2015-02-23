@@ -53,6 +53,7 @@ namespace Genetic_Cars.Car
     private readonly PhysicsManager m_physicsManager;
     private readonly Definition m_definition;
     private EntityType m_type;
+    private int m_id;
 
     // graphics fields
     private ConvexShape m_bodyShape;
@@ -101,7 +102,19 @@ namespace Genetic_Cars.Car
     /// <summary>
     /// Just an identifier for this car.
     /// </summary>
-    public int Id { get; set; }
+    public int Id
+    {
+      get { return m_id; }
+      set
+      {
+        m_id = value;
+        m_bodyBody.UserData = m_id;
+        foreach (var wheelBody in m_wheelBodies)
+        {
+          wheelBody.UserData = m_id;
+        }
+      }
+    }
     
     /// <summary>
     /// The geometric center of the car's body.
@@ -314,7 +327,7 @@ namespace Genetic_Cars.Car
           );
         body.BodyType = BodyType.Dynamic;
         body.Friction = 1;
-        body.CollidesWith = ~CollisionCategory;
+        body.CollidesWith = Track.CollisionCategory;
         body.CollisionCategories = CollisionCategory;
 
         // need to catch the first collision of this body
