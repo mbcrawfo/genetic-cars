@@ -103,6 +103,18 @@ namespace Genetic_Cars.Car
       }
     }
 
+    public Car GetCar(int id)
+    {
+      if (id < 0 || id >= Size)
+      {
+        throw new ArgumentOutOfRangeException("id");
+      }
+
+      var car = m_cars[id];
+      Debug.Assert(car.Id == id);
+      return car;
+    }
+
     /// <summary>
     /// Does a logic update for the population.
     /// </summary>

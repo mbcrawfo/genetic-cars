@@ -52,13 +52,15 @@ namespace Genetic_Cars
       this.historyBox = new System.Windows.Forms.GroupBox();
       this.highScoreListBox = new System.Windows.Forms.ListBox();
       this.populationBox = new System.Windows.Forms.GroupBox();
+      this.followLeaderButton = new System.Windows.Forms.Button();
+      this.followingLabel = new System.Windows.Forms.Label();
+      this.populationList = new System.Windows.Forms.FlowLayoutPanel();
       this.distanceLabel = new System.Windows.Forms.Label();
       this.liveCountLabel = new System.Windows.Forms.Label();
       this.generationLabel = new System.Windows.Forms.Label();
       this.overviewBox = new System.Windows.Forms.GroupBox();
       this.overviewPanel = new System.Windows.Forms.Panel();
       this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-      this.populationList = new System.Windows.Forms.FlowLayoutPanel();
       this.mainLayout.SuspendLayout();
       this.settingsBox.SuspendLayout();
       this.historyBox.SuspendLayout();
@@ -273,6 +275,8 @@ namespace Genetic_Cars
       // 
       // populationBox
       // 
+      this.populationBox.Controls.Add(this.followLeaderButton);
+      this.populationBox.Controls.Add(this.followingLabel);
       this.populationBox.Controls.Add(this.populationList);
       this.populationBox.Controls.Add(this.distanceLabel);
       this.populationBox.Controls.Add(this.liveCountLabel);
@@ -285,11 +289,45 @@ namespace Genetic_Cars
       this.populationBox.TabStop = false;
       this.populationBox.Text = "Population";
       // 
+      // followLeaderButton
+      // 
+      this.followLeaderButton.Location = new System.Drawing.Point(6, 87);
+      this.followLeaderButton.Name = "followLeaderButton";
+      this.followLeaderButton.Size = new System.Drawing.Size(138, 23);
+      this.followLeaderButton.TabIndex = 5;
+      this.followLeaderButton.Text = "Follow Leader";
+      this.toolTip.SetToolTip(this.followLeaderButton, "When clicked, resets the camera to follow \r\nthe lead car.");
+      this.followLeaderButton.UseVisualStyleBackColor = true;
+      this.followLeaderButton.Click += new System.EventHandler(this.followLeaderButton_Click);
+      // 
+      // followingLabel
+      // 
+      this.followingLabel.AutoSize = true;
+      this.followingLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.followingLabel.Location = new System.Drawing.Point(6, 50);
+      this.followingLabel.Name = "followingLabel";
+      this.followingLabel.Size = new System.Drawing.Size(108, 17);
+      this.followingLabel.TabIndex = 4;
+      this.followingLabel.Text = "Following: Car 0";
+      // 
+      // populationList
+      // 
+      this.populationList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.populationList.AutoScroll = true;
+      this.populationList.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+      this.populationList.Location = new System.Drawing.Point(6, 116);
+      this.populationList.Name = "populationList";
+      this.populationList.Size = new System.Drawing.Size(138, 376);
+      this.populationList.TabIndex = 3;
+      this.populationList.WrapContents = false;
+      // 
       // distanceLabel
       // 
       this.distanceLabel.AutoSize = true;
       this.distanceLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.distanceLabel.Location = new System.Drawing.Point(6, 50);
+      this.distanceLabel.Location = new System.Drawing.Point(6, 67);
       this.distanceLabel.Name = "distanceLabel";
       this.distanceLabel.Size = new System.Drawing.Size(114, 17);
       this.distanceLabel.TabIndex = 2;
@@ -338,19 +376,6 @@ namespace Genetic_Cars
       this.overviewPanel.Size = new System.Drawing.Size(516, 202);
       this.overviewPanel.TabIndex = 0;
       // 
-      // populationList
-      // 
-      this.populationList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-      this.populationList.AutoScroll = true;
-      this.populationList.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-      this.populationList.Location = new System.Drawing.Point(6, 70);
-      this.populationList.Name = "populationList";
-      this.populationList.Size = new System.Drawing.Size(138, 422);
-      this.populationList.TabIndex = 3;
-      this.populationList.WrapContents = false;
-      // 
       // MainWindow
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -398,6 +423,8 @@ namespace Genetic_Cars
     private Panel overviewPanel;
     private ListBox highScoreListBox;
     private FlowLayoutPanel populationList;
+    private Label followingLabel;
+    private Button followLeaderButton;
 
 
   }

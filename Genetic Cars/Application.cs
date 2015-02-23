@@ -220,7 +220,21 @@ namespace Genetic_Cars
       {
         m_lastDrawingStepDelta = 0;
 
-        var viewPos = m_population.Leader.Position.ToVector2f().InvertY();
+        var following = m_window.FollowingCarId;
+        Vector2f viewPos;
+        if (following == MainWindow.LeaderCarId)
+        {
+          viewPos = m_population.Leader.Position.ToVector2f().InvertY();
+        }
+        else
+        {
+          var car = m_population.GetCar(following);
+          if (!car.IsAlive)
+          {
+            m_window.FollowingCarId = MainWindow.LeaderCarId;
+          }
+          viewPos = car.Position.ToVector2f().InvertY();
+        }
         m_drawingView.Center = viewPos;
         m_viewShape.Position = viewPos;
 
@@ -264,6 +278,9 @@ namespace Genetic_Cars
         // sync the gui text
         m_window.SetDistance(m_population.Leader.MaxForwardDistance);
         m_window.SetLiveCount(m_population.LiveCount);
+        m_window.SetFollowingNumber(
+          m_window.FollowingCarId == MainWindow.LeaderCarId ? 
+          m_population.Leader.Id : m_window.FollowingCarId);
       }
     }
 

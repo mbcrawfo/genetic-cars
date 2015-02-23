@@ -25,41 +25,7 @@ namespace Genetic_Cars
       Settings.Default.PopulationSize;
     private const int MaxHighScores = 20;
 
-    private bool m_paused = false;
-    private readonly List<HighScore> m_highScores = new List<HighScore>();
-
-    public MainWindow()
-    {
-      InitializeComponent();
-
-      // initialize default values
-      mutationRateTextBox.Text = 
-        Settings.Default.MutationRate.ToString(
-        CultureInfo.CurrentCulture);
-
-      
-      clonesComboBox.Items.Clear();
-      var maxClones = PopulationSize / 2;
-      for (var i = 0; i <= maxClones; i++)
-      {
-        clonesComboBox.Items.Add(i);
-      }
-      clonesComboBox.SelectedIndex = Properties.Settings.Default.NumClones;
-
-      for (var i = 0; i < PopulationSize; i++)
-      {
-        var pb = new ColorProgressBar
-        {
-          Minimum = 0,
-          Maximum = 100,
-          Value = 100,
-          Text = i.ToString(),
-          Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold),
-          Margin = new Padding(0)
-        };
-        populationList.Controls.Add(pb);
-      }
-    }
+    public const int LeaderCarId = -1;
 
     /// <summary>
     /// Handles the request for a seed change.
@@ -82,10 +48,67 @@ namespace Genetic_Cars
     /// </summary>
     public delegate void NewPopulationHandler();
 
+    private bool m_paused = false;
+    private readonly List<HighScore> m_highScores = new List<HighScore>();
+    private int m_followingCarId;
+
+    public MainWindow()
+    {
+      InitializeComponent();
+
+      // initialize default values
+      mutationRateTextBox.Text = 
+        Settings.Default.MutationRate.ToString(
+        CultureInfo.CurrentCulture);
+
+      FollowingCarId = LeaderCarId;
+
+      
+      clonesComboBox.Items.Clear();
+      var maxClones = PopulationSize / 2;
+      for (var i = 0; i <= maxClones; i++)
+      {
+        clonesComboBox.Items.Add(i);
+      }
+      clonesComboBox.SelectedIndex = Properties.Settings.Default.NumClones;
+
+      for (var i = 0; i < PopulationSize; i++)
+      {
+        var pb = new ColorProgressBar
+        {
+          Id = i,
+          Minimum = 0,
+          Maximum = 100,
+          Value = 100,
+          Text = i.ToString(),
+          Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold),
+          Margin = new Padding(0)
+        };
+        pb.Click += (sender, args) => 
+          FollowingCarId = ((ColorProgressBar) sender).Id;
+        toolTip.SetToolTip(pb, string.Format("Click to view car {0}", i));
+
+        populationList.Controls.Add(pb);
+      }
+    }
+    
     public event SeedChangedHandler SeedChanged;
     public event PauseSimulationHandler PauseSimulation;
     public event ResumeSimulationHandler ResumeSimulation;
     public event NewPopulationHandler NewPopulation;
+
+    /// <summary>
+    /// The id of the car the user wants the camera to follow.
+    /// </summary>
+    public int FollowingCarId 
+    { get { return m_followingCarId; }
+      set
+      {
+        m_followingCarId = value;
+        var status = m_followingCarId == LeaderCarId ? "Yes" : "No";
+        followLeaderButton.Text = string.Format("Follow Leader: {0}", status);
+      }
+    }
 
     /// <summary>
     /// The handle for the main SFML drawing surface.
@@ -104,6 +127,16 @@ namespace Genetic_Cars
     }
 
     /// <summary>
+    /// Sets the id number of the car being followed.  Needed because the gui 
+    /// doesn't know the id of the leader car.
+    /// </summary>
+    /// <param name="num"></param>
+    public void SetFollowingNumber(int num)
+    {
+      followingLabel.Text = string.Format("Following: Car {0}", num);
+    }
+
+    /// <summary>
     /// Set the text indicating the current generation.
     /// </summary>
     /// <param name="generation"></param>
@@ -112,6 +145,7 @@ namespace Genetic_Cars
     {
       Debug.Assert(PopulationSize == cars.Count);
 
+      FollowingCarId = LeaderCarId;
       generationLabel.Text = string.Format(
         "Generation: {0}", generation);
 
@@ -181,7 +215,7 @@ namespace Genetic_Cars
         highScoreListBox.Items.Add(m_highScores[i].DisplayValue);
       }
     }
-
+    
     private void SetHealthValue(int id, float health)
     {
       var pb = (ColorProgressBar)populationList.Controls[id];
@@ -394,6 +428,11 @@ namespace Genetic_Cars
         }
       }
     }
+
+    private void followLeaderButton_Click(object sender, EventArgs e)
+    {
+      FollowingCarId = LeaderCarId;
+    }
     #endregion
 
     private sealed class HighScore : IComparable
@@ -446,9 +485,13 @@ namespace Genetic_Cars
 
       public ColorProgressBar()
       {
+        SetStyle(ControlStyles.AllPaintingInWmPaint, true);
+        SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
         SetStyle(ControlStyles.UserPaint, true);
         FillColor = Color.ForestGreen;
       }
+
+      public int Id { get; set; }
 
       public Color FillColor
       {
