@@ -31,8 +31,19 @@ namespace Genetic_Cars.Car
     /// </summary>
     public static Random Random { get; set; }
 
+    /// <summary>
+    /// Responds to a new generation of cars.
+    /// </summary>
+    /// <param name="num">The generation number.</param>
+    /// <param name="cars">The list of new cars.</param>
     public delegate void NewGenerationHandler(int num, List<Car> cars);
 
+    /// <summary>
+    /// Responds to the population evolving a new champion car.
+    /// </summary>
+    /// <param name="generation"></param>
+    /// <param name="id"></param>
+    /// <param name="distance"></param>
     public delegate void NewChampionHandler(int generation, int id, 
       float distance);
 
@@ -57,6 +68,10 @@ namespace Genetic_Cars.Car
       new Vertex(new Vector2f(0, 1000), Color.Green),
     };
 
+    /// <summary>
+    /// Creates a new empty population.
+    /// </summary>
+    /// <param name="physicsManager"></param>
     public Population(PhysicsManager physicsManager)
     {
       if (physicsManager == null)
@@ -64,7 +79,6 @@ namespace Genetic_Cars.Car
         throw new ArgumentNullException("physicsManager");
       }
 
-      MutationRate = Properties.Settings.Default.MutationRate;
       m_physicsManager = physicsManager;
     }
 
@@ -73,15 +87,35 @@ namespace Genetic_Cars.Car
       Dispose(false);
     }
 
+    /// <summary>
+    /// Signals that the population has created a new generation of cars.
+    /// </summary>
     public event NewGenerationHandler NewGeneration;
+
+    /// <summary>
+    /// Signals that a new champion has been found.
+    /// </summary>
     public event NewChampionHandler NewChampion;
 
+    /// <summary>
+    /// The car in the lead for the current generation.  Null if the population 
+    /// is empty.
+    /// </summary>
     public Car Leader { get; private set; }
 
+    /// <summary>
+    /// The current generation number.
+    /// </summary>
     public int Generation { get; private set; }
 
+    /// <summary>
+    /// The count of cars that are currently alive.
+    /// </summary>
     public int LiveCount { get { return m_cars.Count(c => c.IsAlive); } }
 
+    /// <summary>
+    /// The number of cars that will be cloned in each new generation.
+    /// </summary>
     public int NumClones
     {
       get { return m_numClones; }
@@ -95,6 +129,9 @@ namespace Genetic_Cars.Car
       }
     }
 
+    /// <summary>
+    /// The rate at which mutations happen during crossover.
+    /// </summary>
     public float MutationRate
     {
       get { return m_mutationRate; }
@@ -108,6 +145,9 @@ namespace Genetic_Cars.Car
       }
     }
 
+    /// <summary>
+    /// The number of cars that are randomly generated in each new generation.
+    /// </summary>
     public int NumRandom
     {
       get { return m_numRandom; }
@@ -121,6 +161,11 @@ namespace Genetic_Cars.Car
       }
     }
 
+    /// <summary>
+    /// Get a particular car from the current generation.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     public Car GetCar(int id)
     {
       if (id < 0 || id >= Size)

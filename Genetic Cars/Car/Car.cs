@@ -22,6 +22,11 @@ namespace Genetic_Cars.Car
     /// </summary>
     public static Vector2 StartPosition { get; set; }
 
+    /// <summary>
+    /// Responds to a car's change in health.
+    /// </summary>
+    /// <param name="id">The car id.</param>
+    /// <param name="health">The health as a percentage [0,1].</param>
     public delegate void HealthChangedHandler(int id, float health);
 
     // roughly the number of seconds the car's speed must be below the 
@@ -29,7 +34,8 @@ namespace Genetic_Cars.Car
     private const float SecondsTilDeath = 5;
     private const float MaxHealth = 100;
     private const float HealthPerSec = MaxHealth / SecondsTilDeath;
-    private const float LowSpeedThreshold = 0.25f;
+    private static readonly float LowSpeedThreshold =
+      Properties.Settings.Default.CarLowSpeedThreshold;
     private const float SpeedSampleDelay = 5;
 
     private bool m_disposed = false;
@@ -152,6 +158,9 @@ namespace Genetic_Cars.Car
     /// </summary>
     public bool IsAlive { get { return m_health > 0; } }
 
+    /// <summary>
+    /// The type of the car.
+    /// </summary>
     public EntityType Type
     {
       get

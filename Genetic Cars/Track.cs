@@ -81,6 +81,9 @@ namespace Genetic_Cars
       Dispose(false);
     }
 
+    /// <summary>
+    /// Signals that a car has crossed the finish line of the track.
+    /// </summary>
     public event FinishLineCrossedHandler FinishLineCrossed;
 
     /// <summary>

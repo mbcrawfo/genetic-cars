@@ -202,5 +202,14 @@ namespace Genetic_Cars.Properties {
                 this["NumRandom"] = value;
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.25")]
+        public float CarLowSpeedThreshold {
+            get {
+                return ((float)(this["CarLowSpeedThreshold"]));
+            }
+        }
     }
 }

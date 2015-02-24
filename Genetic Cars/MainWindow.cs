@@ -25,6 +25,9 @@ namespace Genetic_Cars
       Settings.Default.PopulationSize;
     private const int MaxHighScores = 20;
 
+    /// <summary>
+    /// The id the gui uses to signal that the user wants to watch the lead car.
+    /// </summary>
     public const int LeaderCarId = -1;
 
     /// <summary>
@@ -95,11 +98,34 @@ namespace Genetic_Cars
       }
     }
     
+    /// <summary>
+    /// Signals that the user has changed the rng seed.
+    /// </summary>
     public event SeedChangedHandler SeedChanged;
+
+    /// <summary>
+    /// Signals that the user wants to pause the simulation.
+    /// </summary>
     public event GenericHandler PauseSimulation;
+
+    /// <summary>
+    /// Signals that the user wants to resume the simulation.
+    /// </summary>
     public event GenericHandler ResumeSimulation;
+
+    /// <summary>
+    /// Signals that the user wants to create a new population.
+    /// </summary>
     public event GenericHandler NewPopulation;
+
+    /// <summary>
+    /// Signals that the user wants to enable graphics rendering.
+    /// </summary>
     public event GenericHandler EnableGraphics;
+
+    /// <summary>
+    /// Signals that the user wants to disable the graphics rendering.
+    /// </summary>
     public event GenericHandler DisableGraphics;
 
     /// <summary>
