@@ -39,7 +39,8 @@ namespace Genetic_Cars.Car
     private bool m_disposed = false;
     private readonly PhysicsManager m_physicsManager;
     private int m_numClones = Properties.Settings.Default.NumClones;
-    private float m_mutationRate;
+    private float m_mutationRate = Properties.Settings.Default.MutationRate;
+    private int m_numRandom = Properties.Settings.Default.NumRandom;
 
     private readonly List<Car> m_cars = new List<Car>(Size); 
 
@@ -104,6 +105,19 @@ namespace Genetic_Cars.Car
           throw new ArgumentOutOfRangeException("value");
         }
         m_mutationRate = value;
+      }
+    }
+
+    public int NumRandom
+    {
+      get { return m_numRandom; }
+      set
+      {
+        if (value < 0 || value > Size)
+        {
+          throw new ArgumentOutOfRangeException("value");
+        }
+        m_numRandom = value;
       }
     }
 
@@ -212,7 +226,7 @@ namespace Genetic_Cars.Car
           var car = new Car(m_physicsManager)
           {
             Id = i, 
-            Type = EntityType.Normal
+            Type = EntityType.Random
           };
           m_cars.Add(car);
         }
@@ -222,7 +236,7 @@ namespace Genetic_Cars.Car
         foreach (var car in m_cars)
         {
           car.Generate();
-          car.Type = EntityType.Normal;
+          car.Type = EntityType.Random;
         }
       }
       
@@ -261,7 +275,7 @@ namespace Genetic_Cars.Car
           m_cars[i].Id = i;
           m_cars[i].Type = EntityType.Clone;
         }
-        else
+        else if (i < Size - NumRandom)
         {
           var a = phenotypes[Random.Next(phenotypes.Count())];
           var b = a;
@@ -277,6 +291,14 @@ namespace Genetic_Cars.Car
           m_cars[i].ReplaceWithCrossover(a, b, mutate);
           m_cars[i].Id = i;
           m_cars[i].Type = EntityType.Normal;
+        }
+        else
+        {
+          Log.DebugFormat("Car {0} is randomly generating", i);
+          m_cars[i].Phenotype = new Phenotype();
+          m_cars[i].ResetEntity();
+          m_cars[i].Id = i;
+          m_cars[i].Type = EntityType.Random;
         }
       }
       

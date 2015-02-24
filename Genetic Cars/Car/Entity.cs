@@ -20,6 +20,7 @@ namespace Genetic_Cars.Car
   {
     Normal,
     Clone,
+    Random,
     Champion
   }
 
@@ -156,6 +157,10 @@ namespace Genetic_Cars.Car
 
           case EntityType.Clone:
             m_bodyShape.FillColor = new Color(0, 0, color);
+            break;
+
+          case EntityType.Random:
+            m_bodyShape.FillColor = new Color(color, 0, color);
             break;
 
           case EntityType.Champion:

@@ -38,6 +38,8 @@ namespace Genetic_Cars
       this.mainLayout = new System.Windows.Forms.TableLayoutPanel();
       this.drawingPanel = new System.Windows.Forms.Panel();
       this.settingsBox = new System.Windows.Forms.GroupBox();
+      this.randomCarsComboBox = new System.Windows.Forms.ComboBox();
+      this.randomCarsLabel = new System.Windows.Forms.Label();
       this.clonesComboBox = new System.Windows.Forms.ComboBox();
       this.clonesLabel = new System.Windows.Forms.Label();
       this.mutationRateApplyButton = new System.Windows.Forms.Button();
@@ -102,6 +104,8 @@ namespace Genetic_Cars
       // 
       // settingsBox
       // 
+      this.settingsBox.Controls.Add(this.randomCarsComboBox);
+      this.settingsBox.Controls.Add(this.randomCarsLabel);
       this.settingsBox.Controls.Add(this.clonesComboBox);
       this.settingsBox.Controls.Add(this.clonesLabel);
       this.settingsBox.Controls.Add(this.mutationRateApplyButton);
@@ -121,6 +125,30 @@ namespace Genetic_Cars
       this.settingsBox.TabStop = false;
       this.settingsBox.Text = "Settings";
       // 
+      // randomCarsComboBox
+      // 
+      this.randomCarsComboBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+      this.randomCarsComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+      this.randomCarsComboBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.randomCarsComboBox.FormattingEnabled = true;
+      this.randomCarsComboBox.Location = new System.Drawing.Point(128, 139);
+      this.randomCarsComboBox.Name = "randomCarsComboBox";
+      this.randomCarsComboBox.Size = new System.Drawing.Size(77, 24);
+      this.randomCarsComboBox.TabIndex = 12;
+      this.toolTip.SetToolTip(this.randomCarsComboBox, "The number of cars that are randomly generated \r\nin each generation.");
+      this.randomCarsComboBox.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.ComboBox_DrawItem);
+      this.randomCarsComboBox.SelectedIndexChanged += new System.EventHandler(this.randomCarsComboBox_SelectedIndexChanged);
+      // 
+      // randomCarsLabel
+      // 
+      this.randomCarsLabel.AutoSize = true;
+      this.randomCarsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.randomCarsLabel.Location = new System.Drawing.Point(9, 140);
+      this.randomCarsLabel.Name = "randomCarsLabel";
+      this.randomCarsLabel.Size = new System.Drawing.Size(111, 20);
+      this.randomCarsLabel.TabIndex = 11;
+      this.randomCarsLabel.Text = "Random Cars:";
+      // 
       // clonesComboBox
       // 
       this.clonesComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -129,13 +157,13 @@ namespace Genetic_Cars
       this.clonesComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.clonesComboBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.clonesComboBox.FormattingEnabled = true;
-      this.clonesComboBox.Location = new System.Drawing.Point(155, 109);
+      this.clonesComboBox.Location = new System.Drawing.Point(128, 109);
       this.clonesComboBox.Name = "clonesComboBox";
-      this.clonesComboBox.Size = new System.Drawing.Size(50, 24);
+      this.clonesComboBox.Size = new System.Drawing.Size(77, 24);
       this.clonesComboBox.TabIndex = 10;
       this.toolTip.SetToolTip(this.clonesComboBox, "The number of cars, taken from the highest scoring \r\npart of the population, that" +
         " will be cloned into the \r\nnext generation unchanged.");
-      this.clonesComboBox.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.clonesComboBox_DrawItem);
+      this.clonesComboBox.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.ComboBox_DrawItem);
       this.clonesComboBox.SelectedIndexChanged += new System.EventHandler(this.clonesComboBox_SelectedIndexChanged);
       // 
       // clonesLabel
@@ -144,9 +172,9 @@ namespace Genetic_Cars
       this.clonesLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.clonesLabel.Location = new System.Drawing.Point(9, 110);
       this.clonesLabel.Name = "clonesLabel";
-      this.clonesLabel.Size = new System.Drawing.Size(140, 20);
+      this.clonesLabel.Size = new System.Drawing.Size(100, 20);
       this.clonesLabel.TabIndex = 9;
-      this.clonesLabel.Text = "Number of Clones:";
+      this.clonesLabel.Text = "Cloned Cars:";
       // 
       // mutationRateApplyButton
       // 
@@ -427,6 +455,8 @@ namespace Genetic_Cars
     private FlowLayoutPanel populationList;
     private Label followingLabel;
     private Button followLeaderButton;
+    private ComboBox randomCarsComboBox;
+    private Label randomCarsLabel;
 
 
   }

@@ -175,6 +175,9 @@ namespace Genetic_Cars.Car
             case EntityType.Clone:
               m_overviewLine[i].Color = Color.Blue;
               break;
+            case EntityType.Random:
+              m_overviewLine[i].Color = Color.Magenta;
+              break;
             case EntityType.Champion:
               m_overviewLine[i].Color = Color.Green;
               break;

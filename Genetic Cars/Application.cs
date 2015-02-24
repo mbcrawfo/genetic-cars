@@ -153,6 +153,10 @@ namespace Genetic_Cars
             m_population.NumClones = Properties.Settings.Default.NumClones;
             break;
 
+          case "NumRandom":
+            m_population.NumRandom = Properties.Settings.Default.NumRandom;
+            break;
+
           case "MutationRate":
             m_population.MutationRate = Properties.Settings.Default.MutationRate;
             break;

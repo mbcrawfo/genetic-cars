@@ -53,6 +53,8 @@ namespace Genetic_Cars
       toolTip.SetToolTip(mutationRateLabel, str);
       str = toolTip.GetToolTip(clonesComboBox);
       toolTip.SetToolTip(clonesLabel, str);
+      str = toolTip.GetToolTip(randomCarsComboBox);
+      toolTip.SetToolTip(randomCarsLabel, str);
 
       // initialize default values
       mutationRateTextBox.Text = 
@@ -61,15 +63,18 @@ namespace Genetic_Cars
 
       FollowingCarId = LeaderCarId;
 
-      
+      // at most half of the population can be clones, and half can be random
       clonesComboBox.Items.Clear();
-      var maxClones = PopulationSize / 2;
-      for (var i = 0; i <= maxClones; i++)
+      randomCarsComboBox.Items.Clear();
+      var halfPop = PopulationSize / 2;
+      for (var i = 0; i <= halfPop; i++)
       {
         clonesComboBox.Items.Add(i);
+        randomCarsComboBox.Items.Add(i);
       }
       clonesComboBox.SelectedIndex = Properties.Settings.Default.NumClones;
-
+      randomCarsComboBox.SelectedIndex = Properties.Settings.Default.NumRandom;
+      
       for (var i = 0; i < PopulationSize; i++)
       {
         var pb = new ColorProgressBar
@@ -166,6 +171,10 @@ namespace Genetic_Cars
           case EntityType.Clone:
             pb.FillColor = Color.Blue;
             break;
+
+          case EntityType.Random:
+            pb.FillColor = Color.Magenta;
+            break;
         }
 
         pb.Visible = true;
@@ -192,6 +201,12 @@ namespace Genetic_Cars
       distanceLabel.Text = string.Format("Distance: {0:F2} m", distance);
     }
 
+    /// <summary>
+    /// Add a new champion car to the high score list.
+    /// </summary>
+    /// <param name="generation"></param>
+    /// <param name="id"></param>
+    /// <param name="distance"></param>
     public void AddChampion(int generation, int id, float distance)
     {
       m_highScores.Add(new HighScore
@@ -423,7 +438,12 @@ namespace Genetic_Cars
       Properties.Settings.Default.NumClones = num;
     }
     
-    private void clonesComboBox_DrawItem(object sender, DrawItemEventArgs e)
+    /// <summary>
+    /// Draws a combo box with center aligned text.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void ComboBox_DrawItem(object sender, DrawItemEventArgs e)
     {
       // see: http://stackoverflow.com/questions/11817062/align-text-in-combobox
 
@@ -461,6 +481,14 @@ namespace Genetic_Cars
     {
       FollowingCarId = LeaderCarId;
     }
+
+    private void randomCarsComboBox_SelectedIndexChanged(object sender,
+      EventArgs e)
+    {
+      var num = (int)randomCarsComboBox.SelectedItem;
+      Properties.Settings.Default.NumRandom = num;
+    }
+
     #endregion
 
     private sealed class HighScore : IComparable
