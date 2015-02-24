@@ -42,7 +42,7 @@ namespace Genetic_Cars
       this.clonesLabel = new System.Windows.Forms.Label();
       this.mutationRateApplyButton = new System.Windows.Forms.Button();
       this.mutationRateTextBox = new System.Windows.Forms.TextBox();
-      this.label1 = new System.Windows.Forms.Label();
+      this.mutationRateLabel = new System.Windows.Forms.Label();
       this.newPopulationButton = new System.Windows.Forms.Button();
       this.graphicsButton = new System.Windows.Forms.Button();
       this.pauseButton = new System.Windows.Forms.Button();
@@ -106,7 +106,7 @@ namespace Genetic_Cars
       this.settingsBox.Controls.Add(this.clonesLabel);
       this.settingsBox.Controls.Add(this.mutationRateApplyButton);
       this.settingsBox.Controls.Add(this.mutationRateTextBox);
-      this.settingsBox.Controls.Add(this.label1);
+      this.settingsBox.Controls.Add(this.mutationRateLabel);
       this.settingsBox.Controls.Add(this.newPopulationButton);
       this.settingsBox.Controls.Add(this.graphicsButton);
       this.settingsBox.Controls.Add(this.pauseButton);
@@ -133,6 +133,8 @@ namespace Genetic_Cars
       this.clonesComboBox.Name = "clonesComboBox";
       this.clonesComboBox.Size = new System.Drawing.Size(50, 24);
       this.clonesComboBox.TabIndex = 10;
+      this.toolTip.SetToolTip(this.clonesComboBox, "The number of cars, taken from the highest scoring \r\npart of the population, that" +
+        " will be cloned into the \r\nnext generation unchanged.");
       this.clonesComboBox.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.clonesComboBox_DrawItem);
       this.clonesComboBox.SelectedIndexChanged += new System.EventHandler(this.clonesComboBox_SelectedIndexChanged);
       // 
@@ -169,15 +171,15 @@ namespace Genetic_Cars
       this.mutationRateTextBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
       this.toolTip.SetToolTip(this.mutationRateTextBox, "Set the mutation rate for the genetic algorithm.\r\nMust be between 0 and 1.");
       // 
-      // label1
+      // mutationRateLabel
       // 
-      this.label1.AutoSize = true;
-      this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.label1.Location = new System.Drawing.Point(8, 80);
-      this.label1.Name = "label1";
-      this.label1.Size = new System.Drawing.Size(114, 20);
-      this.label1.TabIndex = 6;
-      this.label1.Text = "Mutation Rate:";
+      this.mutationRateLabel.AutoSize = true;
+      this.mutationRateLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.mutationRateLabel.Location = new System.Drawing.Point(8, 80);
+      this.mutationRateLabel.Name = "mutationRateLabel";
+      this.mutationRateLabel.Size = new System.Drawing.Size(114, 20);
+      this.mutationRateLabel.TabIndex = 6;
+      this.mutationRateLabel.Text = "Mutation Rate:";
       // 
       // newPopulationButton
       // 
@@ -200,8 +202,8 @@ namespace Genetic_Cars
       this.graphicsButton.Size = new System.Drawing.Size(85, 23);
       this.graphicsButton.TabIndex = 4;
       this.graphicsButton.Text = "Graphics: On";
-      this.toolTip.SetToolTip(this.graphicsButton, "Toggle a rapid simulation mode that disables\r\ndrawing and simulates only physics " +
-        "to reach a\r\nsolution faster.");
+      this.toolTip.SetToolTip(this.graphicsButton, "Enable or disable graphics.\r\nWhen graphics are disabled, the simulation processes" +
+        " \r\nas rapidly as it can (time acceleration).");
       this.graphicsButton.UseVisualStyleBackColor = true;
       this.graphicsButton.Click += new System.EventHandler(this.graphicsButton_Click);
       // 
@@ -296,7 +298,7 @@ namespace Genetic_Cars
       this.followLeaderButton.Size = new System.Drawing.Size(138, 23);
       this.followLeaderButton.TabIndex = 5;
       this.followLeaderButton.Text = "Follow Leader";
-      this.toolTip.SetToolTip(this.followLeaderButton, "When clicked, resets the camera to follow \r\nthe lead car.");
+      this.toolTip.SetToolTip(this.followLeaderButton, "Resets the camera to follow the lead car.");
       this.followLeaderButton.UseVisualStyleBackColor = true;
       this.followLeaderButton.Click += new System.EventHandler(this.followLeaderButton_Click);
       // 
@@ -411,7 +413,7 @@ namespace Genetic_Cars
     private ToolTip toolTip;
     private Button mutationRateApplyButton;
     private TextBox mutationRateTextBox;
-    private Label label1;
+    private Label mutationRateLabel;
     private ComboBox clonesComboBox;
     private Label clonesLabel;
     private GroupBox historyBox;

@@ -28,33 +28,31 @@ namespace Genetic_Cars
     public const int LeaderCarId = -1;
 
     /// <summary>
+    /// Handles events that use no parameters.
+    /// </summary>
+    public delegate void GenericHandler();
+    
+    /// <summary>
     /// Handles the request for a seed change.
     /// </summary>
     /// <param name="seed"></param>
     public delegate void SeedChangedHandler(int seed);
-
-    /// <summary>
-    /// Handles a request to pause the world simulation.
-    /// </summary>
-    public delegate void PauseSimulationHandler();
-
-    /// <summary>
-    /// Handles a request to resume the world simulation.
-    /// </summary>
-    public delegate void ResumeSimulationHandler();
-
-    /// <summary>
-    /// Handles a request to generate a new population.
-    /// </summary>
-    public delegate void NewPopulationHandler();
-
+    
     private bool m_paused = false;
+    private bool m_graphicsEnabled = true;
     private readonly List<HighScore> m_highScores = new List<HighScore>();
     private int m_followingCarId;
 
     public MainWindow()
     {
       InitializeComponent();
+
+      var str = toolTip.GetToolTip(seedTextBox);
+      toolTip.SetToolTip(seedLabel, str);
+      str = toolTip.GetToolTip(mutationRateTextBox);
+      toolTip.SetToolTip(mutationRateLabel, str);
+      str = toolTip.GetToolTip(clonesComboBox);
+      toolTip.SetToolTip(clonesLabel, str);
 
       // initialize default values
       mutationRateTextBox.Text = 
@@ -93,9 +91,11 @@ namespace Genetic_Cars
     }
     
     public event SeedChangedHandler SeedChanged;
-    public event PauseSimulationHandler PauseSimulation;
-    public event ResumeSimulationHandler ResumeSimulation;
-    public event NewPopulationHandler NewPopulation;
+    public event GenericHandler PauseSimulation;
+    public event GenericHandler ResumeSimulation;
+    public event GenericHandler NewPopulation;
+    public event GenericHandler EnableGraphics;
+    public event GenericHandler DisableGraphics;
 
     /// <summary>
     /// The id of the car the user wants the camera to follow.
@@ -215,6 +215,15 @@ namespace Genetic_Cars
         highScoreListBox.Items.Add(m_highScores[i].DisplayValue);
       }
     }
+
+    /// <summary>
+    /// Clear the gui components that aren't regularly updated.
+    /// </summary>
+    public void ResetUi()
+    {
+      m_highScores.Clear();
+      highScoreListBox.Items.Clear();
+    }
     
     private void SetHealthValue(int id, float health)
     {
@@ -227,13 +236,7 @@ namespace Genetic_Cars
         pb.Visible = false;
       }
     }
-
-    private void ResetUI()
-    {
-      m_highScores.Clear();
-      highScoreListBox.Items.Clear();
-    }
-
+    
     private void OnSeedChanged(int seed)
     {
       if (SeedChanged != null)
@@ -263,6 +266,22 @@ namespace Genetic_Cars
       if (NewPopulation != null)
       {
         NewPopulation();
+      }
+    }
+
+    private void OnEnableGraphics()
+    {
+      if (EnableGraphics != null)
+      {
+        EnableGraphics();
+      }
+    }
+
+    private void OnDisableGraphics()
+    {
+      if (DisableGraphics != null)
+      {
+        DisableGraphics();
       }
     }
 
@@ -325,7 +344,7 @@ namespace Genetic_Cars
           );
         if (result == DialogResult.Yes)
         {
-          ResetUI();
+          ResetUi();
           OnSeedChanged(seed);
         }
       }
@@ -342,7 +361,7 @@ namespace Genetic_Cars
         MessageBoxButtons.YesNo, MessageBoxIcon.Question);
       if (result == DialogResult.Yes)
       {
-        ResetUI();
+        ResetUi();
         OnNewPopulation();
       }
       
@@ -351,9 +370,18 @@ namespace Genetic_Cars
 
     private void graphicsButton_Click(object sender, EventArgs e)
     {
-      OnPauseSimulation();
-      MessageBox.Show("I'm not implemented yet :(", "Oops", MessageBoxButtons.OK);
-      OnResumeSimulation();
+      if (m_graphicsEnabled)
+      {
+        m_graphicsEnabled = false;
+        graphicsButton.Text = "Graphics: Off";
+        OnDisableGraphics();
+      }
+      else
+      {
+        m_graphicsEnabled = true;
+        graphicsButton.Text = "Graphics: On";
+        OnEnableGraphics();
+      }
     }
 
     private void pauseButton_Click(object sender, EventArgs e)

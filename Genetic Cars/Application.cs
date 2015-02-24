@@ -48,6 +48,7 @@ namespace Genetic_Cars
     private float m_lastPhysicsStepDelta;
     private float m_lastLogicStepDelta;
     private bool m_paused = false;
+    private bool m_renderEnabled = true;
 
     // rendering state variables
     private MainWindow m_window;
@@ -107,6 +108,8 @@ namespace Genetic_Cars
       m_window.ResumeSimulation += ResumeSimulation;
       m_window.SeedChanged += WindowOnSeedChanged;
       m_window.NewPopulation += WindowOnNewPopulation;
+      m_window.EnableGraphics += EnableRender;
+      m_window.DisableGraphics += DisableRender;
       
       // main SFML panel and view
       m_drawingWindow = new RenderWindow(
@@ -170,16 +173,21 @@ namespace Genetic_Cars
 
         if (!m_paused)
         {
-          DoDrawing();
-          DoPhysics();
-          DoLogic();
+          if (m_renderEnabled)
+          {
+            GraphicalRealtimeUpdate();
+          }
+          else
+          {
+            NonGraphicalRapidUpdate();
+          }
         }
         
         System.Windows.Forms.Application.DoEvents();
         m_drawingWindow.DispatchEvents();
         m_overviewWindow.DispatchEvents();
 
-        if (m_frameTime.ElapsedMilliseconds < TargetFrameTime)
+        if (m_renderEnabled && m_frameTime.ElapsedMilliseconds < TargetFrameTime)
         {
           Thread.Sleep(1);
         }
@@ -216,7 +224,17 @@ namespace Genetic_Cars
       m_disposed = true;
     }
 
-    private void DoDrawing()
+    /// <summary>
+    /// Update the program using real time, draw graphics.
+    /// </summary>
+    private void GraphicalRealtimeUpdate()
+    {
+      Draw();
+      PhysicsRealtime();
+      LogicRealtime();
+    }
+
+    private void Draw()
     {
       m_lastDrawingStepDelta += (float) m_drawingTime.Elapsed.TotalSeconds;
       m_drawingTime.Restart();
@@ -249,17 +267,21 @@ namespace Genetic_Cars
         m_population.Draw(m_drawingWindow);
         m_drawingWindow.Display();
 
-        // draw overview
-        m_overviewWindow.SetView(m_overviewView);
-        m_overviewWindow.Clear(Color.White);
-        m_track.DrawOverview(m_overviewWindow);
-        m_population.DrawOverview(m_overviewWindow);
-        m_overviewWindow.Draw(m_viewShape);
-        m_overviewWindow.Display();
+        DrawOverview();
       }
     }
 
-    private void DoPhysics()
+    private void DrawOverview()
+    {
+      m_overviewWindow.SetView(m_overviewView);
+      m_overviewWindow.Clear(Color.White);
+      m_track.DrawOverview(m_overviewWindow);
+      m_population.DrawOverview(m_overviewWindow);
+      m_overviewWindow.Draw(m_viewShape);
+      m_overviewWindow.Display();
+    }
+
+    private void PhysicsRealtime()
     {
       m_lastPhysicsStepDelta += (float)m_physicsTime.Elapsed.TotalSeconds;
       m_physicsTime.Restart();
@@ -270,7 +292,7 @@ namespace Genetic_Cars
       }
     }
 
-    private void DoLogic()
+    private void LogicRealtime()
     {
       m_lastLogicStepDelta += (float)m_logicTime.Elapsed.TotalSeconds;
       m_logicTime.Restart();
@@ -283,6 +305,7 @@ namespace Genetic_Cars
           m_newWorld = false;
           var seed = DateTime.Now.ToString("F");
           SetSeed(seed.GetHashCode());
+          m_window.ResetUi();
           GenerateWorld();
         }
 
@@ -294,6 +317,34 @@ namespace Genetic_Cars
         m_window.SetFollowingNumber(
           m_window.FollowingCarId == MainWindow.LeaderCarId ? 
           m_population.Leader.Id : m_window.FollowingCarId);
+      }
+    }
+
+    /// <summary>
+    /// Updates the physics and logic simulation by one physics tick.  Each 
+    /// call performs an update regardless of the elapsed wall time.  The 
+    /// overview is updated every 250 ms.
+    /// </summary>
+    private void NonGraphicalRapidUpdate()
+    {
+      m_lastDrawingStepDelta += (float)m_drawingTime.Elapsed.TotalSeconds;
+      m_drawingTime.Restart();
+      if (m_lastDrawingStepDelta >= 0.5f)
+      {
+        m_lastDrawingStepDelta = 0;
+        DrawOverview();
+      }
+
+      StepWorld(PhysicsTickInterval);
+      m_population.Update(PhysicsTickInterval);
+
+      if (m_newWorld)
+      {
+        m_newWorld = false;
+        var seed = DateTime.Now.ToString("F");
+        SetSeed(seed.GetHashCode());
+        m_window.ResetUi();
+        GenerateWorld();
       }
     }
 
@@ -339,22 +390,6 @@ namespace Genetic_Cars
       };
     }
     
-    private void PauseSimulation()
-    {
-      m_paused = true;
-      m_drawingTime.Stop();
-      m_physicsTime.Stop();
-      m_logicTime.Stop();
-    }
-
-    private void ResumeSimulation()
-    {
-      m_paused = false;
-      m_drawingTime.Start();
-      m_frameTime.Start();
-      m_logicTime.Start();
-    }
-
     private static string Mutate(string genome)
     {
       StringBuilder sb = new StringBuilder(genome);
@@ -388,6 +423,31 @@ namespace Genetic_Cars
     }
 
     #region Event Handlers
+
+    private void PauseSimulation()
+    {
+      m_paused = true;
+
+      m_drawingTime.Stop();
+      m_physicsTime.Stop();
+      m_logicTime.Stop();
+    }
+
+    private void ResumeSimulation()
+    {
+      m_paused = false;
+
+      // don't touch the timers if rendering is disabled
+      if (!m_renderEnabled)
+      {
+        return;
+      }
+
+      m_drawingTime.Start();
+      m_frameTime.Start();
+      m_logicTime.Start();
+    }
+
     /// <summary>
     /// Resizes the SFML view to avoid object distortion.
     /// </summary>
@@ -445,6 +505,28 @@ namespace Genetic_Cars
 
       ResumeSimulation();
     }
+
+    private void EnableRender()
+    {
+      m_renderEnabled = true;
+      m_drawingTime.Restart();
+      m_physicsTime.Restart();
+      m_logicTime.Restart();
+    }
+
+    private void DisableRender()
+    {
+      m_renderEnabled = false;
+
+      m_lastDrawingStepDelta = 0;
+      m_lastPhysicsStepDelta = 0;
+      m_lastLogicStepDelta = 0;
+
+      m_drawingTime.Restart();
+      m_physicsTime.Stop();
+      m_logicTime.Stop();
+    }
+
     #endregion
   }
 }

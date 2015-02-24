@@ -20,7 +20,11 @@ namespace Genetic_Cars.Car
     // A car must make it at least this much farther than the existing 
     // champion to become the new champion
     private const float ChampionThreshold = 1;
-    private const int ChampionId = -1;
+
+    /// <summary>
+    /// The id always assigned to the champion ghost car.
+    /// </summary>
+    public const int ChampionId = -1;
     
     /// <summary>
     /// The RNG used for all actions in this class.

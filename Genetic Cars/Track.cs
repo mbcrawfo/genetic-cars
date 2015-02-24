@@ -324,6 +324,13 @@ namespace Genetic_Cars
       }
 
       var car = fixtureA.IsSensor ? fixtureB.Body : fixtureA.Body;
+      // the champion really shouldn't be the first to hit the sensor...
+      // but just in case
+      if ((int) car.UserData == Car.Population.ChampionId)
+      {
+        return true;
+      }
+
       m_finishLineCrossed = true;
       Log.DebugFormat("Car {0} hit finish line", (int)car.UserData);
       if (FinishLineCrossed != null)
