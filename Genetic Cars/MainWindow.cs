@@ -243,8 +243,8 @@ namespace Genetic_Cars
     private void SetHealthValue(int id, float health)
     {
       var pb = (ColorProgressBar)populationList.Controls[id];
-      var value = (int)Math.Round(health * 100); 
-      pb.Value = value;
+      var value = (int)Math.Round(health * 100);
+      pb.Value = Math.Min(value, pb.Maximum);
 
       if (value <= 0)
       {
