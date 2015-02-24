@@ -491,6 +491,27 @@ namespace Genetic_Cars
     {
       PauseSimulation();
 
+      // render a zoomed in view of the winning car
+      const float width = 4;
+      var ratio = m_drawingView.Size.Y / m_drawingView.Size.X;
+      View winnerView = new View
+      {
+        Center = m_population.Leader.Position.ToVector2f().InvertY(),
+        Size = new Vector2f(width, width * ratio),
+        Viewport = new FloatRect(0, 0, 1, 1)
+      };
+      m_drawingWindow.SetView(winnerView);
+      m_drawingWindow.Clear(Color.White);
+      m_track.Draw(m_drawingWindow);
+      m_population.Draw(m_drawingWindow);
+      m_drawingWindow.Display();
+
+      // save a screenshot
+      var filename = string.Format("winner_{0:yy-MM-dd_HH-mm-ss}.png",
+        DateTime.Now);
+      m_drawingWindow.Capture().SaveToFile(filename);
+      Log.InfoFormat("Screenshot of winner saved to {0}", filename);
+
       var message = string.Format(
         "Track defeated in generation {0} by car {1}.\n" +
         "Click Yes to generate a new world with a new seed, or No to exit.",
