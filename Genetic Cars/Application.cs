@@ -492,7 +492,7 @@ namespace Genetic_Cars
       PauseSimulation();
 
       // render a zoomed in view of the winning car
-      const float width = 4;
+      const float width = 8;
       var ratio = m_drawingView.Size.Y / m_drawingView.Size.X;
       View winnerView = new View
       {
@@ -507,8 +507,9 @@ namespace Genetic_Cars
       m_drawingWindow.Display();
 
       // save a screenshot
-      var filename = string.Format("winner_{0:yy-MM-dd_HH-mm-ss}.png",
-        DateTime.Now);
+      var filename = string.Format(
+        "winner_gen{0}_car{1}_{2:yyyy-MM-dd_HH-mm-ss}.png",
+        m_population.Generation, id, DateTime.Now);
       m_drawingWindow.Capture().SaveToFile(filename);
       Log.InfoFormat("Screenshot of winner saved to {0}", filename);
 
