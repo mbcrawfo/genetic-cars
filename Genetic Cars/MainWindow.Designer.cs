@@ -198,6 +198,7 @@ namespace Genetic_Cars
       this.mutationRateTextBox.TabIndex = 7;
       this.mutationRateTextBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
       this.toolTip.SetToolTip(this.mutationRateTextBox, "Set the mutation rate for the genetic algorithm.\r\nMust be between 0 and 1.");
+      this.mutationRateTextBox.TextChanged += new System.EventHandler(this.mutationRateTextBox_TextChanged);
       // 
       // mutationRateLabel
       // 

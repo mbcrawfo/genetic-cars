@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Printing;
 using System.Globalization;
 using System.Reflection;
@@ -441,12 +442,50 @@ namespace Genetic_Cars
       }
     }
 
+    private void mutationRateTextBox_TextChanged(object sender, EventArgs e)
+    {
+      var rate = Properties.Settings.Default.MutationRate.ToString();
+      var text = mutationRateTextBox.Text;
+
+      if (!text.Equals(rate))
+      {
+        // paint the button red until the changed are saved
+        Bitmap bmp = new Bitmap(mutationRateApplyButton.Width, 
+          mutationRateApplyButton.Height);
+        using (Graphics g = Graphics.FromImage(bmp))
+        {
+          Rectangle r = new Rectangle(0, 0, bmp.Width, bmp.Height);
+          using (LinearGradientBrush br = new LinearGradientBrush(
+            r, Color.Red, Color.DarkRed, LinearGradientMode.Vertical))
+          {
+            g.FillRectangle(br, r);
+          }
+        }
+        mutationRateApplyButton.ForeColor = Color.White;
+        mutationRateApplyButton.BackgroundImage = bmp;
+      }
+      else
+      {
+        // reset the button to default
+        mutationRateApplyButton.ForeColor = SystemColors.ControlText;
+        mutationRateApplyButton.BackgroundImage = null;
+        mutationRateApplyButton.BackColor = SystemColors.Control;
+        mutationRateApplyButton.UseVisualStyleBackColor = true;
+      }
+    }
+
     private void mutationRateApplyButton_Click(object sender, EventArgs e)
     {
       float rate;
       if (float.TryParse(mutationRateTextBox.Text, out rate) && 
         (rate >= 0 || rate <= 1))
       {
+        // reset the button to default
+        mutationRateApplyButton.ForeColor = SystemColors.ControlText;
+        mutationRateApplyButton.BackgroundImage = null;
+        mutationRateApplyButton.BackColor = SystemColors.Control;
+        mutationRateApplyButton.UseVisualStyleBackColor = true;
+
         Properties.Settings.Default.MutationRate = rate;
       }
       else
