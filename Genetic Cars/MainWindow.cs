@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Printing;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -41,6 +42,13 @@ namespace Genetic_Cars
     /// </summary>
     /// <param name="seed"></param>
     public delegate void SeedChangedHandler(int seed);
+
+    /// <summary>
+    /// Handles a request to load a lua script file.
+    /// </summary>
+    /// <param name="path">The file path</param>
+    /// <returns>Success/failure of loading.</returns>
+    public delegate bool LuaLoadHandler(string path);
     
     private bool m_paused = false;
     private bool m_graphicsEnabled = true;
@@ -128,6 +136,11 @@ namespace Genetic_Cars
     /// Signals that the user wants to disable the graphics rendering.
     /// </summary>
     public event GenericHandler DisableGraphics;
+
+    /// <summary>
+    /// Signals that the user wants to load a lua file.
+    /// </summary>
+    public event LuaLoadHandler LuaLoad;
 
     /// <summary>
     /// The id of the car the user wants the camera to follow.
@@ -552,6 +565,36 @@ namespace Genetic_Cars
     {
       var num = (int)randomCarsComboBox.SelectedItem;
       Properties.Settings.Default.NumRandom = num;
+    }
+
+    private void functionLoadButton_Click(object sender, EventArgs e)
+    {
+      OnPauseSimulation();
+
+      var dialog = new OpenFileDialog
+      {
+        Filter = "lua Files (*.lua)|*.lua|All Files (*.*)|*.*",
+        FilterIndex = 0,
+        Multiselect = false,
+        InitialDirectory = Environment.CurrentDirectory
+      };
+      var result = dialog.ShowDialog();
+
+      if (result == DialogResult.OK && LuaLoad != null)
+      {
+        if (LuaLoad(dialog.FileName))
+        {
+          functionsLabel.Text = 
+            "Functions: " + Path.GetFileName(dialog.FileName);
+        }
+        else
+        {
+          MessageBox.Show("Error loading " + dialog.FileName, "Error", 
+            MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+      }
+
+      OnResumeSimulation();
     }
 
     #endregion

@@ -63,6 +63,8 @@ namespace Genetic_Cars
       this.overviewBox = new System.Windows.Forms.GroupBox();
       this.overviewPanel = new System.Windows.Forms.Panel();
       this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+      this.functionsLabel = new System.Windows.Forms.Label();
+      this.functionLoadButton = new System.Windows.Forms.Button();
       this.mainLayout.SuspendLayout();
       this.settingsBox.SuspendLayout();
       this.historyBox.SuspendLayout();
@@ -104,6 +106,8 @@ namespace Genetic_Cars
       // 
       // settingsBox
       // 
+      this.settingsBox.Controls.Add(this.functionLoadButton);
+      this.settingsBox.Controls.Add(this.functionsLabel);
       this.settingsBox.Controls.Add(this.randomCarsComboBox);
       this.settingsBox.Controls.Add(this.randomCarsLabel);
       this.settingsBox.Controls.Add(this.clonesComboBox);
@@ -407,6 +411,27 @@ namespace Genetic_Cars
       this.overviewPanel.Size = new System.Drawing.Size(516, 202);
       this.overviewPanel.TabIndex = 0;
       // 
+      // functionsLabel
+      // 
+      this.functionsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.functionsLabel.Location = new System.Drawing.Point(9, 166);
+      this.functionsLabel.Name = "functionsLabel";
+      this.functionsLabel.Size = new System.Drawing.Size(196, 23);
+      this.functionsLabel.TabIndex = 13;
+      this.functionsLabel.Text = "Functions: Default";
+      this.toolTip.SetToolTip(this.functionsLabel, "The current provider for the crossover and \r\nmutation functions.");
+      // 
+      // functionLoadButton
+      // 
+      this.functionLoadButton.Location = new System.Drawing.Point(211, 166);
+      this.functionLoadButton.Name = "functionLoadButton";
+      this.functionLoadButton.Size = new System.Drawing.Size(75, 23);
+      this.functionLoadButton.TabIndex = 14;
+      this.functionLoadButton.Text = "Load";
+      this.toolTip.SetToolTip(this.functionLoadButton, "Load a script file to replace the crossover and \r\nmutation functions.");
+      this.functionLoadButton.UseVisualStyleBackColor = true;
+      this.functionLoadButton.Click += new System.EventHandler(this.functionLoadButton_Click);
+      // 
       // MainWindow
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -458,6 +483,8 @@ namespace Genetic_Cars
     private Button followLeaderButton;
     private ComboBox randomCarsComboBox;
     private Label randomCarsLabel;
+    private Button functionLoadButton;
+    private Label functionsLabel;
 
 
   }

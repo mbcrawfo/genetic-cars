@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -10,6 +11,7 @@ using Genetic_Cars.Car;
 using Genetic_Cars.Properties;
 using log4net;
 using Microsoft.Xna.Framework;
+using NLua;
 using SFML.Graphics;
 using SFML.Window;
 using View = SFML.Graphics.View;
@@ -68,6 +70,7 @@ namespace Genetic_Cars
       OutlineColor = Color.Black,
       OutlineThickness = 1
     };
+    private Lua m_luaState;
     
     /// <summary>
     /// The main entry point for the application.
@@ -110,6 +113,7 @@ namespace Genetic_Cars
       m_window.NewPopulation += WindowOnNewPopulation;
       m_window.EnableGraphics += EnableRender;
       m_window.DisableGraphics += DisableRender;
+      m_window.LuaLoad += LuaLoad;
       
       // main SFML panel and view
       m_drawingWindow = new RenderWindow(
@@ -142,8 +146,8 @@ namespace Genetic_Cars
       SetSeed(seed.GetHashCode());
       GenerateWorld();
       
-      Phenotype.MutateStrategy = Mutate;
-      Phenotype.CrossoverStrategy = CrossOver;
+      Phenotype.MutateStrategy = Phenotype.DefaultMutator;
+      Phenotype.CrossoverStrategy = Phenotype.DefaultCrossOver;
       
       Properties.Settings.Default.PropertyChanged += (sender, args) =>
       {
@@ -223,6 +227,11 @@ namespace Genetic_Cars
         m_drawingWindow.Dispose();
         
         m_window.Dispose();
+
+        if (m_luaState != null)
+        {
+          m_luaState.Dispose();
+        }
       }
 
       m_disposed = true;
@@ -352,6 +361,66 @@ namespace Genetic_Cars
       }
     }
 
+    private bool LuaLoad(string path)
+    {
+      var newLua = new Lua();
+
+      // load .net packages then clear the import function
+      //newLua.LoadCLRPackage();
+      //newLua.DoString(@"import('System')");
+      //newLua.DoString(@"import('System.Text')");
+      newLua.DoString(@"import = function () end");
+
+      // set globals for scripts to use
+      newLua["Log"] = LogManager.GetLogger("Lua");
+      newLua["RNG"] = Phenotype.Random;
+      newLua["GenomeLength"] = Phenotype.GenomeLength;
+      
+      try
+      {
+        newLua.DoFile(path);
+      }
+      catch (Exception e)
+      {
+        Log.ErrorFormat("Error loading file {0}", path);
+        Log.Error(e);
+      }
+
+      var crossover = newLua.GetFunction(@"CrossOver");
+      var mutate = newLua.GetFunction(@"Mutate");
+
+      if (crossover == null || mutate == null)
+      {
+        if (crossover == null)
+        {
+          Log.ErrorFormat("file {0} was missing CrossOver function",
+            path);
+        }
+        if (mutate == null)
+        {
+          Log.ErrorFormat("file {0} was missing Mutate function", 
+            path);
+        }
+        
+        Log.Error("Mutate/Crossover functions have not been changed");
+        newLua.Dispose();
+      }
+      else
+      {
+        Phenotype.CrossoverStrategy =
+          (s1, s2) => (string) crossover.Call(s1, s2).First();
+        Phenotype.MutateStrategy =
+          genome => (string) mutate.Call(genome).First();
+        Log.InfoFormat("Set crossover and mutation functions from {0}",
+          path);
+
+        m_luaState = newLua;
+        return true;
+      }
+
+      return false;
+    }
+
     private void SetSeed(int seed)
     {
       Log.InfoFormat("RNG seed set to 0x{0:X}", seed);
@@ -394,38 +463,6 @@ namespace Genetic_Cars
       };
     }
     
-    private static string Mutate(string genome)
-    {
-      StringBuilder sb = new StringBuilder(genome);
-      var idx = Phenotype.Random.Next(sb.Length);
-      if (sb[idx] == '0')
-      {
-        sb[idx] = '1';
-      }
-      else
-      {
-        sb[idx] = '0';
-      }
-      return sb.ToString();
-    }
-
-    private static string CrossOver(string a, string b)
-    {
-      StringBuilder sb = new StringBuilder(Phenotype.GenomeLength);
-      var parent = Phenotype.Random.NextDouble() < 0.5 ? a : b;
-
-      for (var i = 0; i < Phenotype.GenomeLength; i++)
-      {
-        sb.Append(parent[i]);
-        if (Phenotype.Random.NextDouble() < 0.4)
-        {
-          parent = parent == a ? b : a;
-        }
-      }
-
-      return sb.ToString();
-    }
-
     #region Event Handlers
 
     private void PauseSimulation()

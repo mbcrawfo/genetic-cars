@@ -60,6 +60,38 @@ namespace Genetic_Cars.Car
     /// </summary>
     public static Random Random { get; set; }
 
+    public static string DefaultMutator(string genome)
+    {
+      StringBuilder sb = new StringBuilder(genome);
+      var idx = Random.Next(sb.Length);
+      if (sb[idx] == '0')
+      {
+        sb[idx] = '1';
+      }
+      else
+      {
+        sb[idx] = '0';
+      }
+      return sb.ToString();
+    }
+
+    public static string DefaultCrossOver(string a, string b)
+    {
+      StringBuilder sb = new StringBuilder(GenomeLength);
+      var parent = Random.NextDouble() < 0.5 ? a : b;
+
+      for (var i = 0; i < GenomeLength; i++)
+      {
+        sb.Append(parent[i]);
+        if (Random.NextDouble() < 0.4)
+        {
+          parent = parent == a ? b : a;
+        }
+      }
+
+      return sb.ToString();
+    }
+
     /// <summary>
     /// Generates a new Phenotype by crossing the two parents.
     /// </summary>
