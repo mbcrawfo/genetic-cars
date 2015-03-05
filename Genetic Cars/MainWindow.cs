@@ -47,8 +47,9 @@ namespace Genetic_Cars
     /// Handles a request to load a lua script file.
     /// </summary>
     /// <param name="path">The file path</param>
+    /// <param name="error">An error message string, if the load fails</param>
     /// <returns>Success/failure of loading.</returns>
-    public delegate bool LuaLoadHandler(string path);
+    public delegate bool LuaLoadHandler(string path, out string error);
     
     private bool m_paused = false;
     private bool m_graphicsEnabled = true;
@@ -582,15 +583,18 @@ namespace Genetic_Cars
 
       if (result == DialogResult.OK && LuaLoad != null)
       {
-        if (LuaLoad(dialog.FileName))
+        string error;
+        if (LuaLoad(dialog.FileName, out error))
         {
           functionsLabel.Text = 
             "Functions: " + Path.GetFileName(dialog.FileName);
         }
         else
         {
-          MessageBox.Show("Error loading " + dialog.FileName, "Error", 
-            MessageBoxButtons.OK, MessageBoxIcon.Error);
+          var msg = string.Format("Error loading {0}\n{1}",
+            dialog.FileName, error);
+          MessageBox.Show(msg, "Error", MessageBoxButtons.OK,
+            MessageBoxIcon.Error);
         }
       }
 

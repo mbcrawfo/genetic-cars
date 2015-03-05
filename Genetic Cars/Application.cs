@@ -361,8 +361,9 @@ namespace Genetic_Cars
       }
     }
 
-    private bool LuaLoad(string path)
+    private bool LuaLoad(string path, out string error)
     {
+      error = "";
       var newLua = new Lua();
 
       // load .net packages then clear the import function
@@ -384,6 +385,8 @@ namespace Genetic_Cars
       {
         Log.ErrorFormat("Error loading file {0}", path);
         Log.Error(e);
+        error = e.Message;
+        return false;
       }
 
       var crossover = newLua.GetFunction(@"CrossOver");
@@ -393,32 +396,31 @@ namespace Genetic_Cars
       {
         if (crossover == null)
         {
+          error = "Missing CrossOver function";
           Log.ErrorFormat("file {0} was missing CrossOver function",
             path);
         }
         if (mutate == null)
         {
+          error += string.IsNullOrEmpty(error) ? "" : "\n";
+          error += "Missing Mutate function";
           Log.ErrorFormat("file {0} was missing Mutate function", 
             path);
         }
         
         Log.Error("Mutate/Crossover functions have not been changed");
-        newLua.Dispose();
-      }
-      else
-      {
-        Phenotype.CrossoverStrategy =
-          (s1, s2) => (string) crossover.Call(s1, s2).First();
-        Phenotype.MutateStrategy =
-          genome => (string) mutate.Call(genome).First();
-        Log.InfoFormat("Set crossover and mutation functions from {0}",
-          path);
-
-        m_luaState = newLua;
-        return true;
+        return false;
       }
 
-      return false;
+      Phenotype.CrossoverStrategy =
+        (s1, s2) => (string) crossover.Call(s1, s2).First();
+      Phenotype.MutateStrategy =
+        genome => (string) mutate.Call(genome).First();
+      Log.InfoFormat("Set crossover and mutation functions from {0}",
+        path);
+        
+      m_luaState = newLua;
+      return true;
     }
 
     private void SetSeed(int seed)
