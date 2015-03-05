@@ -25,8 +25,8 @@ namespace Genetic_Cars
     // track properties
     private static readonly int NumPieces = 
       Settings.Default.NumTrackPieces;
-    private const float MaxPieceAngle = 60;
-    private const float MinPieceAngle = 5;
+    private const float MaxPieceAngle = 55;
+    private const float MinPieceAngle = 10;
 
     // graphical properties of the track
     private static readonly Color FillColor = new Color(128, 128, 128);
@@ -404,7 +404,7 @@ namespace Genetic_Cars
     }
 
     /// <summary>
-    /// Uses a cubic function to calculate the maximum angle for a piece of 
+    /// Calculates the maximum angle for a piece of 
     /// track in the range 
     /// [<see cref="MinPieceAngle"/>, <see cref="MaxPieceAngle"/>].
     /// </summary>
@@ -416,16 +416,16 @@ namespace Genetic_Cars
     {
       Debug.Assert(index < NumPieces);
 
-      // uses y=x^3 in the range x=[0,10]
-      // scale x to [0..10] based on its location in the track
-      float x = ((index + 1f) / NumPieces) * 10f;
-      float y = x * x * x;
-      float percent = y / 1000f;
+      // uses y=x^3.5 in the range x=[2,10]
+      // scale x to [2..10] based on its location in the track
+      float x = (((index + 1f) / NumPieces) * 8f) + 2f;
+      float y = (float) Math.Pow(x, 3.5);
+      float percent = Math.Min(y, 1000f) / 1000f;
       return (percent * (MaxPieceAngle - MinPieceAngle)) + MinPieceAngle;
     }
 
     /// <summary>
-    /// Uses a cubic function to calculate the maximum angle for a piece of 
+    /// Calculates the maximum angle for a piece of 
     /// track in the range 
     /// [<see cref="MinPieceAngle"/>, <see cref="MaxPieceAngle"/>].  Will 
     /// always return a value less than <see cref="CalcMaxAngle"/> for the 
@@ -439,10 +439,10 @@ namespace Genetic_Cars
     {
       Debug.Assert(index < NumPieces);
 
-      // uses y=x^3-x^2.7 in the range x=[0,10]
-      // scale x to [0..10] based on its location in the track
-      float x = ((index + 1f) / NumPieces) * 10f;
-      float y = (x * x * x) - (float)Math.Pow(x, 2.7);
+      // uses y=x^3.1-x^2.5 in the range x=[2,10]
+      // scale x to [2..10] based on its location in the track
+      float x = (((index + 1f) / NumPieces) * 8f) + 2;
+      float y = (float)(Math.Pow(x, 3.1) - Math.Pow(x, 2.5));
       float percent = y / 1000f;
       return (percent * (MaxPieceAngle - MinPieceAngle)) + MinPieceAngle;
     }
