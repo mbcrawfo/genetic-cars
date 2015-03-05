@@ -38,6 +38,11 @@ namespace Genetic_Cars
       this.mainLayout = new System.Windows.Forms.TableLayoutPanel();
       this.drawingPanel = new System.Windows.Forms.Panel();
       this.settingsBox = new System.Windows.Forms.GroupBox();
+      this.trackSeedApplyButton = new System.Windows.Forms.Button();
+      this.trackSeedTextBox = new System.Windows.Forms.TextBox();
+      this.trackSeedLabel = new System.Windows.Forms.Label();
+      this.functionLoadButton = new System.Windows.Forms.Button();
+      this.functionsLabel = new System.Windows.Forms.Label();
       this.randomCarsComboBox = new System.Windows.Forms.ComboBox();
       this.randomCarsLabel = new System.Windows.Forms.Label();
       this.clonesComboBox = new System.Windows.Forms.ComboBox();
@@ -48,9 +53,9 @@ namespace Genetic_Cars
       this.newPopulationButton = new System.Windows.Forms.Button();
       this.graphicsButton = new System.Windows.Forms.Button();
       this.pauseButton = new System.Windows.Forms.Button();
-      this.seedApplyButton = new System.Windows.Forms.Button();
-      this.seedTextBox = new System.Windows.Forms.TextBox();
-      this.seedLabel = new System.Windows.Forms.Label();
+      this.popSeedApplyButton = new System.Windows.Forms.Button();
+      this.popSeedTextBox = new System.Windows.Forms.TextBox();
+      this.popSeedLabel = new System.Windows.Forms.Label();
       this.historyBox = new System.Windows.Forms.GroupBox();
       this.highScoreListBox = new System.Windows.Forms.ListBox();
       this.populationBox = new System.Windows.Forms.GroupBox();
@@ -63,8 +68,6 @@ namespace Genetic_Cars
       this.overviewBox = new System.Windows.Forms.GroupBox();
       this.overviewPanel = new System.Windows.Forms.Panel();
       this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-      this.functionsLabel = new System.Windows.Forms.Label();
-      this.functionLoadButton = new System.Windows.Forms.Button();
       this.mainLayout.SuspendLayout();
       this.settingsBox.SuspendLayout();
       this.historyBox.SuspendLayout();
@@ -106,6 +109,9 @@ namespace Genetic_Cars
       // 
       // settingsBox
       // 
+      this.settingsBox.Controls.Add(this.trackSeedApplyButton);
+      this.settingsBox.Controls.Add(this.trackSeedTextBox);
+      this.settingsBox.Controls.Add(this.trackSeedLabel);
       this.settingsBox.Controls.Add(this.functionLoadButton);
       this.settingsBox.Controls.Add(this.functionsLabel);
       this.settingsBox.Controls.Add(this.randomCarsComboBox);
@@ -118,9 +124,9 @@ namespace Genetic_Cars
       this.settingsBox.Controls.Add(this.newPopulationButton);
       this.settingsBox.Controls.Add(this.graphicsButton);
       this.settingsBox.Controls.Add(this.pauseButton);
-      this.settingsBox.Controls.Add(this.seedApplyButton);
-      this.settingsBox.Controls.Add(this.seedTextBox);
-      this.settingsBox.Controls.Add(this.seedLabel);
+      this.settingsBox.Controls.Add(this.popSeedApplyButton);
+      this.settingsBox.Controls.Add(this.popSeedTextBox);
+      this.settingsBox.Controls.Add(this.popSeedLabel);
       this.settingsBox.Dock = System.Windows.Forms.DockStyle.Fill;
       this.settingsBox.Location = new System.Drawing.Point(3, 507);
       this.settingsBox.Name = "settingsBox";
@@ -129,16 +135,67 @@ namespace Genetic_Cars
       this.settingsBox.TabStop = false;
       this.settingsBox.Text = "Settings";
       // 
+      // trackSeedApplyButton
+      // 
+      this.trackSeedApplyButton.Location = new System.Drawing.Point(214, 45);
+      this.trackSeedApplyButton.Name = "trackSeedApplyButton";
+      this.trackSeedApplyButton.Size = new System.Drawing.Size(75, 23);
+      this.trackSeedApplyButton.TabIndex = 4;
+      this.trackSeedApplyButton.Text = "Apply";
+      this.trackSeedApplyButton.UseVisualStyleBackColor = true;
+      this.trackSeedApplyButton.Click += new System.EventHandler(this.trackSeedApplyButton_Click);
+      // 
+      // trackSeedTextBox
+      // 
+      this.trackSeedTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.trackSeedTextBox.Location = new System.Drawing.Point(102, 45);
+      this.trackSeedTextBox.Name = "trackSeedTextBox";
+      this.trackSeedTextBox.Size = new System.Drawing.Size(104, 23);
+      this.trackSeedTextBox.TabIndex = 3;
+      this.toolTip.SetToolTip(this.trackSeedTextBox, resources.GetString("trackSeedTextBox.ToolTip"));
+      this.trackSeedTextBox.TextChanged += new System.EventHandler(this.trackSeedTextBox_TextChanged);
+      // 
+      // trackSeedLabel
+      // 
+      this.trackSeedLabel.AutoSize = true;
+      this.trackSeedLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.trackSeedLabel.Location = new System.Drawing.Point(9, 45);
+      this.trackSeedLabel.Name = "trackSeedLabel";
+      this.trackSeedLabel.Size = new System.Drawing.Size(94, 20);
+      this.trackSeedLabel.TabIndex = 15;
+      this.trackSeedLabel.Text = "Track Seed:";
+      // 
+      // functionLoadButton
+      // 
+      this.functionLoadButton.Location = new System.Drawing.Point(214, 192);
+      this.functionLoadButton.Name = "functionLoadButton";
+      this.functionLoadButton.Size = new System.Drawing.Size(75, 23);
+      this.functionLoadButton.TabIndex = 11;
+      this.functionLoadButton.Text = "Load";
+      this.toolTip.SetToolTip(this.functionLoadButton, "Load a script file to replace the crossover and \r\nmutation functions.");
+      this.functionLoadButton.UseVisualStyleBackColor = true;
+      this.functionLoadButton.Click += new System.EventHandler(this.functionLoadButton_Click);
+      // 
+      // functionsLabel
+      // 
+      this.functionsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.functionsLabel.Location = new System.Drawing.Point(10, 192);
+      this.functionsLabel.Name = "functionsLabel";
+      this.functionsLabel.Size = new System.Drawing.Size(196, 23);
+      this.functionsLabel.TabIndex = 13;
+      this.functionsLabel.Text = "Functions: Default";
+      this.toolTip.SetToolTip(this.functionsLabel, "The current provider for the crossover and \r\nmutation functions.");
+      // 
       // randomCarsComboBox
       // 
       this.randomCarsComboBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
       this.randomCarsComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.randomCarsComboBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.randomCarsComboBox.FormattingEnabled = true;
-      this.randomCarsComboBox.Location = new System.Drawing.Point(128, 139);
+      this.randomCarsComboBox.Location = new System.Drawing.Point(129, 165);
       this.randomCarsComboBox.Name = "randomCarsComboBox";
       this.randomCarsComboBox.Size = new System.Drawing.Size(77, 24);
-      this.randomCarsComboBox.TabIndex = 12;
+      this.randomCarsComboBox.TabIndex = 10;
       this.toolTip.SetToolTip(this.randomCarsComboBox, "The number of cars that are randomly generated \r\nin each generation.");
       this.randomCarsComboBox.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.ComboBox_DrawItem);
       this.randomCarsComboBox.SelectedIndexChanged += new System.EventHandler(this.randomCarsComboBox_SelectedIndexChanged);
@@ -147,7 +204,7 @@ namespace Genetic_Cars
       // 
       this.randomCarsLabel.AutoSize = true;
       this.randomCarsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.randomCarsLabel.Location = new System.Drawing.Point(9, 140);
+      this.randomCarsLabel.Location = new System.Drawing.Point(10, 166);
       this.randomCarsLabel.Name = "randomCarsLabel";
       this.randomCarsLabel.Size = new System.Drawing.Size(111, 20);
       this.randomCarsLabel.TabIndex = 11;
@@ -161,10 +218,10 @@ namespace Genetic_Cars
       this.clonesComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.clonesComboBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.clonesComboBox.FormattingEnabled = true;
-      this.clonesComboBox.Location = new System.Drawing.Point(128, 109);
+      this.clonesComboBox.Location = new System.Drawing.Point(129, 135);
       this.clonesComboBox.Name = "clonesComboBox";
       this.clonesComboBox.Size = new System.Drawing.Size(77, 24);
-      this.clonesComboBox.TabIndex = 10;
+      this.clonesComboBox.TabIndex = 9;
       this.toolTip.SetToolTip(this.clonesComboBox, "The number of cars, taken from the highest scoring \r\npart of the population, that" +
         " will be cloned into the \r\nnext generation unchanged.");
       this.clonesComboBox.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.ComboBox_DrawItem);
@@ -174,7 +231,7 @@ namespace Genetic_Cars
       // 
       this.clonesLabel.AutoSize = true;
       this.clonesLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.clonesLabel.Location = new System.Drawing.Point(9, 110);
+      this.clonesLabel.Location = new System.Drawing.Point(10, 136);
       this.clonesLabel.Name = "clonesLabel";
       this.clonesLabel.Size = new System.Drawing.Size(100, 20);
       this.clonesLabel.TabIndex = 9;
@@ -183,7 +240,7 @@ namespace Genetic_Cars
       // mutationRateApplyButton
       // 
       this.mutationRateApplyButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.mutationRateApplyButton.Location = new System.Drawing.Point(211, 80);
+      this.mutationRateApplyButton.Location = new System.Drawing.Point(214, 106);
       this.mutationRateApplyButton.Name = "mutationRateApplyButton";
       this.mutationRateApplyButton.Size = new System.Drawing.Size(75, 23);
       this.mutationRateApplyButton.TabIndex = 8;
@@ -195,10 +252,10 @@ namespace Genetic_Cars
       // 
       this.mutationRateTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this.mutationRateTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.mutationRateTextBox.Location = new System.Drawing.Point(128, 77);
+      this.mutationRateTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.mutationRateTextBox.Location = new System.Drawing.Point(129, 103);
       this.mutationRateTextBox.Name = "mutationRateTextBox";
-      this.mutationRateTextBox.Size = new System.Drawing.Size(77, 26);
+      this.mutationRateTextBox.Size = new System.Drawing.Size(77, 23);
       this.mutationRateTextBox.TabIndex = 7;
       this.mutationRateTextBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
       this.toolTip.SetToolTip(this.mutationRateTextBox, "Set the mutation rate for the genetic algorithm.\r\nMust be between 0 and 1.");
@@ -208,7 +265,7 @@ namespace Genetic_Cars
       // 
       this.mutationRateLabel.AutoSize = true;
       this.mutationRateLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.mutationRateLabel.Location = new System.Drawing.Point(8, 80);
+      this.mutationRateLabel.Location = new System.Drawing.Point(9, 106);
       this.mutationRateLabel.Name = "mutationRateLabel";
       this.mutationRateLabel.Size = new System.Drawing.Size(114, 20);
       this.mutationRateLabel.TabIndex = 6;
@@ -217,10 +274,10 @@ namespace Genetic_Cars
       // newPopulationButton
       // 
       this.newPopulationButton.AutoSize = true;
-      this.newPopulationButton.Location = new System.Drawing.Point(13, 19);
+      this.newPopulationButton.Location = new System.Drawing.Point(15, 16);
       this.newPopulationButton.Name = "newPopulationButton";
       this.newPopulationButton.Size = new System.Drawing.Size(92, 23);
-      this.newPopulationButton.TabIndex = 5;
+      this.newPopulationButton.TabIndex = 0;
       this.newPopulationButton.Text = "New Population";
       this.toolTip.SetToolTip(this.newPopulationButton, "Generates a new random population, but\r\nkeeps the same track.");
       this.newPopulationButton.UseVisualStyleBackColor = true;
@@ -230,10 +287,10 @@ namespace Genetic_Cars
       // 
       this.graphicsButton.Anchor = System.Windows.Forms.AnchorStyles.Top;
       this.graphicsButton.AutoSize = true;
-      this.graphicsButton.Location = new System.Drawing.Point(117, 19);
+      this.graphicsButton.Location = new System.Drawing.Point(119, 16);
       this.graphicsButton.Name = "graphicsButton";
       this.graphicsButton.Size = new System.Drawing.Size(85, 23);
-      this.graphicsButton.TabIndex = 4;
+      this.graphicsButton.TabIndex = 1;
       this.graphicsButton.Text = "Graphics: On";
       this.toolTip.SetToolTip(this.graphicsButton, "Enable or disable graphics.\r\nWhen graphics are disabled, the simulation processes" +
         " \r\nas rapidly as it can (time acceleration).");
@@ -243,47 +300,48 @@ namespace Genetic_Cars
       // pauseButton
       // 
       this.pauseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.pauseButton.Location = new System.Drawing.Point(212, 19);
+      this.pauseButton.Location = new System.Drawing.Point(214, 16);
       this.pauseButton.Name = "pauseButton";
       this.pauseButton.Size = new System.Drawing.Size(75, 23);
-      this.pauseButton.TabIndex = 3;
+      this.pauseButton.TabIndex = 2;
       this.pauseButton.Text = "Pause";
       this.toolTip.SetToolTip(this.pauseButton, "Pause or resume the simulation.");
       this.pauseButton.UseVisualStyleBackColor = true;
       this.pauseButton.Click += new System.EventHandler(this.pauseButton_Click);
       // 
-      // seedApplyButton
+      // popSeedApplyButton
       // 
-      this.seedApplyButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.seedApplyButton.AutoSize = true;
-      this.seedApplyButton.Location = new System.Drawing.Point(211, 48);
-      this.seedApplyButton.Name = "seedApplyButton";
-      this.seedApplyButton.Size = new System.Drawing.Size(75, 23);
-      this.seedApplyButton.TabIndex = 2;
-      this.seedApplyButton.Text = "Apply";
-      this.seedApplyButton.UseVisualStyleBackColor = true;
-      this.seedApplyButton.Click += new System.EventHandler(this.seedApplyButton_Click);
+      this.popSeedApplyButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+      this.popSeedApplyButton.AutoSize = true;
+      this.popSeedApplyButton.Location = new System.Drawing.Point(214, 74);
+      this.popSeedApplyButton.Name = "popSeedApplyButton";
+      this.popSeedApplyButton.Size = new System.Drawing.Size(75, 23);
+      this.popSeedApplyButton.TabIndex = 6;
+      this.popSeedApplyButton.Text = "Apply";
+      this.popSeedApplyButton.UseVisualStyleBackColor = true;
+      this.popSeedApplyButton.Click += new System.EventHandler(this.popSeedApplyButton_Click);
       // 
-      // seedTextBox
+      // popSeedTextBox
       // 
-      this.seedTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+      this.popSeedTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this.seedTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.seedTextBox.Location = new System.Drawing.Point(65, 48);
-      this.seedTextBox.Name = "seedTextBox";
-      this.seedTextBox.Size = new System.Drawing.Size(140, 23);
-      this.seedTextBox.TabIndex = 1;
-      this.toolTip.SetToolTip(this.seedTextBox, resources.GetString("seedTextBox.ToolTip"));
+      this.popSeedTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.popSeedTextBox.Location = new System.Drawing.Point(102, 74);
+      this.popSeedTextBox.Name = "popSeedTextBox";
+      this.popSeedTextBox.Size = new System.Drawing.Size(104, 23);
+      this.popSeedTextBox.TabIndex = 5;
+      this.toolTip.SetToolTip(this.popSeedTextBox, resources.GetString("popSeedTextBox.ToolTip"));
+      this.popSeedTextBox.TextChanged += new System.EventHandler(this.popSeedTextBox_TextChanged);
       // 
-      // seedLabel
+      // popSeedLabel
       // 
-      this.seedLabel.AutoSize = true;
-      this.seedLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.seedLabel.Location = new System.Drawing.Point(8, 48);
-      this.seedLabel.Name = "seedLabel";
-      this.seedLabel.Size = new System.Drawing.Size(51, 20);
-      this.seedLabel.TabIndex = 0;
-      this.seedLabel.Text = "Seed:";
+      this.popSeedLabel.AutoSize = true;
+      this.popSeedLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.popSeedLabel.Location = new System.Drawing.Point(9, 74);
+      this.popSeedLabel.Name = "popSeedLabel";
+      this.popSeedLabel.Size = new System.Drawing.Size(87, 20);
+      this.popSeedLabel.TabIndex = 0;
+      this.popSeedLabel.Text = "Pop. Seed:";
       // 
       // historyBox
       // 
@@ -307,6 +365,7 @@ namespace Genetic_Cars
       this.highScoreListBox.SelectionMode = System.Windows.Forms.SelectionMode.None;
       this.highScoreListBox.Size = new System.Drawing.Size(157, 201);
       this.highScoreListBox.TabIndex = 0;
+      this.highScoreListBox.TabStop = false;
       // 
       // populationBox
       // 
@@ -330,6 +389,7 @@ namespace Genetic_Cars
       this.followLeaderButton.Name = "followLeaderButton";
       this.followLeaderButton.Size = new System.Drawing.Size(138, 23);
       this.followLeaderButton.TabIndex = 5;
+      this.followLeaderButton.TabStop = false;
       this.followLeaderButton.Text = "Follow Leader";
       this.toolTip.SetToolTip(this.followLeaderButton, "Resets the camera to follow the lead car.");
       this.followLeaderButton.UseVisualStyleBackColor = true;
@@ -411,27 +471,6 @@ namespace Genetic_Cars
       this.overviewPanel.Size = new System.Drawing.Size(516, 202);
       this.overviewPanel.TabIndex = 0;
       // 
-      // functionsLabel
-      // 
-      this.functionsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.functionsLabel.Location = new System.Drawing.Point(9, 166);
-      this.functionsLabel.Name = "functionsLabel";
-      this.functionsLabel.Size = new System.Drawing.Size(196, 23);
-      this.functionsLabel.TabIndex = 13;
-      this.functionsLabel.Text = "Functions: Default";
-      this.toolTip.SetToolTip(this.functionsLabel, "The current provider for the crossover and \r\nmutation functions.");
-      // 
-      // functionLoadButton
-      // 
-      this.functionLoadButton.Location = new System.Drawing.Point(211, 166);
-      this.functionLoadButton.Name = "functionLoadButton";
-      this.functionLoadButton.Size = new System.Drawing.Size(75, 23);
-      this.functionLoadButton.TabIndex = 14;
-      this.functionLoadButton.Text = "Load";
-      this.toolTip.SetToolTip(this.functionLoadButton, "Load a script file to replace the crossover and \r\nmutation functions.");
-      this.functionLoadButton.UseVisualStyleBackColor = true;
-      this.functionLoadButton.Click += new System.EventHandler(this.functionLoadButton_Click);
-      // 
       // MainWindow
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -458,9 +497,9 @@ namespace Genetic_Cars
     private TableLayoutPanel mainLayout;
     private Panel drawingPanel;
     private GroupBox settingsBox;
-    private Button seedApplyButton;
-    private TextBox seedTextBox;
-    private Label seedLabel;
+    private Button popSeedApplyButton;
+    private TextBox popSeedTextBox;
+    private Label popSeedLabel;
     private Button pauseButton;
     private Button newPopulationButton;
     private Button graphicsButton;
@@ -485,6 +524,9 @@ namespace Genetic_Cars
     private Label randomCarsLabel;
     private Button functionLoadButton;
     private Label functionsLabel;
+    private TextBox trackSeedTextBox;
+    private Label trackSeedLabel;
+    private Button trackSeedApplyButton;
 
 
   }

@@ -120,11 +120,17 @@
   <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>21, 16</value>
   </metadata>
-  <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>21, 16</value>
-  </metadata>
-  <data name="seedTextBox.ToolTip" xml:space="preserve">
-    <value>Set the seed for the random number generator.
+  <data name="trackSeedTextBox.ToolTip" xml:space="preserve">
+    <value>Set the seed for the random number generator used 
+to create the track.
+Prefix the string with "\x" to use a hex number.
+Prefix the string with "\d" to use a decimal number.
+Otherwise, the string will be hashed to form a seed.
+Hashes may be found in the log file.</value>
+  </data>
+  <data name="popSeedTextBox.ToolTip" xml:space="preserve">
+    <value>Set the seed for the random number generator used 
+to create the population.
 Prefix the string with "\x" to use a hex number.
 Prefix the string with "\d" to use a decimal number.
 Otherwise, the string will be hashed to form a seed.

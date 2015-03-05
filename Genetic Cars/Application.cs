@@ -109,7 +109,8 @@ namespace Genetic_Cars
       m_window.Show();
       m_window.PauseSimulation += PauseSimulation;
       m_window.ResumeSimulation += ResumeSimulation;
-      m_window.SeedChanged += WindowOnSeedChanged;
+      m_window.TrackSeedChanged += WindowOnTrackSeedChanged;
+      m_window.PopulationSeedChanged += WindowOnPopulationSeedChanged;
       m_window.NewPopulation += WindowOnNewPopulation;
       m_window.EnableGraphics += EnableRender;
       m_window.DisableGraphics += DisableRender;
@@ -143,7 +144,8 @@ namespace Genetic_Cars
 
       var seed = DateTime.Now.ToString("F");
       Log.DebugFormat("Initial seed string: {0}", seed);
-      SetSeed(seed.GetHashCode());
+      SetTrackSeed(seed.GetHashCode());
+      SetPopulationSeed(seed.GetHashCode());
       GenerateWorld();
       
       Phenotype.MutateStrategy = Phenotype.DefaultMutator;
@@ -316,9 +318,10 @@ namespace Genetic_Cars
         if (m_newWorld)
         {
           m_newWorld = false;
-          var seed = DateTime.Now.ToString("F");
-          SetSeed(seed.GetHashCode());
           m_window.ResetUi();
+          var seed = DateTime.Now.ToString("F");
+          SetTrackSeed(seed.GetHashCode());
+          SetPopulationSeed(seed.GetHashCode());
           GenerateWorld();
         }
 
@@ -354,9 +357,10 @@ namespace Genetic_Cars
       if (m_newWorld)
       {
         m_newWorld = false;
-        var seed = DateTime.Now.ToString("F");
-        SetSeed(seed.GetHashCode());
         m_window.ResetUi();
+        var seed = DateTime.Now.ToString("F");
+        SetTrackSeed(seed.GetHashCode());
+        SetPopulationSeed(seed.GetHashCode());
         GenerateWorld();
       }
     }
@@ -423,11 +427,17 @@ namespace Genetic_Cars
       return true;
     }
 
-    private void SetSeed(int seed)
+    private void SetTrackSeed(int seed)
     {
-      Log.InfoFormat("RNG seed set to 0x{0:X}", seed);
+      Log.InfoFormat("Track seed set to 0x{0:X}", seed);
       var random = new Random(seed);
       Track.Random = random;
+    }
+
+    private void SetPopulationSeed(int seed)
+    {
+      Log.InfoFormat("Population seed set to 0x{0:X}", seed);
+      var random = new Random(seed);
       Population.Random = random;
       Phenotype.Random = random;
     }
@@ -448,11 +458,6 @@ namespace Genetic_Cars
       m_track.FinishLineCrossed += TrackOnFinishLineCrossed;
       Car.Car.StartPosition = new Vector2(m_track.StartingLine,
         (2 * Definition.MaxBodyPointDistance) + Definition.MaxWheelRadius);
-      
-      m_population = new Population(this);
-      m_population.NewGeneration += m_window.NewGeneration;
-      m_population.NewChampion += m_window.AddChampion;
-      m_population.Generate();
 
       // rebuild the view to match the track
       var size = m_overviewWindow.Size;
@@ -463,6 +468,21 @@ namespace Genetic_Cars
         Size = new Vector2f(m_track.Dimensions.X, m_track.Dimensions.X * ratio),
         Viewport = new FloatRect(0, 0, 1, 1)
       };
+
+      ResetPopulation();
+    }
+
+    private void ResetPopulation()
+    {
+      if (m_initialized)
+      {
+        m_population.Dispose();
+      }
+
+      m_population = new Population(this);
+      m_population.NewGeneration += m_window.NewGeneration;
+      m_population.NewChampion += m_window.AddChampion;
+      m_population.Generate();
     }
     
     #region Event Handlers
@@ -512,10 +532,17 @@ namespace Genetic_Cars
         new Vector2f(m_track.Dimensions.X, m_track.Dimensions.X * ratio);
     }
 
-    private void WindowOnSeedChanged(int seed)
+    private void WindowOnTrackSeedChanged(int seed)
     {
-      SetSeed(seed);
+      SetTrackSeed(seed);
+      SetPopulationSeed(seed);
       GenerateWorld();
+    }
+
+    private void WindowOnPopulationSeedChanged(int seed)
+    {
+      SetPopulationSeed(seed);
+      ResetPopulation();
     }
 
     private void WindowOnNewPopulation()

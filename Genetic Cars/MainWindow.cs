@@ -55,13 +55,17 @@ namespace Genetic_Cars
     private bool m_graphicsEnabled = true;
     private readonly List<HighScore> m_highScores = new List<HighScore>();
     private int m_followingCarId;
+    private string m_lastPopSeed = "";
+    private string m_lastTrackSeed = "";
 
     public MainWindow()
     {
       InitializeComponent();
 
-      var str = toolTip.GetToolTip(seedTextBox);
-      toolTip.SetToolTip(seedLabel, str);
+      var str = toolTip.GetToolTip(popSeedTextBox);
+      toolTip.SetToolTip(popSeedLabel, str);
+      str = toolTip.GetToolTip(trackSeedTextBox);
+      toolTip.SetToolTip(trackSeedLabel, str);
       str = toolTip.GetToolTip(mutationRateTextBox);
       toolTip.SetToolTip(mutationRateLabel, str);
       str = toolTip.GetToolTip(clonesComboBox);
@@ -107,11 +111,16 @@ namespace Genetic_Cars
         populationList.Controls.Add(pb);
       }
     }
-    
+
     /// <summary>
-    /// Signals that the user has changed the rng seed.
+    /// Signals that the user has changed the track seed.
     /// </summary>
-    public event SeedChangedHandler SeedChanged;
+    public event SeedChangedHandler TrackSeedChanged;
+
+    /// <summary>
+    /// Signals that the user has changed the population seed.
+    /// </summary>
+    public event SeedChangedHandler PopulationSeedChanged;
 
     /// <summary>
     /// Signals that the user wants to pause the simulation.
@@ -292,12 +301,20 @@ namespace Genetic_Cars
         pb.Visible = false;
       }
     }
-    
-    private void OnSeedChanged(int seed)
+
+    private void OnTrackSeedChanged(int seed)
     {
-      if (SeedChanged != null)
+      if (TrackSeedChanged != null)
       {
-        SeedChanged(seed);
+        TrackSeedChanged(seed);
+      }
+    }
+    
+    private void OnPopulationSeedChanged(int seed)
+    {
+      if (PopulationSeedChanged != null)
+      {
+        PopulationSeedChanged(seed);
       }
     }
 
@@ -340,71 +357,54 @@ namespace Genetic_Cars
         DisableGraphics();
       }
     }
-
+    
     #region Event Handlers
-    private void seedApplyButton_Click(object sender, EventArgs e)
+
+    private void trackSeedApplyButton_Click(object sender, EventArgs e)
     {
       OnPauseSimulation();
 
-      var str = seedTextBox.Text;
-      var apply = true;
-      int seed = 0;
-      if (string.IsNullOrEmpty(str))
-      {
-        var answer = MessageBox.Show(
-          "No seed entered.  Click OK to use the current date/time string.",
-          "", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
-        apply = answer == DialogResult.OK;
-        if (apply)
-        {
-          str = DateTime.Now.ToString("F");
-          Log.InfoFormat("Using seed string: {0}", str);
-          seed = str.GetHashCode();
-        }
-      }
-      else if (str.StartsWith(@"\x"))
-      {
-        str = str.Substring(2);
-        const NumberStyles style = NumberStyles.HexNumber;
-        var provider = CultureInfo.CurrentCulture;
-        if (!int.TryParse(str, style, provider, out seed))
-        {
-          MessageBox.Show("Error parsing the hex value.  Seed not changed",
-            "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-          apply = false;
-        }
-      }
-      else if (str.StartsWith(@"\d"))
-      {
-        str = str.Substring(2);
-        const NumberStyles style = NumberStyles.Integer;
-        var provider = CultureInfo.CurrentCulture;
-        if (!int.TryParse(str, style, provider, out seed))
-        {
-          MessageBox.Show("Error parsing the value.  Seed not changed",
-            "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-          apply = false;
-        }
-      }
-      else
-      {
-        Log.InfoFormat("Using seed string: {0}", str);
-        seed = str.GetHashCode();
-      }
-
-      if (apply)
+      var str = trackSeedTextBox.Text;
+      int seed;
+      if (TryGetSeedString(str, out seed))
       {
         var result = MessageBox.Show(
-          "Applying a new seed will reset the world.  Continue?",
+          "Applying a new seed will reset the population.  Continue?",
           "Apply seed?", MessageBoxButtons.YesNo, MessageBoxIcon.Question
           );
         if (result == DialogResult.Yes)
         {
+          m_lastTrackSeed = str;
+          ResetButtonBackground(trackSeedApplyButton);
           ResetUi();
-          OnSeedChanged(seed);
+          OnTrackSeedChanged(seed);
         }
       }
-      
+
+      OnResumeSimulation();
+    }
+
+    private void popSeedApplyButton_Click(object sender, EventArgs e)
+    {
+      OnPauseSimulation();
+
+      var str = popSeedTextBox.Text;
+      int seed;
+      if (TryGetSeedString(str, out seed))
+      {
+        var result = MessageBox.Show(
+          "Applying a new seed will reset the population.  Continue?",
+          "Apply seed?", MessageBoxButtons.YesNo, MessageBoxIcon.Question
+          );
+        if (result == DialogResult.Yes)
+        {
+          m_lastPopSeed = str;
+          ResetButtonBackground(popSeedApplyButton);
+          ResetUi();
+          OnPopulationSeedChanged(seed);
+        }
+      }
+
       OnResumeSimulation();
     }
     
@@ -463,43 +463,49 @@ namespace Genetic_Cars
 
       if (!text.Equals(rate))
       {
-        // paint the button red until the changed are saved
-        Bitmap bmp = new Bitmap(mutationRateApplyButton.Width, 
-          mutationRateApplyButton.Height);
-        using (Graphics g = Graphics.FromImage(bmp))
-        {
-          Rectangle r = new Rectangle(0, 0, bmp.Width, bmp.Height);
-          using (LinearGradientBrush br = new LinearGradientBrush(
-            r, Color.Red, Color.DarkRed, LinearGradientMode.Vertical))
-          {
-            g.FillRectangle(br, r);
-          }
-        }
-        mutationRateApplyButton.ForeColor = Color.White;
-        mutationRateApplyButton.BackgroundImage = bmp;
+        SetButtonBackgroundRed(mutationRateApplyButton);
       }
       else
       {
-        // reset the button to default
-        mutationRateApplyButton.ForeColor = SystemColors.ControlText;
-        mutationRateApplyButton.BackgroundImage = null;
-        mutationRateApplyButton.BackColor = SystemColors.Control;
-        mutationRateApplyButton.UseVisualStyleBackColor = true;
+        ResetButtonBackground(mutationRateApplyButton);
+      }
+    }
+    
+    private void trackSeedTextBox_TextChanged(object sender, EventArgs e)
+    {
+      var text = trackSeedTextBox.Text;
+
+      if (!text.Equals(m_lastTrackSeed))
+      {
+        SetButtonBackgroundRed(trackSeedApplyButton);
+      }
+      else
+      {
+        ResetButtonBackground(trackSeedApplyButton);
+      }
+    }
+
+    private void popSeedTextBox_TextChanged(object sender, EventArgs e)
+    {
+      var text = popSeedTextBox.Text;
+
+      if (!text.Equals(m_lastPopSeed))
+      {
+        SetButtonBackgroundRed(popSeedApplyButton);
+      }
+      else
+      {
+        ResetButtonBackground(popSeedApplyButton);
       }
     }
 
     private void mutationRateApplyButton_Click(object sender, EventArgs e)
     {
       float rate;
-      if (float.TryParse(mutationRateTextBox.Text, out rate) && 
+      if (float.TryParse(mutationRateTextBox.Text, out rate) &&
         (rate >= 0 || rate <= 1))
       {
-        // reset the button to default
-        mutationRateApplyButton.ForeColor = SystemColors.ControlText;
-        mutationRateApplyButton.BackgroundImage = null;
-        mutationRateApplyButton.BackColor = SystemColors.Control;
-        mutationRateApplyButton.UseVisualStyleBackColor = true;
-
+        ResetButtonBackground(mutationRateApplyButton);
         Properties.Settings.Default.MutationRate = rate;
       }
       else
@@ -600,8 +606,93 @@ namespace Genetic_Cars
 
       OnResumeSimulation();
     }
+    
 
     #endregion
+
+    private static void SetButtonBackgroundRed(Button button)
+    {
+      // paint the button red until the changed are saved
+      Bitmap bmp = new Bitmap(button.Width, button.Height);
+      using (Graphics g = Graphics.FromImage(bmp))
+      {
+        Rectangle r = new Rectangle(0, 0, bmp.Width, bmp.Height);
+        using (LinearGradientBrush br = new LinearGradientBrush(
+          r, Color.Red, Color.DarkRed, LinearGradientMode.Vertical))
+        {
+          g.FillRectangle(br, r);
+        }
+      }
+      button.ForeColor = Color.White;
+      button.BackgroundImage = bmp;
+    }
+
+    private static void ResetButtonBackground(Button button)
+    {
+      button.ForeColor = SystemColors.ControlText;
+      button.BackgroundImage = null;
+      button.BackColor = SystemColors.Control;
+      button.UseVisualStyleBackColor = true;
+    }
+
+    private static bool TryGetSeedString(string str, out int seed)
+    {
+      seed = 0;
+
+      // empty string, prompt to use date/time
+      if (string.IsNullOrEmpty(str))
+      {
+        var result = MessageBox.Show(
+          "No seed entered.  Click OK to use the current date/time string.",
+          "", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
+        if (result != DialogResult.OK)
+        {
+          return false;
+        }
+
+        str = DateTime.Now.ToString("F");
+        Log.InfoFormat("Using seed string: {0}", str);
+        seed = str.GetHashCode();
+        return true;
+      }
+
+      // hex string
+      if (str.StartsWith(@"\x"))
+      {
+        str = str.Substring(2);
+        const NumberStyles style = NumberStyles.HexNumber;
+        var provider = CultureInfo.CurrentCulture;
+        if (int.TryParse(str, style, provider, out seed))
+        {
+          return true;
+        }
+
+        MessageBox.Show("Error parsing the hex value.  Seed not changed",
+          "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        return false;
+      }
+
+      // decimal integer string
+      if (str.StartsWith(@"\d"))
+      {
+        str = str.Substring(2);
+        const NumberStyles style = NumberStyles.Integer;
+        var provider = CultureInfo.CurrentCulture;
+        if (int.TryParse(str, style, provider, out seed))
+        {
+          return true;
+        }
+
+        MessageBox.Show("Error parsing the value.  Seed not changed",
+          "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        return false;
+      }
+
+      // just hash the string
+      Log.InfoFormat("Using seed string {0}", str);
+      seed = str.GetHashCode();
+      return true;
+    }
 
     private sealed class HighScore : IComparable
     {
