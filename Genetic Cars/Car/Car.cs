@@ -270,6 +270,16 @@ namespace Genetic_Cars.Car
       target.Draw(m_overviewText, m_overviewRenderStates);
     }
 
+    /// <summary>
+    /// Manually kills the car.
+    /// </summary>
+    public void Kill()
+    {
+      m_health = 0;
+      ClearEntity();
+      OnHealthChanged();
+    }
+
     public void Dispose()
     {
       Dispose(true);

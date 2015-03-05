@@ -115,6 +115,7 @@ namespace Genetic_Cars
       m_window.EnableGraphics += EnableRender;
       m_window.DisableGraphics += DisableRender;
       m_window.LuaLoad += LuaLoad;
+      m_window.KillCar += WindowOnKillCar;
       
       // main SFML panel and view
       m_drawingWindow = new RenderWindow(
@@ -171,7 +172,7 @@ namespace Genetic_Cars
 
       m_initialized = true;
     }
-    
+
     /// <summary>
     /// Executes the program.
     /// </summary>
@@ -617,6 +618,22 @@ namespace Genetic_Cars
       m_drawingTime.Restart();
       m_physicsTime.Stop();
       m_logicTime.Stop();
+    }
+
+    private void WindowOnKillCar(int id)
+    {
+      if (m_population == null)
+      {
+        return;
+      }
+
+      var car = m_population.GetCar(id);
+      if (car == null)
+      {
+        return;
+      }
+
+      car.Kill();
     }
 
     #endregion

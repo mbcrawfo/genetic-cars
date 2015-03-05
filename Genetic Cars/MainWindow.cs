@@ -44,6 +44,12 @@ namespace Genetic_Cars
     public delegate void SeedChangedHandler(int seed);
 
     /// <summary>
+    /// Handles a request to kill a car.
+    /// </summary>
+    /// <param name="id"></param>
+    public delegate void KillCarHandler(int id);
+
+    /// <summary>
     /// Handles a request to load a lua script file.
     /// </summary>
     /// <param name="path">The file path</param>
@@ -91,7 +97,7 @@ namespace Genetic_Cars
       }
       clonesComboBox.SelectedIndex = Properties.Settings.Default.NumClones;
       randomCarsComboBox.SelectedIndex = Properties.Settings.Default.NumRandom;
-      
+
       for (var i = 0; i < PopulationSize; i++)
       {
         var pb = new ColorProgressBar
@@ -104,9 +110,23 @@ namespace Genetic_Cars
           Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold),
           Margin = new Padding(0)
         };
-        pb.Click += (sender, args) => 
-          FollowingCarId = ((ColorProgressBar) sender).Id;
+        pb.MouseClick += (sender, args) =>
+        {
+          if (args.Button == MouseButtons.Left)
+          {
+            FollowingCarId = ((ColorProgressBar) sender).Id;
+          }
+        };
         toolTip.SetToolTip(pb, string.Format("Click to view car {0}", i));
+
+        // set a context menu to manually kill cars
+        var contextMenu = new ContextMenu();
+        contextMenu.Popup += (sender, args) => OnPauseSimulation();
+        contextMenu.Collapse += (sender, args) => OnResumeSimulation();
+        var menuItem = new MenuItem("Kill");
+        menuItem.Click += (sender, args) => OnKillCar(pb.Id);
+        contextMenu.MenuItems.Add(menuItem);
+        pb.ContextMenu = contextMenu;
 
         populationList.Controls.Add(pb);
       }
@@ -151,6 +171,11 @@ namespace Genetic_Cars
     /// Signals that the user wants to load a lua file.
     /// </summary>
     public event LuaLoadHandler LuaLoad;
+
+    /// <summary>
+    /// Signals a request to kill a car manually.
+    /// </summary>
+    public event KillCarHandler KillCar;
 
     /// <summary>
     /// The id of the car the user wants the camera to follow.
@@ -355,6 +380,14 @@ namespace Genetic_Cars
       if (DisableGraphics != null)
       {
         DisableGraphics();
+      }
+    }
+
+    private void OnKillCar(int id)
+    {
+      if (KillCar != null)
+      {
+        KillCar(id);
       }
     }
     
