@@ -371,11 +371,10 @@ namespace Genetic_Cars
       error = "";
       var newLua = new Lua();
 
-      // load .net packages then clear the import function
-      //newLua.LoadCLRPackage();
-      //newLua.DoString(@"import('System')");
-      //newLua.DoString(@"import('System.Text')");
+      // clear the import function
       newLua.DoString(@"import = function () end");
+      // set the path so scripts can use require
+      newLua.DoString(@"package.path = package.path .. ';scripts/?.lua'");
 
       // set globals for scripts to use
       newLua["Log"] = LogManager.GetLogger("Lua");
