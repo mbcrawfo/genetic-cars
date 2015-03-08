@@ -6,25 +6,25 @@
       <Value Profile="(Default)">0.5</Value>
     </Setting>
     <Setting Name="MaxBodyPointDistance" Type="System.Single" Scope="Application">
-      <Value Profile="(Default)">2</Value>
+      <Value Profile="(Default)">2.5</Value>
     </Setting>
     <Setting Name="MinBodyDensity" Type="System.Single" Scope="Application">
-      <Value Profile="(Default)">0.1</Value>
+      <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="MaxBodyDensity" Type="System.Single" Scope="Application">
-      <Value Profile="(Default)">1</Value>
+      <Value Profile="(Default)">15</Value>
     </Setting>
     <Setting Name="MinWheelRadius" Type="System.Single" Scope="Application">
-      <Value Profile="(Default)">0.15</Value>
+      <Value Profile="(Default)">0.2</Value>
     </Setting>
     <Setting Name="MaxWheelRadius" Type="System.Single" Scope="Application">
-      <Value Profile="(Default)">0.75</Value>
+      <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="MinWheelDensity" Type="System.Single" Scope="Application">
-      <Value Profile="(Default)">0.1</Value>
+      <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="MaxWheelDensity" Type="System.Single" Scope="Application">
-      <Value Profile="(Default)">1</Value>
+      <Value Profile="(Default)">10</Value>
     </Setting>
     <Setting Name="NumBodyPoints" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">16</Value>
@@ -39,13 +39,13 @@
       <Value Profile="(Default)">1440</Value>
     </Setting>
     <Setting Name="MinWheelTorque" Type="System.Single" Scope="Application">
-      <Value Profile="(Default)">0.5</Value>
-    </Setting>
-    <Setting Name="MaxWheelTorque" Type="System.Single" Scope="Application">
       <Value Profile="(Default)">10</Value>
     </Setting>
+    <Setting Name="MaxWheelTorque" Type="System.Single" Scope="Application">
+      <Value Profile="(Default)">50</Value>
+    </Setting>
     <Setting Name="NumTrackPieces" Type="System.Int32" Scope="Application">
-      <Value Profile="(Default)">100</Value>
+      <Value Profile="(Default)">200</Value>
     </Setting>
     <Setting Name="PopulationSize" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">25</Value>
@@ -54,13 +54,22 @@
       <Value Profile="(Default)">0.25</Value>
     </Setting>
     <Setting Name="NumClones" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">2</Value>
+      <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="NumRandom" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
     <Setting Name="CarLowSpeedThreshold" Type="System.Single" Scope="Application">
-      <Value Profile="(Default)">0.25</Value>
+      <Value Profile="(Default)">0.3</Value>
+    </Setting>
+    <Setting Name="BreedingPopulationPercent" Type="System.Single" Scope="Application">
+      <Value Profile="(Default)">0.5</Value>
+    </Setting>
+    <Setting Name="MinTrackAngle" Type="System.Single" Scope="Application">
+      <Value Profile="(Default)">10</Value>
+    </Setting>
+    <Setting Name="MaxTrackAngle" Type="System.Single" Scope="Application">
+      <Value Profile="(Default)">50</Value>
     </Setting>
   </Settings>
 </SettingsFile>

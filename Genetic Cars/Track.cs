@@ -25,8 +25,10 @@ namespace Genetic_Cars
     // track properties
     private static readonly int NumPieces = 
       Settings.Default.NumTrackPieces;
-    private const float MaxPieceAngle = 55;
-    private const float MinPieceAngle = 10;
+    private static readonly float MaxPieceAngle = 
+      Settings.Default.MaxTrackAngle;
+    private static readonly float MinPieceAngle = 
+      Settings.Default.MinTrackAngle;
 
     // graphical properties of the track
     private static readonly Color FillColor = new Color(128, 128, 128);

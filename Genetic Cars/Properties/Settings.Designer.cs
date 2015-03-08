@@ -34,7 +34,7 @@ namespace Genetic_Cars.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        [global::System.Configuration.DefaultSettingValueAttribute("2.5")]
         public float MaxBodyPointDistance {
             get {
                 return ((float)(this["MaxBodyPointDistance"]));
@@ -43,7 +43,7 @@ namespace Genetic_Cars.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0.1")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
         public float MinBodyDensity {
             get {
                 return ((float)(this["MinBodyDensity"]));
@@ -52,7 +52,7 @@ namespace Genetic_Cars.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        [global::System.Configuration.DefaultSettingValueAttribute("15")]
         public float MaxBodyDensity {
             get {
                 return ((float)(this["MaxBodyDensity"]));
@@ -61,7 +61,7 @@ namespace Genetic_Cars.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0.15")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.2")]
         public float MinWheelRadius {
             get {
                 return ((float)(this["MinWheelRadius"]));
@@ -70,7 +70,7 @@ namespace Genetic_Cars.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0.75")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
         public float MaxWheelRadius {
             get {
                 return ((float)(this["MaxWheelRadius"]));
@@ -79,7 +79,7 @@ namespace Genetic_Cars.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0.1")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
         public float MinWheelDensity {
             get {
                 return ((float)(this["MinWheelDensity"]));
@@ -88,7 +88,7 @@ namespace Genetic_Cars.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
         public float MaxWheelDensity {
             get {
                 return ((float)(this["MaxWheelDensity"]));
@@ -133,7 +133,7 @@ namespace Genetic_Cars.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0.5")]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
         public float MinWheelTorque {
             get {
                 return ((float)(this["MinWheelTorque"]));
@@ -142,7 +142,7 @@ namespace Genetic_Cars.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        [global::System.Configuration.DefaultSettingValueAttribute("50")]
         public float MaxWheelTorque {
             get {
                 return ((float)(this["MaxWheelTorque"]));
@@ -151,7 +151,7 @@ namespace Genetic_Cars.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        [global::System.Configuration.DefaultSettingValueAttribute("200")]
         public int NumTrackPieces {
             get {
                 return ((int)(this["NumTrackPieces"]));
@@ -181,7 +181,7 @@ namespace Genetic_Cars.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
         public int NumClones {
             get {
                 return ((int)(this["NumClones"]));
@@ -205,10 +205,37 @@ namespace Genetic_Cars.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0.25")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.3")]
         public float CarLowSpeedThreshold {
             get {
                 return ((float)(this["CarLowSpeedThreshold"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.5")]
+        public float BreedingPopulationPercent {
+            get {
+                return ((float)(this["BreedingPopulationPercent"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        public float MinTrackAngle {
+            get {
+                return ((float)(this["MinTrackAngle"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("50")]
+        public float MaxTrackAngle {
+            get {
+                return ((float)(this["MaxTrackAngle"]));
             }
         }
     }

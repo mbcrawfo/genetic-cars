@@ -25,7 +25,7 @@ namespace Genetic_Cars
 
     private static readonly int PopulationSize =
       Settings.Default.PopulationSize;
-    private const int MaxHighScores = 20;
+    private const int MaxHighScores = 15;
 
     /// <summary>
     /// The id the gui uses to signal that the user wants to watch the lead car.
@@ -89,8 +89,7 @@ namespace Genetic_Cars
       // at most half of the population can be clones, and half can be random
       clonesComboBox.Items.Clear();
       randomCarsComboBox.Items.Clear();
-      var halfPop = PopulationSize / 2;
-      for (var i = 0; i <= halfPop; i++)
+      for (var i = 0; i <= PopulationSize; i++)
       {
         clonesComboBox.Items.Add(i);
         randomCarsComboBox.Items.Add(i);

@@ -16,6 +16,8 @@ namespace Genetic_Cars.Car
 
     private static readonly int Size =
       Properties.Settings.Default.PopulationSize;
+    private static readonly float BreedingPopPercent =
+      Properties.Settings.Default.BreedingPopulationPercent;
 
     // A car must make it at least this much farther than the existing 
     // champion to become the new champion
@@ -307,7 +309,9 @@ namespace Genetic_Cars.Car
       Generation++;
       Log.DebugFormat("**** Generation {0} ****", Generation);
 
-      var phenotypes = m_cars.GetRange(0, Size / 2)
+      var breedingCount = (int)Math.Round(Size * BreedingPopPercent);
+      Debug.Assert(breedingCount <= Size);
+      var phenotypes = m_cars.GetRange(0, breedingCount)
         .Select(c => c.Phenotype).ToList();
 
       for (var i = 0; i < Size; i++)
