@@ -71,6 +71,8 @@ namespace Genetic_Cars
       OutlineThickness = 1
     };
     private Lua m_luaState;
+    private int m_lastTrackSeed;
+    private int m_lastPopSeed;
     
     /// <summary>
     /// The main entry point for the application.
@@ -430,6 +432,7 @@ namespace Genetic_Cars
     private void SetTrackSeed(int seed)
     {
       Log.InfoFormat("Track seed set to 0x{0:X}", seed);
+      m_lastTrackSeed = seed;
       var random = new Random(seed);
       Track.Random = random;
     }
@@ -437,9 +440,15 @@ namespace Genetic_Cars
     private void SetPopulationSeed(int seed)
     {
       Log.InfoFormat("Population seed set to 0x{0:X}", seed);
+      m_lastPopSeed = seed;
       var random = new Random(seed);
       Population.Random = random;
       Phenotype.Random = random;
+
+      if (m_luaState != null)
+      {
+        m_luaState["RNG"] = random;
+      }
     }
 
     private void GenerateWorld()
@@ -535,7 +544,7 @@ namespace Genetic_Cars
     private void WindowOnTrackSeedChanged(int seed)
     {
       SetTrackSeed(seed);
-      SetPopulationSeed(seed);
+      SetPopulationSeed(m_lastPopSeed);
       GenerateWorld();
     }
 
