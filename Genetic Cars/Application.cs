@@ -89,6 +89,8 @@ namespace Genetic_Cars
       System.Windows.Forms.Application.EnableVisualStyles();
       System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
 
+      Log.InfoFormat("My PID: {0}", Process.GetCurrentProcess().Id);
+
       var app = new Application();
       app.Initialize();
       app.Run();
@@ -109,6 +111,7 @@ namespace Genetic_Cars
       // gui window
       m_window = new MainWindow();
       m_window.Show();
+      m_window.Text = "Genetic Cars PID " + Process.GetCurrentProcess().Id;
       m_window.PauseSimulation += PauseSimulation;
       m_window.ResumeSimulation += ResumeSimulation;
       m_window.TrackSeedChanged += WindowOnTrackSeedChanged;
@@ -594,8 +597,9 @@ namespace Genetic_Cars
 
       // save a screenshot
       var filename = string.Format(
-        "winner_gen{0}_car{1}_{2:yyyy-MM-dd_HH-mm-ss}.png",
-        m_population.Generation, id, DateTime.Now);
+        "pid{3}_gen{0}_car{1}_{2:yyyy-MM-dd_HH-mm-ss}.png",
+        m_population.Generation, id, DateTime.Now, 
+        Process.GetCurrentProcess().Id);
       m_drawingWindow.Capture().SaveToFile(filename);
       Log.InfoFormat("Screenshot of winner saved to {0}", filename);
 
