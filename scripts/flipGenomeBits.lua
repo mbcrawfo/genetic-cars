@@ -1,8 +1,8 @@
 -- Flips random bits in a genome string.
--- genome: The bit string
--- num: The number of bits to flip
+-- param genome: The bit string
+-- param num: The number of bits to flip
 -- return: The modified genome string.
-function flipGenomeBits(genome, num)
+function FlipGenomeBits(genome, num)
   -- track which bit indices have been flipped
   local flipped = {}
   
