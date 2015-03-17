@@ -488,12 +488,21 @@ namespace Genetic_Cars
         m_population.Dispose();
       }
 
+      UpdateCarOverviewText();
+
       m_population = new Population(this);
       m_population.NewGeneration += m_window.NewGeneration;
       m_population.NewChampion += m_window.AddChampion;
       m_population.Generate();
     }
-    
+
+    private void UpdateCarOverviewText()
+    {
+      Car.Car.OverviewTextYOffset = m_overviewView.Size.Y / 4f;
+      Car.Car.OverviewCharacterSize =
+        (uint) Math.Round(m_overviewView.Size.Y / 10f);
+    }
+
     #region Event Handlers
 
     private void PauseSimulation()
@@ -539,6 +548,8 @@ namespace Genetic_Cars
       var ratio = (float)e.Height / e.Width;
       m_overviewView.Size =
         new Vector2f(m_track.Dimensions.X, m_track.Dimensions.X * ratio);
+
+      UpdateCarOverviewText();
     }
 
     private void WindowOnTrackSeedChanged(int seed)

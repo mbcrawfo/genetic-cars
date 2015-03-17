@@ -29,6 +29,10 @@ namespace Genetic_Cars.Car
     /// <param name="health">The health as a percentage [0,1].</param>
     public delegate void HealthChangedHandler(int id, float health);
 
+    public static uint OverviewCharacterSize { get; set; }
+
+    public static float OverviewTextYOffset { get; set; }
+
     // roughly the number of seconds the car's speed must be below the 
     // threshold before it will die
     private const float SecondsTilDeath = 5;
@@ -112,7 +116,7 @@ namespace Genetic_Cars.Car
         {
           m_entity.Id = m_id;
         }
-        m_overviewText = new Text(m_id.ToString(), Font, 8)
+        m_overviewText = new Text(m_id.ToString(), Font, OverviewCharacterSize)
         {
           Color = Color.Black
         };
@@ -270,7 +274,8 @@ namespace Genetic_Cars.Car
 
       m_overviewRenderStates.Transform = m_overviewLineTransform;
       target.Draw(m_overviewLine, PrimitiveType.Lines, m_overviewRenderStates);
-      
+
+      m_overviewText.CharacterSize = OverviewCharacterSize;
       m_overviewRenderStates.Transform = m_overviewTextTransform;
       target.Draw(m_overviewText, m_overviewRenderStates);
     }
@@ -421,7 +426,7 @@ namespace Genetic_Cars.Car
       m_overviewLineTransform.Translate(Position.X, 0);
       // offset the text from the line
       m_overviewTextTransform = m_overviewLineTransform;
-      m_overviewTextTransform.Translate(2, -(Position.Y + 20));
+      m_overviewTextTransform.Translate(2, -(Position.Y + OverviewTextYOffset));
 
       // update the car's speed
       var moved = Position - m_lastPosition;

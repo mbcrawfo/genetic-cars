@@ -13,11 +13,12 @@ namespace Genetic_Cars.Car
   {
     private static readonly ILog Log = LogManager.GetLogger(
       MethodBase.GetCurrentMethod().DeclaringType);
-
-    private static readonly int Size =
-      Properties.Settings.Default.PopulationSize;
+    
     private static readonly float BreedingPopPercent =
       Properties.Settings.Default.BreedingPopulationPercent;
+
+    public static readonly int Size =
+      Properties.Settings.Default.PopulationSize;
 
     // A car must make it at least this much farther than the existing 
     // champion to become the new champion
