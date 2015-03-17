@@ -202,7 +202,7 @@ namespace Genetic_Cars.Car
         return;
       }
 
-      Leader = m_cars.OrderByDescending(c => c.MaxForwardDistance)
+      Leader = m_cars.OrderByDescending(c => c.MaxDistance)
         .First(c => c.IsAlive);
     }
 
@@ -302,7 +302,7 @@ namespace Genetic_Cars.Car
       Log.DebugFormat("Results of generation {0}", Generation);
       foreach (var car in m_cars)
       {
-        Log.DebugFormat("Car {0}: {1:F2} m", car.Id, car.MaxForwardDistance);
+        Log.DebugFormat("Car {0}: {1:F2} m", car.Id, car.MaxDistance);
       }
 
       UpdateChamption();
@@ -372,17 +372,17 @@ namespace Genetic_Cars.Car
 
     private void UpdateChamption()
     {
-      if (m_cars[0].MaxForwardDistance > m_championDistance + ChampionThreshold)
+      if (m_cars[0].MaxDistance > m_championDistance + ChampionThreshold)
       {
         var champ = m_cars[0];
-        m_championDistance = champ.MaxForwardDistance;
+        m_championDistance = champ.MaxDistance;
         Log.DebugFormat(
           "New champion in generation {0}, car {1} distance {2:F2} m",
           Generation, champ.Id, m_championDistance);
         OnNewChampion(Generation, champ.Id, m_championDistance);
 
         var transform = Transform.Identity;
-        transform.Translate(champ.Position.X, 0);
+        transform.Translate(champ.MaxDistancePosition.X, 0);
         m_overviewRenderStates.Transform = transform;
 
         if (m_championCar == null)
@@ -435,11 +435,11 @@ namespace Genetic_Cars.Car
     /// <returns></returns>
     private static int CarMaxDistanceComparator(Car c1, Car c2)
     {
-      if (c1.MaxForwardDistance > c2.MaxForwardDistance)
+      if (c1.MaxDistance > c2.MaxDistance)
       {
         return -1;
       }
-      else if (c1.MaxForwardDistance == c2.MaxForwardDistance)
+      else if (c1.MaxDistance == c2.MaxDistance)
       {
         return 0;
       }

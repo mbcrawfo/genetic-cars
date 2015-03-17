@@ -331,7 +331,7 @@ namespace Genetic_Cars
         m_population.Update(LogicTickInterval);
         
         // sync the gui text
-        m_window.SetDistance(m_population.Leader.MaxForwardDistance);
+        m_window.SetDistance(m_population.Leader.MaxDistance);
         m_window.SetLiveCount(m_population.LiveCount);
         m_window.SetFollowingNumber(
           m_window.FollowingCarId == MainWindow.LeaderCarId ? 

@@ -133,10 +133,15 @@ namespace Genetic_Cars.Car
     /// <summary>
     /// The score of the car is the max forward distance it has traveled.
     /// </summary>
-    public float MaxForwardDistance { get; private set; }
+    public float MaxDistance { get; private set; }
 
     /// <summary>
-    /// The total distance traveled by the car.
+    /// The position of the car when it was at MaxDistance.
+    /// </summary>
+    public Vector2 MaxDistancePosition { get; private set; }
+
+    /// <summary>
+    /// The distance traveled by the car to its current location.
     /// </summary>
     public float DistanceTraveled { get; private set; }
 
@@ -349,7 +354,8 @@ namespace Genetic_Cars.Car
       HealthChanged = null;
       Position = StartPosition;
       m_lastPosition = StartPosition;
-      MaxForwardDistance = 0;
+      MaxDistance = 0;
+      MaxDistancePosition = Vector2.Zero;
       DistanceTraveled = 0;
       m_health = MaxHealth;
       Speed = 0;
@@ -431,7 +437,13 @@ namespace Genetic_Cars.Car
         DistanceTraveled += movedLen;
       }
       m_lastPosition = Position;
-      MaxForwardDistance = Math.Max(MaxForwardDistance, DistanceTraveled);
+
+      var oldMax = MaxDistance;
+      MaxDistance = Math.Max(MaxDistance, DistanceTraveled);
+      if (oldMax < MaxDistance)
+      {
+        MaxDistancePosition = Position;
+      }
     }
   }
 }
