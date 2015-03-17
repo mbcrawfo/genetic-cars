@@ -25,7 +25,6 @@ namespace Genetic_Cars
 
     private static readonly int PopulationSize =
       Settings.Default.PopulationSize;
-    private const int MaxHighScores = 15;
 
     /// <summary>
     /// The id the gui uses to signal that the user wants to watch the lead car.
@@ -292,11 +291,6 @@ namespace Genetic_Cars
       });
 
       m_highScores.Sort();
-      if (m_highScores.Count > MaxHighScores)
-      {
-        m_highScores.RemoveAt(m_highScores.Count - 1);
-      }
-
       highScoreListBox.Items.Clear();
       for (var i = 0; i < m_highScores.Count; i++)
       {
@@ -740,7 +734,7 @@ namespace Genetic_Cars
 
       public override string ToString()
       {
-        return string.Format("{0}. Generation {1}, {2:F2} m",
+        return string.Format("{0}. Gen {1}, {2:F2} m",
           Index, Generation, Distance);
       }
 
