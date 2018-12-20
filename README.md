@@ -40,7 +40,7 @@ The following settings are available in app.config.
 * **MinWheelSpeed / MaxWheelSpeed** - The range of possible speeds in degrees / second for the car's wheels.  Not that this is the *maximum* speed of the wheel.  If the wheel does not have sufficient torque it will not be able to reach its max speed.
 * **MinWheelTorque / MaxWheelTorque** - The range of possible torque outputs for the car wheels in N*m.
 
-# Gemone: #
+# Genome: #
 
 The genome for a car is expressed as a bit string.  A car with *N* body points and *M* wheels has the following genome.
 
